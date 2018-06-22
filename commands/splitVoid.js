@@ -5,6 +5,7 @@ module.exports.run = async (lanisBot, message, args) => {
   const raidingChannelCount = Object.keys(channels.raidingChannels).length;
   let channelNumber;
   let raidingChannel;
+  let voidImage = "/files/images/voidImage.png";
 
   if (0 < args && args <= raidingChannelCount) {
     channelNumber = args - 1;
@@ -24,7 +25,6 @@ module.exports.run = async (lanisBot, message, args) => {
   ];
 
   let voidCheckEmbed = new Discord.RichEmbed()
-    .setThumbnail("https://i.imgur.com/EpnUoXm.png")
     .addField("Splitting **Raiding Channel Number " + (channelNumber + 1) + "** into groups!", "React below with the classes that you are bringing to void.")
     .addField("If you do not have any of the classes shown below react with: ", reactEmojis[0]);
   const voidCheckMessage = await lanisBot.channels.get(channels.raidStatusAnnouncements).send(voidCheckEmbed);
@@ -43,7 +43,7 @@ module.exports.run = async (lanisBot, message, args) => {
       if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
         collector.stop();
         const editedEmbed = new Discord.RichEmbed()
-          .setThumbnail("https://i.imgur.com/EpnUoXm.png")
+          .setThumbnail(voidImage)
           .addField("The Void check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
         await voidCheckMessage.edit(editedEmbed);
       }
@@ -58,7 +58,7 @@ module.exports.run = async (lanisBot, message, args) => {
   collector.on("end", async (collected, reason) => {
     if (reason !== "user") {
       const editedEmbed = new Discord.RichEmbed()
-        .setThumbnail("https://i.imgur.com/EpnUoXm.png")
+        .setThumbnail(voidImage)
         .addField("The Void check has run out of time.", "Please wait for the next run to start.");
       await voidCheckMessage.edit(editedEmbed);
     }
@@ -140,7 +140,7 @@ module.exports.run = async (lanisBot, message, args) => {
       await message.channel.send("These people had duplicate reactions:\n" + duplicateReactors.join("\n"));
     }
 
-    let maxGroups = 4;
+    let maxGroups = 2;
 
     for (reaction of usefulReacts) {
       if (reaction.size < maxGroups) {
@@ -153,7 +153,7 @@ module.exports.run = async (lanisBot, message, args) => {
       return;
     }
 
-    await message.channel.send("Can form " + maxGroups + " groups.");
+    //await message.channel.send("Can form " + maxGroups + " groups.");
 
     let groups = [];
     for (let i = 0; i < maxGroups; i++) {
