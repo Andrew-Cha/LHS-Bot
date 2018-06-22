@@ -5,7 +5,6 @@ module.exports.run = async (lanisBot, message, args) => {
   const raidingChannelCount = Object.keys(channels.raidingChannels).length;
   let channelNumber;
   let raidingChannel;
-  let voidImage = "/files/images/voidImage.png";
 
   if (0 < args && args <= raidingChannelCount) {
     channelNumber = args - 1;
@@ -17,8 +16,9 @@ module.exports.run = async (lanisBot, message, args) => {
   }
 
   const reactEmojis = [lanisBot.emojis.find("name", "voidentity"),
-  lanisBot.emojis.find("name", "warrior"),
+  lanisBot.emojis.find("name", "marbleseal"),
   lanisBot.emojis.find("name", "paladin"),
+  lanisBot.emojis.find("name", "warrior"),
   lanisBot.emojis.find("name", "knight"),
   lanisBot.emojis.find("name", "priest"),
     "❌"
@@ -31,8 +31,9 @@ module.exports.run = async (lanisBot, message, args) => {
 
   const filter = (reaction, user) => reaction.emoji.name === "❌" ||
     reaction.emoji === lanisBot.emojis.find("name", "voidentity") ||
-    reaction.emoji === lanisBot.emojis.find("name", "warrior") ||
+    reaction.emoji === lanisBot.emojis.find("name", "marbleseal") ||
     reaction.emoji === lanisBot.emojis.find("name", "paladin") ||
+    reaction.emoji === lanisBot.emojis.find("name", "warrior") ||
     reaction.emoji === lanisBot.emojis.find("name", "knight") ||
     reaction.emoji === lanisBot.emojis.find("name", "priest");
 
@@ -43,7 +44,7 @@ module.exports.run = async (lanisBot, message, args) => {
       if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
         collector.stop();
         const editedEmbed = new Discord.RichEmbed()
-          .setThumbnail(voidImage)
+          .setImage("https://i.imgur.com/kldnYcZ.png")
           .addField("The Void check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
         await voidCheckMessage.edit(editedEmbed);
       }
@@ -58,7 +59,7 @@ module.exports.run = async (lanisBot, message, args) => {
   collector.on("end", async (collected, reason) => {
     if (reason !== "user") {
       const editedEmbed = new Discord.RichEmbed()
-        .setThumbnail(voidImage)
+        .setImage("https://i.imgur.com/kldnYcZ.png")
         .addField("The Void check has run out of time.", "Please wait for the next run to start.");
       await voidCheckMessage.edit(editedEmbed);
     }
