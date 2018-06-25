@@ -15,38 +15,38 @@ module.exports.run = async (lanisBot, message, args) => {
     return;
   }
 
-  const reactEmojis = [lanisBot.emojis.find("name", "voidentity"),
-  lanisBot.emojis.find("name", "marbleseal"),
-  lanisBot.emojis.find("name", "paladin"),
-  lanisBot.emojis.find("name", "warrior"),
+  const reactEmojis = [lanisBot.emojis.find("name", "LHvoid"),
+  lanisBot.emojis.find("name", "marble"),
+  lanisBot.emojis.find("name", "LHpaladin"),
+  lanisBot.emojis.find("name", "LHwarrior"),
   lanisBot.emojis.find("name", "knight"),
-  lanisBot.emojis.find("name", "priest"),
+  lanisBot.emojis.find("name", "LHpriest"),
     "❌"
   ];
 
   let voidCheckEmbed = new Discord.RichEmbed()
-    .addField("Splitting **Raiding Channel Number " + (channelNumber + 1) + "** into groups!", "React below with the classes that you are bringing to void.")
-    .addField("If you do not have any of the classes shown below react with: ", reactEmojis[0]);
+    .addField("Splitting **Raiding Channel Number " + (channelNumber + 1) + "** into groups!", "React below with only one emote from the classes or Marble Seal that you are bringing to void.")
+    .addField("If you do not have any of the classes(or the Marble Seal) shown below react with: ", reactEmojis[0]);
   const voidCheckMessage = await lanisBot.channels.get(channels.raidStatusAnnouncements).send(voidCheckEmbed);
 
   const filter = (reaction, user) => reaction.emoji.name === "❌" ||
-    reaction.emoji === lanisBot.emojis.find("name", "voidentity") ||
-    reaction.emoji === lanisBot.emojis.find("name", "marbleseal") ||
-    reaction.emoji === lanisBot.emojis.find("name", "paladin") ||
-    reaction.emoji === lanisBot.emojis.find("name", "warrior") ||
+    reaction.emoji === lanisBot.emojis.find("name", "LHvoid") ||
+    reaction.emoji === lanisBot.emojis.find("name", "marble") ||
+    reaction.emoji === lanisBot.emojis.find("name", "LHpaladin") ||
+    reaction.emoji === lanisBot.emojis.find("name", "LHwarrior") ||
     reaction.emoji === lanisBot.emojis.find("name", "knight") ||
-    reaction.emoji === lanisBot.emojis.find("name", "priest");
+    reaction.emoji === lanisBot.emojis.find("name", "LHpriest");
 
-  const collector = new Discord.ReactionCollector(voidCheckMessage, filter, { time: 120000 });
+  const collector = new Discord.ReactionCollector(voidCheckMessage, filter, { time: 60000 });
   collector.on("collect", async (reaction, collector) => {
     if (!reaction.users.last().bot && reaction.emoji.name === "❌") {
       const currentMember = voidCheckMessage.guild.member(reaction.users.last()) || await voidCheckMessage.guild.fetchMember(reaction.users.last());
       if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
         collector.stop();
-        const editedEmbed = new Discord.RichEmbed()
-          .setImage("https://i.imgur.com/kldnYcZ.png")
-          .addField("The Void check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
-        await voidCheckMessage.edit(editedEmbed);
+        //const editedEmbed = new Discord.RichEmbed()
+        //   .setImage("https://i.imgur.com/ykSCdYt.png")
+        //   .addField("The Void check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
+        // await voidCheckMessage.edit(editedEmbed);
       }
     }
   })
@@ -57,31 +57,33 @@ module.exports.run = async (lanisBot, message, args) => {
   }
 
   collector.on("end", async (collected, reason) => {
-    if (reason !== "user") {
-      const editedEmbed = new Discord.RichEmbed()
-        .setImage("https://i.imgur.com/kldnYcZ.png")
-        .addField("The Void check has run out of time.", "Please wait for the next run to start.");
-      await voidCheckMessage.edit(editedEmbed);
-    }
+    // if (reason !== "user") {
+    const editedEmbed = new Discord.RichEmbed()
+      .setImage("https://i.imgur.com/ykSCdYt.png")
+      .addField("The Void check has been finished.", "Please wait for the next run to start.");
+    await voidCheckMessage.edit(editedEmbed);
+    //}
 
     const members = raidingChannel.members;
 
     let peopleActive = [];
     let duplicateReactors = [];
-    const voidEntityEmoji = lanisBot.emojis.find("name", "voidentity");
-    const warriorEmoji = lanisBot.emojis.find("name", "warrior");
-    const paladinEmoji = lanisBot.emojis.find("name", "paladin");
+    const voidEntityEmoji = lanisBot.emojis.find("name", "LHvoid");
+    const marbleEmoji = lanisBot.emojis.find("name", "marble")
+    const paladinEmoji = lanisBot.emojis.find("name", "LHpaladin");
+    const warriorEmoji = lanisBot.emojis.find("name", "LHwarrior");
     const knightEmoji = lanisBot.emojis.find("name", "knight");
-    const priestEmoji = lanisBot.emojis.find("name", "priest");
+    const priestEmoji = lanisBot.emojis.find("name", "LHpriest");
 
     const voidEntityReacts = (collected.get(voidEntityEmoji.id) ? collected.get(voidEntityEmoji.id).users : null);
-    const warriorReacts = (collected.get(warriorEmoji.id) ? collected.get(warriorEmoji.id).users : null);
+    const marbleReacts = (collected.get(marbleEmoji.id) ? collected.get(marbleEmoji.id).users : null);
     const paladinReacts = (collected.get(paladinEmoji.id) ? collected.get(paladinEmoji.id).users : null);
+    const warriorReacts = (collected.get(warriorEmoji.id) ? collected.get(warriorEmoji.id).users : null);
     const knightReacts = (collected.get(knightEmoji.id) ? collected.get(knightEmoji.id).users : null);
     const priestReacts = (collected.get(priestEmoji.id) ? collected.get(priestEmoji.id).users : null);
 
-    const allReacts = [voidEntityReacts, warriorReacts, paladinReacts, knightReacts, priestReacts];
-    const usefulReacts = [warriorReacts, paladinReacts, knightReacts, priestReacts];
+    const allReacts = [voidEntityReacts, marbleReacts, paladinReacts, warriorReacts, knightReacts, priestReacts];
+    const usefulReacts = [marbleReacts, paladinReacts, warriorReacts, knightReacts, priestReacts];
 
     for (reaction of allReacts) {
       if (reaction && reaction.size - 1 > 0) {
@@ -141,11 +143,15 @@ module.exports.run = async (lanisBot, message, args) => {
       await message.channel.send("These people had duplicate reactions:\n" + duplicateReactors.join("\n"));
     }
 
-    let maxGroups = 2;
+    let maxGroups = 4;
 
     for (reaction of usefulReacts) {
       if (reaction.size < maxGroups) {
-        maxGroups = reaction.size;
+        if (reaction.size % 2 === 0) {
+          if (reaction !== usefulReacts[0]) {
+          maxGroups = reaction.size;
+          }
+        }
       }
     }
 
@@ -154,7 +160,7 @@ module.exports.run = async (lanisBot, message, args) => {
       return;
     }
 
-    //await message.channel.send("Can form " + maxGroups + " groups.");
+    await message.channel.send("Can form " + maxGroups + " groups.");
 
     let groups = [];
     for (let i = 0; i < maxGroups; i++) {
