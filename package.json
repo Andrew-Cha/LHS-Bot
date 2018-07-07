@@ -5,7 +5,6 @@
     "discord.js": "^11.3.2",
     "enmap": "^2.5.2",
     "enmap-mongo": "^2.0.1",
-    "hello.js": "^1.0.0",
-    "mongodb": "^3.1.0-beta4"
+    "hello.js": "^1.0.0"
   }
 }

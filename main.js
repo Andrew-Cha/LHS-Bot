@@ -7,9 +7,10 @@ const channels = require("./channels.json");
 
 lanisBot.options.disableEveryone = true;
 lanisBot.commands = new Discord.Collection();
+lanisBot.suspensions = require("./suspensions.json");
 
 let antiflood = new Set();
-let antifloodTime = 3;  // in seconds
+let antifloodTime = 1;  // in seconds
 
 fileSystem.readdir("./commands", (err, files) => {
     if (err) console.log(err);
@@ -30,13 +31,41 @@ fileSystem.readdir("./commands", (err, files) => {
 
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
+
+    lanisBot.setInterval((async () => {
+        for (let i in lanisBot.suspensions) {
+            const guildID = lanisBot.suspensions[i].guildID;
+            const currentGuild = lanisBot.guilds.get(guildID);
+            const member = lanisBot.guilds.get(guildID).members.get(i);
+            const memberToUnsuspend = currentGuild.fetchMember(member).then(async (person) => {
+
+                if (!person) return;
+                if (Date.now() > lanisBot.suspensions[i].time) {
+                    const suspendRole = currentGuild.roles.find(role => role.name === "Suspended but Verified");
+                    person.removeRole(suspendRole)
+
+                    for (let i = 0; i < lanisBot.suspensions[person.id].roles.length; i++) {
+                        const currentRole = currentGuild.roles.find(role => role.name === lanisBot.suspensions[person.id].roles[i]);
+                        person.addRole(currentRole);
+                    }
+
+                    delete lanisBot.suspensions[person.id];
+                    fileSystem.writeFile("./suspensions.json", JSON.stringify(lanisBot.suspensions), function (err) {
+                        if (err) return console.log(err);
+                    });
+                    await lanisBot.channels.get(channels.suspendLog).send(person + " you have been unsuspended.");
+                }
+            }).catch((error) => {
+            });
+        }
+    }), 5000);
 });
 
 lanisBot.on("message", async message => {
     if (message.author.bot) return;
     if (message.channel.type === "dm") return;
     if (message.content.indexOf(config.prefix) !== 0) return;
-    if (message.channel.id !== channels.botCommands) return;
+    if (message.channel.id !== channels.botCommands && message.channel.id !== channels.verifierLogChat) return;
 
     if (antiflood.has(message.author.id)) {
         message.delete();
