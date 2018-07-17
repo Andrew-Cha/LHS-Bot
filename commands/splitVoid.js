@@ -16,7 +16,7 @@ module.exports.run = async (lanisBot, message, args) => {
   if (0 < channelNumber && channelNumber <= raidingChannelCount) {
     raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber - 1]);
   } else {
-    const error = "**Can't find such a channel to set up the void split for.**";
+    const error = "Can't find such a channel to set up the void split for.";
     await message.channel.send(error);
     return;
   }

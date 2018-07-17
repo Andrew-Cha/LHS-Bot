@@ -5,7 +5,7 @@ const fileSystem = require("fs");
 const config = require("./config.json");
 const channels = require("./channels.json");
 
-lanisBot.options.disableEveryone = true;
+//lanisBot.options.disableEveryone = true;
 lanisBot.commands = new Discord.Collection();
 lanisBot.suspensions = require("./suspensions.json");
 
@@ -25,13 +25,14 @@ fileSystem.readdir("./commands", (err, files) => {
     file.forEach((f, i) => {
         let props = require(`./commands/${f}`);
         console.log(`${f} command loaded.`);
-        lanisBot.commands.set(props.help.name, props);
+        lanisBot.commands.set(props.help.name.toUpperCase(), props);
     });
 });
 
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
-
+    await lanisBot.channels.get(channels.botCommands).send("Restart successful!");
+    await lanisBot.user.setActivity("in Cansonio's garden", { type: "PLAYING" })
     lanisBot.setInterval((async () => {
         for (let i in lanisBot.suspensions) {
             const guildID = lanisBot.suspensions[i].guildID;
@@ -67,7 +68,7 @@ lanisBot.on("message", async message => {
     if (message.content.indexOf(config.prefix) !== 0) return;
     if (message.channel.id !== channels.botCommands && message.channel.id !== channels.verifierLogChat) return;
 
-    if (antiflood.has(message.author.id)) {
+    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no") {
         message.delete();
         return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
     }
@@ -77,7 +78,7 @@ lanisBot.on("message", async message => {
     let command = messageArray[0];
     let args = messageArray.slice(1);
 
-    let commandFile = lanisBot.commands.get(command.slice(prefix.length));
+    let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());
     if (commandFile) commandFile.run(lanisBot, message, args);
 
     antiflood.add(message.author.id);

@@ -6,7 +6,7 @@ const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     let action = args[0];
-    const channelList = ["AFK", "SPLITVOID", "SUSPEND"];
+    const channelList = ["AFK", "SPLITVOID", "SUSPEND", "CLEAN"];
     if (action != undefined) {
         action = action.toUpperCase();
     }
@@ -109,17 +109,3 @@ module.exports.run = async (lanisBot, message, args) => {
 module.exports.help = {
     name: "safeGuard"
 }
-
-//add 
-// Make a list of commands, grab them perhaps from bot?
-// See if the command matches, if so add the command to their json file's object?
-// Zat's it.
-
-//remove
-//Same as add, just remove
-
-//optIn / optOut
-// add a person's object to a json file, else remov em
-
-//A message in this case is the command, so use a case for that.
-//Args are used for specifying commands, so args should be added in cases.
