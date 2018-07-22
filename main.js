@@ -5,7 +5,7 @@ const fileSystem = require("fs");
 const config = require("./config.json");
 const channels = require("./channels.json");
 
-//lanisBot.options.disableEveryone = true;
+lanisBot.options.disableEveryone = true;
 lanisBot.commands = new Discord.Collection();
 lanisBot.suspensions = require("./suspensions.json");
 

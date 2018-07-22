@@ -9,7 +9,7 @@ const leadingLogs = require(leadingLogsFile);
 module.exports.run = async (lanisBot, message, args) => {
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
-    const week = Math.floor(day / 7) + 1;
+    const week = Math.floor(day / 8) + 1;
     let weekSuffix = "";
     switch (week) {
         case 1:
@@ -139,7 +139,7 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     }
 
-    message.channel.send(reportMessage);
+    await message.channel.send(reportMessage);
 }
 
 module.exports.help = {

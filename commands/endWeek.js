@@ -11,7 +11,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (message.member.highestRole.position <= hrlRole.position) return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
-    const week = parseInt(day / 7) + 1;
+    const week = parseInt(day / 8) + 1;
     let weekSuffix = "";
     switch (week) {
         case 1:

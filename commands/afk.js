@@ -15,18 +15,34 @@ module.exports.run = async (lanisBot, message, args) => {
             break;
         }
     }
-    if (!isLeader) return await message.channel.send("You have to be a Raid Leader to log your runs.");
+    if (!isLeader) return await message.channel.send("You have to be a Raid Leader to start an AFK check.");
 
+    let hour = new Date().getUTCHours();
+    let minutes = new Date().getUTCMinutes();
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    let timeType = "PM";
+    if (hour < 12) {
+        timeType = "AM";
+    } else if (hour >= 12) {
+        timeType = "PM";
+        if (hour !== 12) {
+            hour = hour - 12;
+        }
+    }
+    
     let aborted = false;
     const raidingChannelCount = Object.keys(channels.raidingChannels).length;
     const botCommands = lanisBot.channels.get(channels.botCommands);
+    const raidStatusAnnouncements = lanisBot.channels.get(channels.raidStatusAnnouncements);
     const wantedChannel = args[0];
     const wantedType = args[1];
+    const marbleSealEmote = lanisBot.emojis.find("name", "marble");
     let raidEmote;
     let raidType;
     let channelNumber;
     let raidingChannel;
-    let currentRunEmote;
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
@@ -122,9 +138,10 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     const date = new Date().toISOString();
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
-    
-    const warningMessage = ("@here Next run starting for the **Raiding Channel Number " + wantedChannel + "**, it's going to be a " + raidType + " run! React to the AFK check below! Started by: " + message.author);
-    const warning = await lanisBot.channels.get(channels.raidStatusAnnouncements).send(warningMessage);
+
+    const warningMessage = ("@here started by " + message.member + " for Raiding Channe #" + wantedChannel);
+    const warning = await raidStatusAnnouncements.send(warningMessage);
+    //const warning = await botCommands.send(warningMessage);
 
     const reactEmojis = [
         raidEmote,
@@ -145,23 +162,18 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let afkCheckEmbed = new Discord.RichEmbed()
-        .setColor(borderColor)
-        .addField("AFK Check!", "We are starting an AFK check now, join queue and react with" + reactEmojis[0] + "to be moved in or kept in your current channel!\nIf you react with vial, key, or classes and do not bring them, you may be suspended.\n**In addition** to reacting with" + reactEmojis[0] + "also react if...", true)
+        .setColor(borderColor);
     if (wantedType.toUpperCase() === "VOID") {
-        afkCheckEmbed.addField("If you have a vial react with:", reactEmojis[1], true);
-        afkCheckEmbed.addBlankField(true);
-        const marbleSealEmote = lanisBot.emojis.find("name", "marbleseal");
-        afkCheckEmbed.addField("If you have a marble seal react with:", marbleSealEmote, true);
+        const voidEmbedMessage = "To join go to queue and react to " + raidEmote + "\nIf you have a key react with: " + reactEmojis[6] + "\nIf you have a vial react with:" + reactEmojis[1] + "\nIf you have a marble seal react with:" + marbleSealEmote + "\nTo indicate your class choice react with: " + reactEmojis[2] + reactEmojis[3] + reactEmojis[4] + reactEmojis[5] + "\nIf you are a leader and want the AFK check to END, react with:" + reactEmojis[7];
+        afkCheckEmbed.addField("Void AFK Check" + raidEmote, voidEmbedMessage, false);
+    } else if (wantedType.toUpperCase() === "CULT") {
+        const cultEmbedMessage = "To join go to queue and react to " + raidEmote + "\nIf you have a key react with: " + reactEmojis[6] + "\nTo indicate your class choice react with: " + reactEmojis[2] + reactEmojis[3] + reactEmojis[4] + reactEmojis[5] + "\nIf you are a leader and want the AFK check to END, react with:" + reactEmojis[7];
+        afkCheckEmbed.addField("Cult AFK Check", cultEmbedMessage, false);
     }
-    afkCheckEmbed.addField("If you have a key react with:", reactEmojis[6], true)
-        .addField("If you are bringing a warrior, react with:", reactEmojis[2], true)
-        .addField("If you are bringing a paladin, react with:", reactEmojis[3], true)
-        .addField("If you are bringing a knight react with:", reactEmojis[4], true)
-        .addField("If you are bringing a priest, react with:", reactEmojis[5], true)
-        .addField("If you are a leader and want the AFK check to END, react with:", reactEmojis[7], true)
+    afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds.")
 
-
-    const afkCheckMessage = await lanisBot.channels.get(channels.raidStatusAnnouncements).send(afkCheckEmbed);
+    const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
+    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);
 
     await message.channel.send("AFK check started.");
 
@@ -183,14 +195,9 @@ module.exports.run = async (lanisBot, message, args) => {
     let keysMessaged = 0;
 
     await message.guild.fetchMembers();
-    const collector = new Discord.ReactionCollector(afkCheckMessage, filter, { time: 360000 });
-    collector.on("collect", async (reaction, collector) => {
+    const afkCheckCollector = new Discord.ReactionCollector(afkCheckMessage, filter, { time: 360000 });
+    afkCheckCollector.on("collect", async (reaction, afkCheckCollector) => {
         const currentMember = await message.guild.members.get(reaction.users.last().id);
-        if (currentMember) {
-            console.log("Got reaction from: " + currentMember.displayName + " of " + reaction.emoji.name);
-        }
-
-        raidingChannel = await lanisBot.channels.get(channels.raidingChannels[channelNumber]);
         let personInQueue = false;
         for (queueChannel of queueChannels) {
             if (queueChannel.members.has(currentMember.id) === true) {
@@ -200,14 +207,13 @@ module.exports.run = async (lanisBot, message, args) => {
 
         if (!currentMember.user.bot) {
             let DMChannel = await currentMember.createDM();
-
+            if (currentMember) {
+                console.log("Got reaction from: " + currentMember.displayName + " of " + reaction.emoji.name);
+            }
             if (reaction.emoji.name === "❌") {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
-                    collector.stop();
-                    const editedEmbed = new Discord.RichEmbed()
-                        .setColor(borderColor)
-                        .addField("The AFK check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
-                    await afkCheckMessage.edit(editedEmbed).then(() => { }).catch(console.error);
+                    afkCheckCollector.stop();
+                    await botCommands.send("AFK #" + wantedChannel + " stopped by " + currentMember.displayName + ".");
                 }
             } else if (reaction.emoji === lanisBot.emojis.find("name", "LHkey")) {
                 if (locationMessage != "") {
@@ -239,7 +245,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     })
                                 }).then(async (successMessage) => {
                                     if (keysMessaged < 1) {
-                                        await currentMember.send("The location is: " + locationMessage + ".");
+                                        await currentMember.send("The location is: " + locationMessage);
                                         botCommands.send("Person: " + currentMember + " has reacted with key and location has been sent to them.");
                                         keysMessaged += 1;
                                     } else {
@@ -347,10 +353,6 @@ module.exports.run = async (lanisBot, message, args) => {
                     console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName);
                     await currentMember.setVoiceChannel(raidingChannel.id);
                 }
-
-                if (peopleActive.includes(currentMember.id) === false) {
-                    peopleActive.push(currentMember.id);
-                }
             }
         }
     });
@@ -358,7 +360,6 @@ module.exports.run = async (lanisBot, message, args) => {
     if (wantedType.toUpperCase() === "CULT") {
         reactEmojis.splice(1, 1);
     } else if (wantedType.toUpperCase() === "VOID") {
-        marbleSealEmote = lanisBot.emojis.find("name", "marble")
         reactEmojis.splice(2, 0, marbleSealEmote);
     }
 
@@ -367,15 +368,25 @@ module.exports.run = async (lanisBot, message, args) => {
             .catch(console.error);
     }
 
+    let timeTotal = afkCheckCollector.options.time;
+    const updateTimeLeft = setInterval(() => {
+        const embed = afkCheckMessage.embeds[0];
+        timeTotal -= 5000;
+        const minutesLeft = Math.floor(timeTotal / 60000);
+        const secondsLeft = Math.floor((timeTotal - minutesLeft * 60000) / 1000);
+        afkCheckEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds.");
+        afkCheckMessage.edit(afkCheckEmbed);
+      }, 5000);
+
     let abortEmbed = new Discord.RichEmbed()
         .setColor(borderColor)
         .addField(`Abort Raiding Channel Number **${wantedChannel}**`, `If you made a mistake you can abort the AFK check now, no people will be moved to AFK.`);
 
-    const abortMessage = await lanisBot.channels.get(channels.botCommands).send(abortEmbed);
+    const abortMessage = await botCommands.send(abortEmbed);
     abortMessage.react("❌");
     const abortFilter = (reaction, user) => reaction.emoji.name === "❌"
     const abortReactCollector = new Discord.ReactionCollector(abortMessage, abortFilter, { time: 360000 });
-    abortReactCollector.on("collect", async (reaction, collector) => {
+    abortReactCollector.on("collect", async (reaction, afkCheckCollector) => {
         const currentMember = await message.guild.members.get(reaction.users.last().id);
         if (reaction.emoji.name === "❌") {
             if (!reaction.users.last().bot) {
@@ -383,8 +394,8 @@ module.exports.run = async (lanisBot, message, args) => {
                     aborted = true;
                     await afkCheckMessage.delete();
                     await warning.delete();
-                    await message.channel.send("AFK check aborted.");
                     await abortReactCollector.stop();
+                    await clearInterval(updateTimeLeft);
                     if (arlLocationMessage) {
                         await arlLocationMessage.delete();
                     }
@@ -399,15 +410,49 @@ module.exports.run = async (lanisBot, message, args) => {
         abortMessage.delete();
     });
 
-    collector.on("end", async (collected, reason) => {
-        abortReactCollector.stop();
+    afkCheckCollector.on("end", async (collected, reason) => {
+        await abortReactCollector.stop();
+        let peopleActive = [];
+        const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
+        for (const collectedEmoji of collected.values()) {
+            for (const member of collectedEmoji.users.values()) {
+                if (!member.bot) {
+                    if (peopleActive.includes(member.id) === false) {
+                        peopleActive.push(member.id);
+                    }
+                    const currentMember = message.guild.members.get(member.id);
+                    let personInQueue = false;
+                    for (queueChannel of queueChannels) {
+                        if (queueChannel.members.has(currentMember.id) === true) {
+                            personInQueue = true;
+                        }
+                    }
+                    if (personInQueue) {
+                        console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName + " at the end.");
+                        await currentMember.setVoiceChannel(raidingChannel.id);
+                    }
+                }
+            }
+        }
+
+        await clearInterval(updateTimeLeft);
+        await movingPeopleWarning.delete();
 
         if (reason !== "user") {
             const editedEmbed = new Discord.RichEmbed()
                 .setColor(borderColor)
-                .addField("The AFK check has run out of time.", "Please wait for the next run to start.");
+                .addField("The AFK check has run out of time.", "Please wait for the next run to start.\nTotal raiders: " + peopleActive.length)
+                .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
+            await afkCheckMessage.edit(editedEmbed);
+        } else {
+            const editedEmbed = new Discord.RichEmbed()
+                .setColor(borderColor)
+                .addField("The AFK check has been stopped manually.", "Please wait for the next run to start.\nTotal raiders: " + peopleActive.length)
+                .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
             await afkCheckMessage.edit(editedEmbed);
         }
+        await warning.delete();
+        await afkCheckMessage.clearReactions();
 
         const members = raidingChannel.members;
 

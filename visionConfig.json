@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "spry-climber-210910",
+  "private_key_id": "621786ff7d805de654d44688a8ea7d1760e40c5d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCiGuKC6Y51MWfy\nsiVTY5NsD/g24AlHL0F7RYDyoKExvY9vPz5ffIWAvF+WmaNfVu43yXK0ZeqFDJnZ\nPpLduG18D0k+QotSWhUnO/kAlrxQdor9Flw2lf1aJdcTmjX1DYgMvnCmzXbO+pec\nnCNGmLQt4IFNpASHS0YHJsr1KjweVFHL344TYbmhLq0hq3WSruF8ZwX0kwkZtFDL\npMa3oAVERCkLypmC1L1TlySxwkvgarCPj6GrdFBV8Jua4SyzMGYRpWJ6B+1Mo/dY\neuBLHMVHWusdlhzJbYjCg2pV7msnCQgDw+9WQyFkHhduuMlxH8jGLYy01H/02B1n\nzbyzhYrFAgMBAAECggEAAubRuVZ0b6FBk/r7Hg+HPHKp38E0fR7NkU6xbLitifq5\nqYy8TkXrDIM0NtHxsCuf8TlQm07oSKlOXfnZSSaho0L/KpXlTKCwc/UxAQcrm6qh\nQl4DSWcJ0LuckhlNjp4WlFjFR1ldH2Xo0kPsdYidK1NX4Dlhm/EHhBrfzVmkhS16\n9kZF42AThcGgowkSJ+7iLw82V2mQeApvNanrzygqmV6TQtsYQ4UzpiHjxuSF5OmA\ntctLdtpATJjbwa0FnzqCPGfsvm/okyrRKrzyMMx6eLm449YQWQLiolhxhRNW87cf\nP0z0MDE3cD+7F1bNWgNVcobijPyt1iZ41EJ1YuXCtQKBgQDPN8rYfHPB4BcKQmfH\nXxgJbKkOf5rVS6iUT6bUF069jgf6NeqHpz9jvbLTD72+AJMp6fgxE47MOcrTDwf6\nednE9AYYn+p+hNq/+E2/8/H2R/RVNCqqMOgO1cq4Oc5w7MK52U6W4eOvzdVR7NRt\nXikDP9PQqiLi57Cv286CFVdAHwKBgQDIRFCSWvIoPKtKG1xxmJvhFWRQG4HLOcRH\ntkLQe5k2gCOqlwLF1THf6KCi+YtMVRaSYxVfZOIjBaVznMsvfP27EnJ8/mqWsFmr\n4XyoyZmuYrFgJduOEMPcxbb9XiSbLEgXKe0TfpKBjRJJR6jKAcBNOBc4kqkux9DD\n9etaqTdImwKBgERX42gZS9iCvzacBjxkaboaA3wLrBZzOKuJxb0n3sl4AbuNcsfA\n6pBL7aHdDDiRWfg1+ay+BZfn67RGvdvnumJSFXyjqaSGztsH2yTXIVOYEcbUSMoP\nDUpvSsgOEL9/5w2C1X/ACudd3OCDWuCjcKVotMSaiJ0Ly2OE/Iw826UDAoGAOJ1P\nZcB+Gq/kAIQxow9wabYhcKAGFkyTV26H/uYiDw00iAI+z2yQt+rMlqYTIhYf1mxa\nW2hqoVn0RvW5Xwhntl3lrb5Cpaze/L82/YRYhLrzx+mL4uKMbDocnA3kLVXcX2gD\n1HIAus0FsV+nsMvD8FB+CAk1+LqWIv+/dBbIQScCgYA6EPC5hdEYeh9U76dlC70X\nfVcLm5701C0MvUXHVNQbyZaZbpeHD0Ya/DnIbHbcVOCd5B4lzAMizNmxuUAU1ZCx\nvLhgGCNd43SXWPeCMTRFeBmMSmpB1Ea4DQasIYp+rvetJpw1VdMnc9ozBsBeIn41\nPIdLJjVdKzG6MtFbmebZdQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "lhs-bot@spry-climber-210910.iam.gserviceaccount.com",
+  "client_id": "104238937953341999947",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/lhs-bot%40spry-climber-210910.iam.gserviceaccount.com"
+}
