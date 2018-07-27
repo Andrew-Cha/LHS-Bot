@@ -4,9 +4,12 @@
   "dependencies": {
     "@google-cloud/storage": "^1.7.0",
     "@google-cloud/vision": "^0.21.0",
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "discord.js": "^11.3.2",
     "enmap": "^2.5.2",
     "enmap-mongo": "^2.0.1",
+    "generate-password": "^1.4.0",
     "hello.js": "^1.0.0",
     "jimp": "^0.2.28"
   }

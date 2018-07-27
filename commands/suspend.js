@@ -1,11 +1,11 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
-const suspensionsFile = path.normalize(__dirname + "../../suspensions.json");
+const suspensionsFile = path.normalize(__dirname + "../../dataFiles/suspensions.json");
 const suspensions = require(suspensionsFile);
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");

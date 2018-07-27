@@ -1,14 +1,15 @@
 const Discord = require("discord.js");
 
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const wantedChannel = args[0];
     const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+    let abortRestart = false;
 
     if (!wantedChannel) return await message.channel.send("Input an existing raiding channel number to clean up in.");
     let raidingChannel;
@@ -69,19 +70,51 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
 
-    const members = raidingChannel.members;
-    await message.channel.send("Cleaning is started.");
-    for (member of members.values()) {
-        console.log("attempting to move into queue from raiding channel " + (wantedChannel + 1) + " to queue " + member.displayName);
-        if (!member.bot) {
-            if (raidingChannel.members.has(member.id)) {
-                if (!member.hasPermission("MOVE_MEMBERS")) {
-                    console.log("Moving person named " + member.displayName + "to queue");
-                    await member.setVoiceChannel(channels.queues[0]);
+    let abortEmbed = new Discord.RichEmbed()
+        .addField(`Abort Cleaning Channel Number **${wantedChannel}**`, `If you made a mistake you can abort the cleaning now.`);
+
+    const abortMessage = await message.channel.send(abortEmbed);
+    abortMessage.react("❌");
+    const abortFilter = (reaction, user) => reaction.emoji.name === "❌"
+    const abortReactCollector = new Discord.ReactionCollector(abortMessage, abortFilter, { time: 360000 });
+    abortReactCollector.on("collect", async (reaction, afkCheckCollector) => {
+        const currentMember = await message.guild.members.get(reaction.users.last().id);
+        if (reaction.emoji.name === "❌") {
+            if (!reaction.users.last().bot) {
+                if (currentMember) {
+                    abortRestart = true;
+                    await abortReactCollector.stop();
+                    await message.channel.send("Cleaning aborted by " + currentMember);
+                    console.log("Cleaning aborted by " + currentMember.displayName);
+                    return;
                 }
             }
         }
+    });
+
+    abortReactCollector.on("end", async (collected, reason) => {
+        abortMessage.delete();
+    });
+
+    const members = raidingChannel.members;
+    await message.channel.send("Cleaning is started.");
+    for (member of members.values()) {
+        if (!abortRestart) {
+            console.log("attempting to move into queue from raiding channel " + wantedChannel + " to queue " + member.displayName);
+            if (!member.bot) {
+                if (raidingChannel.members.has(member.id)) {
+                    if (!member.hasPermission("MOVE_MEMBERS")) {
+                        console.log("Moving person named " + member.displayName + "to queue");
+                        await member.setVoiceChannel(channels.queues[0]);
+                    }
+                }
+            }
+        } else {
+            break;
+            return;
+        }
     }
+    abortMessage.delete();
     await message.channel.send("Cleaning is finished.");
 }
 

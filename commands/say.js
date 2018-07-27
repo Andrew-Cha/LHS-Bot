@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 module.exports.run = async (lanisBot, message, args) => {
    // if (!message.member.hasPermission("ADMINISTRATOR")) return;
 
-    const returnMessage = args.join(" ");
+    let returnMessage = args.join(" ");
 
     message.channel.send(returnMessage);
 }

@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
@@ -242,15 +242,16 @@ module.exports.run = async (lanisBot, message, args) => {
       }
     }
 
-
-    while (voidEntityReactsToArray.length) {
-      for (let i = currentGroup; i < maxGroups; i++) {
-        if (voidEntityReactsToArray[0]) {
-          groups[i].push(voidEntityReactsToArray.shift());
-        } else {
-          break;
+    if (voidEntityReactsToArray !== undefined) {
+      while (voidEntityReactsToArray.length) {
+        for (let i = currentGroup; i < maxGroups; i++) {
+          if (voidEntityReactsToArray[0]) {
+            groups[i].push(voidEntityReactsToArray.shift());
+          } else {
+            break;
+          }
+          currentGroup = 0;
         }
-        currentGroup = 0;
       }
     }
 

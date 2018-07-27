@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     let diceRoll = Math.floor(Math.random() * 20) + 1;

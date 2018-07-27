@@ -1,14 +1,14 @@
 const Discord = require("discord.js");
 
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
-const leadingLogsFile = path.normalize(__dirname + "../../leadingLogs.json");
+const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.json");
 const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const hrlRole = message.guild.roles.find(role => role.name === "Raid Leader Council");
-    if (message.member.highestRole.position <= hrlRole.position) return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
+    if (message.member.highestRole.position < hrlRole.position) return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
     const week = parseInt(day / 8) + 1;

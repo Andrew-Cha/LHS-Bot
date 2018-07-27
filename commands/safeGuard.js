@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
@@ -51,12 +51,14 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Please opt in the safeguard before trying to add a command.");
                 break;
             }
-            if (channelList.includes(commandToAdd.toUpperCase())) {
-                if (safeGuardConfigs.leaders[index].commands.includes(commandToAdd.toUpperCase())) {
-                    await message.channel.send("Command already added.");
-                } else {
-                    safeGuardConfigs.leaders[index].commands.push(commandToAdd.toUpperCase());
-                    await message.channel.send("Added the command to the safeguard list.");
+            if (commandToAdd) {
+                if (channelList.includes(commandToAdd.toUpperCase())) {
+                    if (safeGuardConfigs.leaders[index].commands.includes(commandToAdd.toUpperCase())) {
+                        await message.channel.send("Command already added.");
+                    } else {
+                        safeGuardConfigs.leaders[index].commands.push(commandToAdd.toUpperCase());
+                        await message.channel.send("Added the command to the safeguard list.");
+                    }
                 }
             } else {
                 await message.channel.send("Command does not exist.");
@@ -68,18 +70,20 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Please opt in the safeguard before trying to remove a command.");
                 break;
             }
-            if (channelList.includes(commandToRemove.toUpperCase())) {
-                if (!safeGuardConfigs.leaders[index].commands.includes(commandToRemove.toUpperCase())) {
-                    await message.channel.send("Command already is not in the safeguard list.");
-                } else {
-                    let commandIndex;
-                    for (let i = 0; i < safeGuardConfigs.leaders[index].commands.length; i++) {
-                        if (safeGuardConfigs.leaders[index].commands[i] === commandToRemove.toUpperCase()) {
-                            commandIndex = i;
+            if (commandToAdd) {
+                if (channelList.includes(commandToRemove.toUpperCase())) {
+                    if (!safeGuardConfigs.leaders[index].commands.includes(commandToRemove.toUpperCase())) {
+                        await message.channel.send("Command already is not in the safeguard list.");
+                    } else {
+                        let commandIndex;
+                        for (let i = 0; i < safeGuardConfigs.leaders[index].commands.length; i++) {
+                            if (safeGuardConfigs.leaders[index].commands[i] === commandToRemove.toUpperCase()) {
+                                commandIndex = i;
+                            }
                         }
+                        safeGuardConfigs.leaders[index].commands.splice(commandIndex, 1);
+                        await message.channel.send("Removed the command from the safeguard list.");
                     }
-                    safeGuardConfigs.leaders[index].commands.splice(commandIndex, 1);
-                    await message.channel.send("Removed the command from the safeguard list.");
                 }
             } else {
                 await message.channel.send("Command does not exist.");

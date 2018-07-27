@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
 
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
-const leadingLogsFile = path.normalize(__dirname + "../../leadingLogs.json");
+const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.json");
 const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
@@ -63,7 +63,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (leaderAdded === false) {
         leadingLogs.leaders[leadingLogs.leaders.length] = {
-            "id": "" + message.author.id,
+            "id":  message.author.id,
             "runs": "1",
             "assistedRuns": "0"
         }

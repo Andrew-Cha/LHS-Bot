@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 const Vision = require('@google-cloud/vision');
 const fs = require('fs');
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const Jimp = require("jimp");
 
 module.exports.run = async (lanisBot, message, args) => {
@@ -27,7 +27,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     await Jimp.read(imageURL).then(async function (image) {
-        image.greyscale();
+        //image.greyscale();
         await image.write("./files/images/who.png");
         await sleep(1000);
     }).catch(function (err) {
@@ -107,7 +107,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                 console.log("Found member named " + member);
                                 memberFound = true;
                             } else {
-                                break;
+                                continue;
                             }
                             const newPeopleCrashingMessage = peopleCrashingString !== "" ? peopleCrashingString + ", " + guildMember : guildMember;
                             if (newPeopleCrashingMessage.length > 2000) {

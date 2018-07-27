@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
 
-const channels = require("../channels.json");
+const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
@@ -31,7 +31,7 @@ module.exports.run = async (lanisBot, message, args) => {
             hour = hour - 12;
         }
     }
-    
+
     let aborted = false;
     const raidingChannelCount = Object.keys(channels.raidingChannels).length;
     const botCommands = lanisBot.channels.get(channels.botCommands);
@@ -139,7 +139,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const date = new Date().toISOString();
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
-    const warningMessage = ("@here started by " + message.member + " for Raiding Channe #" + wantedChannel);
+    const warningMessage = ("@here started by " + message.member + " for Raiding Channel #" + wantedChannel);
     const warning = await raidStatusAnnouncements.send(warningMessage);
     //const warning = await botCommands.send(warningMessage);
 
@@ -185,6 +185,7 @@ module.exports.run = async (lanisBot, message, args) => {
         reaction.emoji === lanisBot.emojis.find("name", "LHpaladin") ||
         reaction.emoji === lanisBot.emojis.find("name", "LHwarrior") ||
         reaction.emoji === lanisBot.emojis.find("name", "knight") ||
+        reaction.emoji === lanisBot.emojis.find("name", "marble") ||
         reaction.emoji === lanisBot.emojis.find("name", "LHpriest")) && user.bot === false;
 
     const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
@@ -222,8 +223,10 @@ module.exports.run = async (lanisBot, message, args) => {
                             if (keysMessaged < 1) {
                                 await new Promise(async (resolve, reject) => {
                                     peopleMessaged.push(currentMember.id);
-                                    await currentMember.send("Are you sure you have the key and want to be sent the location? Not coming to the location with the key will result in a suspension.\nRespond either with: `yes` or `no`.");
-                                    const messageCollector = DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
+                                    await currentMember.send("Are you sure you have the key and want to be sent the location? Not coming to the location with the key will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
+                                        await message.channel.send("User " + currentMember + " tried to get location as a vial but their DMs are turned off.");
+                                    });
+                                    const messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
                                     messageCollector.on("collect", async (responseMessage, messageCollector) => {
                                         if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                                             if (responseMessage.content.toUpperCase() === "YES") {
@@ -268,7 +271,9 @@ module.exports.run = async (lanisBot, message, args) => {
                         if (raidingChannel.members.has(currentMember.id) === true || personInQueue) {
                             if (vialsMessaged < 1) {
                                 await new Promise(async (resolve, reject) => {
-                                    await currentMember.send("Are you sure you have the vial and want to be sent the location? Not coming to the location with the vial will result in a suspension.\nRespond either with: `yes` or `no`.");
+                                    await currentMember.send("Are you sure you have the vial and want to be sent the location? Not coming to the location with the vial will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
+                                        await message.channel.send("User " + currentMember + " tried to get location as a vial but their DMs are turned off.");
+                                    });
                                     peopleMessaged.push(currentMember.id);
                                     const messageCollector = DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
                                     messageCollector.on("collect", async (responseMessage, messageCollector) => {
@@ -307,7 +312,9 @@ module.exports.run = async (lanisBot, message, args) => {
                                 });
                             } else if (vialsMessaged < 4) {
                                 await new Promise(async (resolve, reject) => {
-                                    await currentMember.send("Are you sure you have the vial and want to be sent the location? Not coming to the location with the vial will result in a suspension.\nRespond either with: `yes` or `no`.");
+                                    await currentMember.send("Are you sure you have the vial and want to be sent the location? Not coming to the location with the vial will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
+                                        await message.channel.send("User " + currentMember + " tried to get location as a vial but their DMs are turned off.");
+                                    });
                                     peopleMessaged.push(currentMember.id);
                                     const messageCollector = DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
                                     messageCollector.on("collect", async (responseMessage, messageCollector) => {
@@ -376,7 +383,7 @@ module.exports.run = async (lanisBot, message, args) => {
         const secondsLeft = Math.floor((timeTotal - minutesLeft * 60000) / 1000);
         afkCheckEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds.");
         afkCheckMessage.edit(afkCheckEmbed);
-      }, 5000);
+    }, 5000);
 
     let abortEmbed = new Discord.RichEmbed()
         .setColor(borderColor)
@@ -399,6 +406,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     if (arlLocationMessage) {
                         await arlLocationMessage.delete();
                     }
+                    await message.channel.send("AFK Check aborted by " + currentMember);
                     console.log("AFK check aborted");
                     return;
                 }
@@ -412,6 +420,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     afkCheckCollector.on("end", async (collected, reason) => {
         await abortReactCollector.stop();
+        await clearInterval(updateTimeLeft);
         let peopleActive = [];
         const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
         for (const collectedEmoji of collected.values()) {
@@ -435,24 +444,22 @@ module.exports.run = async (lanisBot, message, args) => {
             }
         }
 
-        await clearInterval(updateTimeLeft);
         await movingPeopleWarning.delete();
 
         if (reason !== "user") {
             const editedEmbed = new Discord.RichEmbed()
                 .setColor(borderColor)
-                .addField("The AFK check has run out of time.", "Please wait for the next run to start.\nTotal raiders: " + peopleActive.length)
+                .addField("The AFK check has run out of time.", `Please wait for the next run to start.\nTotal raiders: ` + peopleActive.length)
                 .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
             await afkCheckMessage.edit(editedEmbed);
         } else {
             const editedEmbed = new Discord.RichEmbed()
                 .setColor(borderColor)
-                .addField("The AFK check has been stopped manually.", "Please wait for the next run to start.\nTotal raiders: " + peopleActive.length)
+                .addField("The AFK check has been stopped manually.", `Please wait for the next run to start.\nTotal raiders: ` + peopleActive.length)
                 .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
             await afkCheckMessage.edit(editedEmbed);
         }
         await warning.delete();
-        await afkCheckMessage.clearReactions();
 
         const members = raidingChannel.members;
 
