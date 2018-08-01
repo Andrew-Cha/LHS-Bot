@@ -12,6 +12,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (message.member.highestRole.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
     const regexMatches = memberMention.match(/<@!?(1|\d{17,19})>/)
+    if (regexMatches === null) return await message.channel.send("Input a correct user mention.");
     const memberID = regexMatches[1];
     if (!memberID) return await message.channel.send("Specify which member you want to suspend.");
     const time = args[1];

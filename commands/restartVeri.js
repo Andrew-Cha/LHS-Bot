@@ -13,7 +13,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let verificationEmbed = new Discord.RichEmbed()
             .setColor('#337b0a')
             .setAuthor('Public Lost Halls Discord', lanisBot.user.avatarURL)
-            .addField("Follow these steps to verify: ", "\n1) Type `-verify (IGN Username)` in this channel\n2) Go to the DM the bot sends you\n3) Follow the steps it tells you to do")
+            .addField("Follow these steps to verify: ", "\n1) Type `-verify Your_RotMG_Name_Here` in this channel\n2) Go to the DM the bot sends you\n3) Follow the steps it tells you to do")
             .setFooter("⚠ Please make sure that you don't have DMs turned off");
         await verificationsAutomatic.send(verificationEmbed);
         await message.channel.send("Cleaned the automatic verification channel.");

@@ -15,7 +15,7 @@ module.exports.run = async (lanisBot, message, args) => {
     let index;
     let memberExpelled = false;
     for (let i = 0; i < playersExpelled.members.length; i++) {
-        if (playersExpelled.members[i].name === playerInputted) {
+        if (playersExpelled.members[i].name.toUpperCase() === playerInputted.toUpperCase()) {
             memberExpelled = true;
             index = i;
             break;
@@ -26,7 +26,7 @@ module.exports.run = async (lanisBot, message, args) => {
         case "ADD":
             if (!memberExpelled) {
                 playersExpelled.members[playersExpelled.members.length] = {
-                    "name": playerInputted
+                    "name": playerInputted.toUpperCase()
                 }
                 await fs.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (err) {
                     if (err) return console.log(err);

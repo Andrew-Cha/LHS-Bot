@@ -6,7 +6,7 @@ const Jimp = require("jimp");
 
 module.exports.run = async (lanisBot, message, args) => {
     const visionClient = new Vision.ImageAnnotatorClient({
-        keyFilename: './visionConfig.json'
+        keyFilename: './dataFiles/visionConfig.json'
     });
     const imageAttached = Array.from(message.attachments.values())[0];
     if (imageAttached === undefined) return await message.channel.send("Please attach an image to your command.");
