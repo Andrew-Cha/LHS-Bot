@@ -274,7 +274,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let errorMessages = [];
         let reportMessages = [];
         let deaths;
-        await axios.get("https://www.realmeye.com/player/" + memberToVerify).then(async response => {
+        await axios.get("https://www.realmeye.com/player/" + memberToVerify, {headers: {'User-Agent': 'Public Halls (LHS) Verification Bot'}}).then(async response => {
             if (response.status === 200) {
                 const htmlData = response.data;
                 const $ = cheerio.load(htmlData);
@@ -365,7 +365,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     reportMessages.push("Couldn't find guild or guild is private.");
                 }
 
-                await axios.get('https://www.realmeye.com/name-history-of-player/' + memberToVerify)
+                await axios.get('https://www.realmeye.com/name-history-of-player/' + memberToVerify, {headers: {'User-Agent': 'Public Halls (LHS) Verification Bot'}})
                     .then(async response => {
                         if (response.status === 200) {
                             const html = response.data;
@@ -399,7 +399,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     })
             }
 
-            await axios.get("https://www.realmeye.com/graveyard-summary-of-player/" + memberToVerify).then(async response => {
+            await axios.get("https://www.realmeye.com/graveyard-summary-of-player/" + memberToVerify, {headers: {'User-Agent': 'Public Halls (LHS) Verification Bot'}}).then(async response => {
                 if (response.status === 200) {
                     const html = response.data;
                     const $ = cheerio.load(html);
@@ -420,7 +420,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 reportMessages.push("No Data for the deaths of the player or they are hidden.")
             }
 
-            await axios.get('https://www.realmeye.com/guild-history-of-player/' + memberToVerify)
+            await axios.get('https://www.realmeye.com/guild-history-of-player/' + memberToVerify, {headers: {'User-Agent': 'Public Halls (LHS) Verification Bot'}})
                 .then(async response => {
                     if (response.status === 200) {
                         const html = response.data;
