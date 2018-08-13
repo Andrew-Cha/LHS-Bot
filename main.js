@@ -245,6 +245,7 @@ lanisBot.on("message", async message => {
         if (message.channel.id === channels.verificationsAutomatic) {
             if (message.member.highestRole.position < devRole.position) {
                 console.log("Deleted message with content: " + message.content);
+                await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
                 return await message.delete();
             }
         } else {
@@ -264,8 +265,11 @@ lanisBot.on("message", async message => {
     let command = messageArray[0];
     let args = messageArray.slice(1);
 
-    if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.highestRole.position < devRole.position) return await message.delete(), console.log("Deleted message with content: " + message.content);
-
+    if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.highestRole.position < devRole.position) {
+        await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+        return await message.delete()
+         console.log("Deleted message with content: " + message.content);
+    }
     let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());
     if (commandFile) commandFile.run(lanisBot, message, args);
 

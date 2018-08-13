@@ -1,6 +1,70 @@
 const Discord = require("discord.js");
 
 module.exports.run = async (lanisBot, message, args) => {
+    const commandListUncapitalized = ["AFK", "all", "clean", "currentWeek", "dice", "endWeek", "expelled", "expelledGuilds", "fix", "hello", "log", "parseMembers", "restart", "restartVeri", "safeGuard", "setPresence", "splitVoid", "suspend", "unsuspend", "verify"]
+    const commandList = ["AFK", "ALL", "CLEAN", "CURRENTWEEK", "DICE", "ENDWEEK", "EXPELLED", "EXPELLEDGUILDS", "FIX", "HELLO", "LOG", "PARSEMEMBERS", "RESTART", "RESTARTVERI", "SAFEGUARD", "SETPRESENCE", "SPLITVOID", "SUSPEND", "UNSUSPEND", "VERIFY"];
+    let command;
+    if (args.length > 0) {
+        command = args[0].toUpperCase();
+    } else {
+        command = "ALL";
+    }
+
+    let commandDescription = new Discord.RichEmbed();
+
+    switch (command) {
+        case ("AFK"):
+
+            break;
+        case ("ALL"):
+            let list = ""
+            for (const command of commandListUncapitalized) {
+                list = list + command.padEnd(30) + "      "
+            }
+            commandDescription.addField("All Commands", list)
+            break;
+        case ("CLEAN"):
+            break;
+        case ("CURRENTWEEK"):
+            break;
+        case ("DICE"):
+            break;
+        case ("ENDWEEK"):
+            break;
+        case ("EXPELLED"):
+            break;
+        case ("EXPELLEDGUILDS"):
+            break;
+        case ("FIX"):
+            break;
+        case ("HELLO"):
+            break;
+        case ("LOG"):
+            break;
+        case ("PARSEMEMBERS"):
+            break;
+        case ("RESTART"):
+            break;
+        case ("RESTARTVERI"):
+            break;
+        case ("SAFEGUARD"):
+            break;
+        case ("SETPRESENCE"):
+            break;
+        case ("SPLITVOID"):
+            break;
+        case ("SUSPEND"):
+            break;
+        case ("UNSUSPEND"):
+            break;
+        case ("VERIFY"):
+            break;
+        default:
+            return await message.channel.send("No such command found, type `-commands` for a full list.");
+    }
+
+    await message.channel.send(commandDescription);
+    /*
     let reply = new Discord.RichEmbed()
         .addField("-afk (Raiding Channel Number) (Type) (Custom message sent to people who react with key or vial. Optional.)", "There are two types: 'Void' and 'Cult'. Custom message can be used for anything, usually it's used for inputting the location. Example: `-afk 3 Void USNW Right Bazaar.`")
         .addField("-clean (Raiding Channel Number)", "Will remove all current non raid leaders from a specified raiding voice channel, usage:\n `-clean 1`")
@@ -15,6 +79,7 @@ module.exports.run = async (lanisBot, message, args) => {
         .addField("-suspend","Suspends a person, usage:\n`-suspend <@user mention> <number(must be a whole number)> <unit: w, d, h or m> <reason>`")
         .addField("-verify", "Used for verifying people. Currently just rips data out of RealmEye. This will most likely be reworked.")
         await message.channel.send(reply);
+        */
 }
 
 module.exports.help = {

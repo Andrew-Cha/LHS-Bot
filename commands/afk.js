@@ -140,8 +140,8 @@ module.exports.run = async (lanisBot, message, args) => {
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
     const warningMessage = ("@here started by " + message.member + " for Raiding Channel #" + wantedChannel);
-    const warning = await raidStatusAnnouncements.send(warningMessage);
-    //const warning = await botCommands.send(warningMessage);
+    //const warning = await raidStatusAnnouncements.send(warningMessage);
+    const warning = await botCommands.send(warningMessage);
 
     const reactEmojis = [
         raidEmote,
@@ -172,8 +172,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds.")
 
-    const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
-    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);
+    //const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
+    const afkCheckMessage = await botCommands.send(afkCheckEmbed);
 
     await message.channel.send("AFK check started.");
 
@@ -213,7 +213,7 @@ module.exports.run = async (lanisBot, message, args) => {
             }
             if (reaction.emoji.name === "❌") {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
-                    afkCheckCollector.stop();
+                    await afkCheckCollector.stop();
                     await botCommands.send("AFK #" + wantedChannel + " stopped by " + currentMember.displayName + ".");
                 }
             } else if (reaction.emoji === lanisBot.emojis.find("name", "LHkey")) {
@@ -415,7 +415,7 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     abortReactCollector.on("end", async (collected, reason) => {
-        abortMessage.delete();
+        await abortMessage.delete();
     });
 
     afkCheckCollector.on("end", async (collected, reason) => {
