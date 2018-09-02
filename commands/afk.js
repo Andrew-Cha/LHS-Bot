@@ -140,8 +140,8 @@ module.exports.run = async (lanisBot, message, args) => {
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
     const warningMessage = ("@here started by " + message.member + " for Raiding Channel #" + wantedChannel);
-    //const warning = await raidStatusAnnouncements.send(warningMessage);
-    const warning = await botCommands.send(warningMessage);
+    const warning = await raidStatusAnnouncements.send(warningMessage);
+    //const warning = await botCommands.send(warningMessage);
 
     const reactEmojis = [
         raidEmote,
@@ -172,8 +172,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds.")
 
-    //const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
-    const afkCheckMessage = await botCommands.send(afkCheckEmbed);
+    const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
+    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);
 
     await message.channel.send("AFK check started.");
 
@@ -266,6 +266,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 }
             } else if (reaction.emoji === lanisBot.emojis.find("name", "vial")) {
+                /*
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true || personInQueue) {
@@ -355,6 +356,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     }
                 }
+                */
             } else {
                 if (personInQueue) {
                     console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName);
@@ -422,13 +424,14 @@ module.exports.run = async (lanisBot, message, args) => {
         await abortReactCollector.stop();
         await clearInterval(updateTimeLeft);
         let peopleActive = [];
-        const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
+        //const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
         for (const collectedEmoji of collected.values()) {
             for (const member of collectedEmoji.users.values()) {
                 if (!member.bot) {
                     if (peopleActive.includes(member.id) === false) {
                         peopleActive.push(member.id);
                     }
+                    /*
                     const currentMember = message.guild.members.get(member.id);
                     let personInQueue = false;
                     for (queueChannel of queueChannels) {
@@ -440,11 +443,12 @@ module.exports.run = async (lanisBot, message, args) => {
                         console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName + " at the end.");
                         await currentMember.setVoiceChannel(raidingChannel.id);
                     }
+                    */
                 }
             }
         }
 
-        await movingPeopleWarning.delete();
+       // await movingPeopleWarning.delete();
 
         if (reason !== "user") {
             const editedEmbed = new Discord.RichEmbed()
@@ -460,7 +464,7 @@ module.exports.run = async (lanisBot, message, args) => {
             await afkCheckMessage.edit(editedEmbed);
         }
         await warning.delete();
-
+/*
         const members = raidingChannel.members;
 
         for (const member of members.values()) {
@@ -473,7 +477,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
             }
         }
-
+*/
     });
 }
 

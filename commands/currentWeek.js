@@ -73,7 +73,7 @@ module.exports.run = async (lanisBot, message, args) => {
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
         const currentLeader = await message.guild.fetchMember(leadingLogs.leaders[i].id).catch(async e => {
             await message.channel.send("Found a member with an invalid ID, continuing.")
-        });;
+        });
         if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
     }
     

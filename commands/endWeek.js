@@ -8,7 +8,7 @@ const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const hrlRole = message.guild.roles.find(role => role.name === "Raid Leader Council");
-    if (message.member.highestRole.position < hrlRole.position) return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
+    if (message.member.highestRole.position < hrlRole.position && message.member.id !== "142250464656883713") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
     const week = parseInt(day / 8) + 1;
@@ -73,7 +73,9 @@ module.exports.run = async (lanisBot, message, args) => {
     let reportMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let activeLeaders = [];
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
-        const currentLeader = await message.guild.fetchMember(leadingLogs.leaders[i].id);
+        const currentLeader = await message.guild.fetchMember(leadingLogs.leaders[i].id).catch(async e => {
+            await message.channel.send("Found a member with an invalid ID, continuing.")
+        });
         if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
     }
 
@@ -142,6 +144,8 @@ module.exports.run = async (lanisBot, message, args) => {
     fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (err) {
         if (err) return console.log(err);
     });
+
+    await message.channel.send("Done.");
 }
 
 
