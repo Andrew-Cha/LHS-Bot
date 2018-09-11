@@ -38,7 +38,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const raidStatusAnnouncements = lanisBot.channels.get(channels.raidStatusAnnouncements);
     const wantedChannel = args[0];
     const wantedType = args[1];
-    const marbleSealEmote = lanisBot.emojis.find("name", "marble");
+    const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.name === "marble");
     let raidEmote;
     let raidType;
     let channelNumber;
@@ -47,6 +47,11 @@ module.exports.run = async (lanisBot, message, args) => {
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
         raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber]);
+        if (raidingChannel === undefined) {
+            const error = "No such raiding channel found to set up for raiding.";
+            await message.channel.send(error);
+            return;
+        }
     } else {
         const error = "No such raiding channel found to set up for raiding.";
         await message.channel.send(error);
@@ -55,10 +60,10 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (wantedType != undefined) {
         if (wantedType.toUpperCase() === "CULT") {
-            raidEmote = lanisBot.emojis.find("name", "cultist");
+            raidEmote = lanisBot.emojis.find(emoji => emoji.name === "cultist");
             raidType = "**Cult**";
         } else if (wantedType.toUpperCase() === "VOID") {
-            raidEmote = lanisBot.emojis.find("name", "LHvoid");
+            raidEmote = lanisBot.emojis.find(emoji => emoji.name === "LHvoid");
             raidType = "**Void**";
         } else {
             message.channel.send("Please input a correct raid type: Cult or Void");
@@ -145,12 +150,12 @@ module.exports.run = async (lanisBot, message, args) => {
 
     const reactEmojis = [
         raidEmote,
-        lanisBot.emojis.find("name", "vial"),
-        lanisBot.emojis.find("name", "LHwarrior"),
-        lanisBot.emojis.find("name", "LHpaladin"),
-        lanisBot.emojis.find("name", "knight"),
-        lanisBot.emojis.find("name", "LHpriest"),
-        lanisBot.emojis.find("name", "LHkey"),
+        lanisBot.emojis.find(emoji => emoji.name === "vial"),
+        lanisBot.emojis.find(emoji => emoji.name === "LHwarrior"),
+        lanisBot.emojis.find(emoji => emoji.name === "LHpaladin"),
+        lanisBot.emojis.find(emoji => emoji.name === "knight"),
+        lanisBot.emojis.find(emoji => emoji.name === "LHpriest"),
+        lanisBot.emojis.find(emoji => emoji.name === "LHkey"),
         "❌"
     ];
 
@@ -170,27 +175,33 @@ module.exports.run = async (lanisBot, message, args) => {
         const cultEmbedMessage = "To join go to queue and react to " + raidEmote + "\nIf you have a key react with: " + reactEmojis[6] + "\nTo indicate your class choice react with: " + reactEmojis[2] + reactEmojis[3] + reactEmojis[4] + reactEmojis[5] + "\nIf you are a leader and want the AFK check to END, react with:" + reactEmojis[7];
         afkCheckEmbed.addField("Cult AFK Check", cultEmbedMessage, false);
     }
-    afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds.")
+    afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds; 0 people out of 0 moved.")
 
     const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
-    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);
+    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);   
+
+    let totalPeople = 0;
+    let peopleMoved = 0;
+    let peopleReacted = 0;
+    let peopleToMoveReacted = [];
+    let peopleMoved = [];
+    let peopleReacted = [];
 
     await message.channel.send("AFK check started.");
 
     const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
-        reaction.emoji === lanisBot.emojis.find("name", "LHvoid") ||
-        reaction.emoji === lanisBot.emojis.find("name", "cultist") ||
-        reaction.emoji === lanisBot.emojis.find("name", "LHkey") ||
-        reaction.emoji === lanisBot.emojis.find("name", "vial") ||
-        reaction.emoji === lanisBot.emojis.find("name", "LHpaladin") ||
-        reaction.emoji === lanisBot.emojis.find("name", "LHwarrior") ||
-        reaction.emoji === lanisBot.emojis.find("name", "knight") ||
-        reaction.emoji === lanisBot.emojis.find("name", "marble") ||
-        reaction.emoji === lanisBot.emojis.find("name", "LHpriest")) && user.bot === false;
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "cultist") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHkey") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "vial") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpaladin") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHwarrior") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "knight") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "marble") ||
+        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpriest")) && user.bot === false;
 
     const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
 
-    let peopleActive = [];
     let peopleMessaged = [];
     let vialsMessaged = 0;
     let keysMessaged = 0;
@@ -201,8 +212,10 @@ module.exports.run = async (lanisBot, message, args) => {
         const currentMember = await message.guild.members.get(reaction.users.last().id);
         let personInQueue = false;
         for (queueChannel of queueChannels) {
-            if (queueChannel.members.has(currentMember.id) === true) {
-                personInQueue = true;
+            if (queueChannel !== undefined) {
+                if (queueChannel.members.has(currentMember.id) === true) {
+                    personInQueue = true;
+                }
             }
         }
 
@@ -216,7 +229,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     await afkCheckCollector.stop();
                     await botCommands.send("AFK #" + wantedChannel + " stopped by " + currentMember.displayName + ".");
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find("name", "LHkey")) {
+            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHkey")) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true || personInQueue) {
@@ -265,8 +278,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     }
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find("name", "vial")) {
-                /*
+            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "vial")) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true || personInQueue) {
@@ -356,11 +368,27 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     }
                 }
-                */
             } else {
+                if (!peopleReacted.includes(currentMember.id)) {
+                    totalPeople++;
+                    peopleReacted.push(currentMember.id);
+                }
+                if (totalPeople === 120) {
+                    await afkCheckCollector.stop();
+                    await botCommands.send("AFK #" + wantedChannel + " stopped by the bot due to a member overflow.");
+                }
+                
                 if (personInQueue) {
+                    if (!peopleToMoveReacted.includes(currentMember.id)) {
+                        peopleReacted++;
+                        peopleToMoveReacted.push(currentMember.id);
+                    }
                     console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName);
                     await currentMember.setVoiceChannel(raidingChannel.id);
+                    if (!peopleMoved.includes(currentMember.id)) {
+                        peopleMoved++;
+                        peopleMoved.push(currentMember.id);
+                    }
                 }
             }
         }
@@ -379,11 +407,10 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let timeTotal = afkCheckCollector.options.time;
     const updateTimeLeft = setInterval(() => {
-        const embed = afkCheckMessage.embeds[0];
         timeTotal -= 5000;
         const minutesLeft = Math.floor(timeTotal / 60000);
         const secondsLeft = Math.floor((timeTotal - minutesLeft * 60000) / 1000);
-        afkCheckEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds.");
+        afkCheckEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds; " + peopleMoved + " out of " + peopleReacted + " moved. Total people: " + totalPeople + ".");
         afkCheckMessage.edit(afkCheckEmbed);
     }, 5000);
 
@@ -423,15 +450,15 @@ module.exports.run = async (lanisBot, message, args) => {
     afkCheckCollector.on("end", async (collected, reason) => {
         await abortReactCollector.stop();
         await clearInterval(updateTimeLeft);
-        let peopleActive = [];
+        /*
+        let peopleToMoveReacted = [];
         //const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
         for (const collectedEmoji of collected.values()) {
             for (const member of collectedEmoji.users.values()) {
                 if (!member.bot) {
-                    if (peopleActive.includes(member.id) === false) {
-                        peopleActive.push(member.id);
+                    if (peopleToMoveReacted.includes(member.id) === false) {
+                        peopleToMoveReacted.push(member.id);
                     }
-                    /*
                     const currentMember = message.guild.members.get(member.id);
                     let personInQueue = false;
                     for (queueChannel of queueChannels) {
@@ -443,45 +470,64 @@ module.exports.run = async (lanisBot, message, args) => {
                         console.log("Moving person into raiding channel " + wantedChannel + " : " + currentMember.displayName + " at the end.");
                         await currentMember.setVoiceChannel(raidingChannel.id);
                     }
-                    */
-                }
+
+    }
             }
         }
-
-       // await movingPeopleWarning.delete();
-
+    */
+        // await movingPeopleWarning.delete();
+        let editedEmbed;
         if (reason !== "user") {
-            const editedEmbed = new Discord.RichEmbed()
+            editedEmbed = new Discord.RichEmbed()
                 .setColor(borderColor)
-                .addField("The AFK check has run out of time.", `Please wait for the next run to start.\nTotal raiders: ` + peopleActive.length)
-                .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
-            await afkCheckMessage.edit(editedEmbed);
+                .addField("The AFK check has run out of time.", `Please wait for the next run to start.\nTotal raiders: ` + totalPeople);
+        } else if (reason === "overflow") {
+            editedEmbed = new Discord.RichEmbed()
+                .setColor(borderColor)
+                .addField("The AFK check has stoppe due to a member overflow.", `Please wait for the next run to start.\nTotal raiders: ` + totalPeople);
         } else {
-            const editedEmbed = new Discord.RichEmbed()
+            editedEmbed = new Discord.RichEmbed()
                 .setColor(borderColor)
-                .addField("The AFK check has been stopped manually.", `Please wait for the next run to start.\nTotal raiders: ` + peopleActive.length)
-                .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
-            await afkCheckMessage.edit(editedEmbed);
+                .addField("The AFK check has been stopped manually.", `Please wait for the next run to start.\nTotal raiders: ` + totalPeople);
         }
+
         await warning.delete();
-/*
+
+        editedEmbed.setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC; " + peopleMoved + " out of " + peopleReacted + " moved.");
+        await afkCheckMessage.edit(editedEmbed);
+
+        const updatePeopleMoved = setInterval(() => {
+            editedEmbed.setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC; " + peopleMoved + " out of " + peopleReacted + " moved.");
+            afkCheckMessage.edit(editedEmbed);
+        }, 5000);
+
         const members = raidingChannel.members;
 
         for (const member of members.values()) {
             if (!member.bot) {
                 if (!aborted) {
-                    if ((member.deaf && !member.hasPermission("MOVE_MEMBERS")) || (peopleActive.includes(member.id) === false && member.hasPermission("MOVE_MEMBERS") == false)) {
+                    if ((member.deaf && !member.hasPermission("MOVE_MEMBERS")) || (peopleToMoveReacted.includes(member.id) === false && member.hasPermission("MOVE_MEMBERS") == false)) {
                         await member.setVoiceChannel(channels.afk);
                         console.log("Moving to AFK from raiding channel " + wantedChannel + " : " + member.displayName);
                     }
                 }
             }
         }
-*/
+
+        await sleep(60000);
+        await clearInterval(updatePeopleMoved);
+        await editedEmbed.setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
+        await afkCheckMessage.edit(editedEmbed);
     });
 }
 
 
 module.exports.help = {
     name: "afk"
+}
+
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms)
+    })
 }

@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const commandListUncapitalized = ["AFK", "all", "clean", "currentWeek", "dice", "endWeek", "expelled", "expelledGuilds", "fix", "hello", "log", "parseMembers", "restart", "restartVeri", "safeGuard", "setPresence", "splitVoid", "suspend", "unsuspend", "verify"]
+    const commandListUncapitalized = ["AFK", "all", "clean", "currentWeek", "dice", "duplicateMembers", "endWeek", "expelled", "expelledGuilds", "faq", "fix", "hello", "log", "parseMembers", "restart", "restartVeri", "rules", "safeGuard", "say", "setPresence", "splitVoid", "suspend", "unsuspend", "verify"]
     const commandList = ["AFK", "ALL", "CLEAN", "CURRENTWEEK", "DICE", "ENDWEEK", "EXPELLED", "EXPELLEDGUILDS", "FIX", "HELLO", "LOG", "PARSEMEMBERS", "RESTART", "RESTARTVERI", "SAFEGUARD", "SETPRESENCE", "SPLITVOID", "SUSPEND", "UNSUSPEND", "VERIFY"];
     let command;
     if (args.length > 0) {
@@ -17,9 +17,23 @@ module.exports.run = async (lanisBot, message, args) => {
 
             break;
         case ("ALL"):
+            let index = 0;
             let list = ""
             for (const command of commandListUncapitalized) {
-                list = list + command.padEnd(30) + "      "
+                let newLineNeeded = false;
+                if (index % 2 === 0) {
+                    newLine = true;
+                }
+
+                const newLine = nextLineNeeded ? newList = list + " ឵឵ ឵឵" + command + "\n" : newList = list + " ឵឵ ឵឵" + command;
+
+                if (newList.length > 1024) {
+                    commandDescription.addField(" ឵឵ ឵឵", list);
+                    list = command;
+                } else {
+                    list = newList;
+                }
+                index += 1;
             }
             commandDescription.addField("All Commands", list)
             break;

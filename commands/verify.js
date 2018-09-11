@@ -172,26 +172,34 @@ module.exports.run = async (lanisBot, message, args) => {
             veriCodeMessage.edit(veriCodeEmbed);
         }, 5000);
 
+        let currentlyCheckingRequirements = false;
+
         messageCollector.on("collect", async (responseMessage, messageCollector) => {
             if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                 if (responseMessage.content.toUpperCase() === "DONE") {
-                    if (timesAttemptedToVerify >= 5) {
-                        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify (typed `done`) already " + timesAttemptedToVerify + " times.");
-                    } else {
-                        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify.");
-                    }
-                    await DMChannel.send("Currently verifying, please wait.");
-                    if (memberToVerify === message.author.username) {
-                        let capitalizedMemberToVerify = capitalizeFirstLetter(memberToVerify);
-                        if (capitalizedMemberToVerify !== message.author.username) {
-                            memberToVerify = capitalizedMemberToVerify;
+                    if (!currentlyCheckingRequirements) {
+                        if (timesAttemptedToVerify >= 5) {
+                            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify (typed `done`) already " + timesAttemptedToVerify + " times.");
                         } else {
-                            let lowerCaseMemberToVerify = lowerCaseFirstLetter(memberToVerify);
-                            memberToVerify = lowerCaseMemberToVerify;
+                            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify.");
                         }
+                        await DMChannel.send("Currently verifying, please wait.");
+                        if (memberToVerify === message.author.username) {
+                            let capitalizedMemberToVerify = capitalizeFirstLetter(memberToVerify);
+                            if (capitalizedMemberToVerify !== message.author.username) {
+                                memberToVerify = capitalizedMemberToVerify;
+                            } else {
+                                let lowerCaseMemberToVerify = lowerCaseFirstLetter(memberToVerify);
+                                memberToVerify = lowerCaseMemberToVerify;
+                            }
+                        }
+                        currentlyCheckingRequirements = true;
+                        await verifyMember(memberToVerify);
+                        currentlyCheckingRequirements = false;
+                        timesAttemptedToVerify += 1;
+                    } else {
+                        await DMChannel.send("The bot is currently is reading data off of RealmEye, please wait.");
                     }
-                    await verifyMember(memberToVerify);
-                    timesAttemptedToVerify += 1;
                 } else if (responseMessage.content.toUpperCase() === "ABORT" || responseMessage.content.toUpperCase() === "STOP") {
                     await errorChannel.send("User " + message.member + " (" + message.author.username + ") stopped the verification by saying '" + responseMessage.content + "'");
                     messageCollector.stop("time");
