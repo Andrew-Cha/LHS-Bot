@@ -6,7 +6,7 @@ const expelledGuilds = require(expelledGuildsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const action = args[0];
-    if (action === undefined) return await message.channel.send("Input whether you want to `add` or `remove` a guild to the expelled guilds list.")
+    if (action === undefined) return await message.channel.send("Input whether you want to `add` or `remove` a guild to the expelled guilds list, to view the list use the `list` argument.")
     let guildInputted = "";
     for (let i = 1; i < args.length; i++) {
         if (i !== 1) {
@@ -15,17 +15,19 @@ module.exports.run = async (lanisBot, message, args) => {
             guildInputted = args[1];
         }
     }
-    if (guildInputted === undefined) return message.channel.send("Please input a guild to expel or unban.");
+    if (guildInputted === "" && action.toUpperCase() !== "LIST") return message.channel.send("Please input a guild to expel or unban.");
 
     const actionUpperCase = action.toUpperCase();
 
     let index;
     let guildExpelled = false;
-    for (let i = 0; i < expelledGuilds.guilds.length; i++) {
-        if (expelledGuilds.guilds[i].name.toUpperCase() === guildInputted.toUpperCase()) {
-            guildExpelled = true;
-            index = i;
-            break;
+    if (guildInputted) {
+        for (let i = 0; i < expelledGuilds.guilds.length; i++) {
+            if (expelledGuilds.guilds[i].name.toUpperCase() === guildInputted.toUpperCase()) {
+                guildExpelled = true;
+                index = i;
+                break;
+            }
         }
     }
 
@@ -56,8 +58,44 @@ module.exports.run = async (lanisBot, message, args) => {
             }
             break;
 
+        case "LIST":
+            let reportMessage = "**Expelled Guilds**\n```";
+            let guildsExpelled = [];
+            for (let i = 0; i < expelledGuilds.guilds.length; i++) {
+                guildsExpelled.push(expelledGuilds.guilds[i].name);
+            }
+
+            function compare(a, b) {
+                if (a < b) {
+                    return -1;
+                }
+                if (a > b) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            guildsExpelled.sort(compare);
+            let guildsScrolled = 1;
+            for (const guild of guildsExpelled) {
+                const newReportMessage = reportMessage + guild + "; ";
+                if (newReportMessage.length > 1996) {
+                    reportMessage = reportMessage + "\n```";
+                    await message.channel.send(reportMessage);
+                    reportMessage = "```\n" + person;
+                } else {
+                    reportMessage = newReportMessage;
+                    if (guildsScrolled === expelledGuilds.guilds.length) {
+                        reportMessage = reportMessage + "\n```";
+                    }
+                }
+                guildsScrolled += 1;
+            }
+
+            await message.channel.send(reportMessage);
+            break;
         default:
-            return await message.channel.send("Input a correct action, either `add` or `remove`");
+            return await message.channel.send("Input a correct action, either `add`,`remove` or `list`.");
             break;
     }
 }

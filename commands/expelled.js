@@ -6,19 +6,22 @@ const playersExpelled = require(playersExpelledFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const action = args[0];
-    if (action === undefined) return await message.channel.send("Input whether you want to `add` or `remove` a person to the expelled people list.")
+    if (action === undefined) return await message.channel.send("Input whether you want to `add` or `remove` a person to the expelled people list, to view the list use the `list` argument.")
     const playerInputted = args[1]
-    if (playerInputted === undefined) return message.channel.send("Please input a user to expel or unban.");
+    if (playerInputted === undefined && action.toUpperCase() !== "LIST") return message.channel.send("Please input a user to expel or unban.");
 
     const actionUpperCase = action.toUpperCase();
 
+
     let index;
     let memberExpelled = false;
-    for (let i = 0; i < playersExpelled.members.length; i++) {
-        if (playersExpelled.members[i].name.toUpperCase() === playerInputted.toUpperCase()) {
-            memberExpelled = true;
-            index = i;
-            break;
+    if (playerInputted) {
+        for (let i = 0; i < playersExpelled.members.length; i++) {
+            if (playersExpelled.members[i].name.toUpperCase() === playerInputted.toUpperCase()) {
+                memberExpelled = true;
+                index = i;
+                break;
+            }
         }
     }
 
@@ -49,8 +52,44 @@ module.exports.run = async (lanisBot, message, args) => {
             }
             break;
 
+        case "LIST":
+            let reportMessage = "**Expelled Players**\n```";
+            let expelledPeople = [];
+            for (let i = 0; i < playersExpelled.members.length; i++) {
+                expelledPeople.push(playersExpelled.members[i].name);
+            }
+
+            function compare(a, b) {
+                if (a < b) {
+                    return -1;
+                }
+                if (a > b) {
+                    return 1;
+                }
+                return 0;
+            }
+
+            expelledPeople.sort(compare);
+            let membersScrolled = 1;
+            for (const person of expelledPeople) {
+                const newReportMessage = reportMessage + person + "; ";
+                if (newReportMessage.length > 1996) {
+                    reportMessage = reportMessage + "\n```";
+                    await message.channel.send(reportMessage);
+                    reportMessage = "```\n" + person;
+                } else {
+                    reportMessage = newReportMessage;
+                    if (membersScrolled === playersExpelled.members.length) {
+                        reportMessage = reportMessage + "\n```";
+                    }
+                }
+                membersScrolled += 1;
+            }
+
+            await message.channel.send(reportMessage);
+            break;
         default:
-            return await message.channel.send("Input a correct action, either `add` or `remove`");
+            return await message.channel.send("Input a correct action, either `add`,`remove` or `list`.");
             break;
     }
 }
