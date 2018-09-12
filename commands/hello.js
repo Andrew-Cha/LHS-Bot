@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
  
 module.exports.run = async (lanisBot, message, args) => {
-    let thumbnail = lanisBot.user.displayAvatarURL;
+    let thumbnail = await lanisBot.user.avatarURL();
        
-    let reply = new Discord.RichEmbed()
+    let reply = new Discord.MessageEmbed()
     .setColor("#00FF00")
     .setThumbnail(thumbnail)
     .addField("Bot Name", lanisBot.user.username)

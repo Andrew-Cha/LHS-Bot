@@ -37,7 +37,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     if (isRaider) {
         const errorMessage = await message.channel.send("You are already a Verified Raider.");
-        await errorChannel.send("A Verified Raider " + message.member + " (" + message.author.username + ") tried to verify.");
+        await errorChannel.send("A Verified Raider " + message.member.toString() + " (" + message.author.username + ") tried to verify.");
         await sleep(10000);
         await errorMessage.delete();
         await message.delete();
@@ -48,7 +48,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const messageChannel = message.channel;
     if (memberToVerify === undefined) {
         const errorMessage = await messageChannel.send("Input a name to verify, please");
-        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify with no name input.");
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify with no name input.");
         await sleep(10000);
         await errorMessage.delete();
         await message.delete()
@@ -65,7 +65,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (memberExpelled) {
         const expelledError = await message.channel.send("Sorry, this member is expelled, cannot verify.");
-        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify with the in game username " + memberToVerify + ", which is expelled.");
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify with the in game username " + memberToVerify + ", which is expelled.");
         await sleep(10000);
         await message.delete();
         await expelledError.delete()
@@ -85,7 +85,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (memberVerified) {
         const verifiedError = await message.channel.send("Sorry, someone has already applied with the nickname of '" + memberVerifiedNickname + "'");
-        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify as an already verified person (who used the bot to verify) named " + memberToVerify + ".");
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify as an already verified person (who used the bot to verify) named " + memberToVerify + ".");
         await sleep(10000);
         await message.delete();
         await verifiedError.delete()
@@ -105,7 +105,7 @@ module.exports.run = async (lanisBot, message, args) => {
     await new Promise(async (resolve, reject) => {
         const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
         messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 900000 });
-        await errorChannel.send("User " + message.member + " (" + message.author.username + ") started a verification process with the name '" + memberToVerify + "'");
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") started a verification process with the name '" + memberToVerify + "'");
         let index;
         let memberAlreadyVerifying = false;
         for (let i = 0; i < currentlyVerifying.members.length; i++) {
@@ -127,7 +127,7 @@ module.exports.run = async (lanisBot, message, args) => {
         } else {
             await message.delete();
             await messageCollector.stop();
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify when they already have a verification pending.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify when they already have a verification pending.");
             return await DMChannel.send("There is already a verification pending.");
         }
 
@@ -140,13 +140,13 @@ module.exports.run = async (lanisBot, message, args) => {
 
         veriCode = "LHS_" + veriCode;
 
-        veriCodeEmbed = new Discord.RichEmbed()
+        veriCodeEmbed = new Discord.MessageEmbed()
             .setColor('#337b0a')
             .addField("Add this code to your RealmEye profile description (make sure that this is the only text in a line of the description) and respond with `done` after that is done. Respond with `stop` or `abort` if you want to stop this.", "```css\n" + veriCode + "\n```\nAlso make sure these conditions are met before verifying:\n1) Your profile is public\n2) **Only** the location is set to hidden.")
             .setFooter("Time left: 15 minutes 0 seconds");
         let disabledDM = false;
         veriCodeMessage = await DMChannel.send(veriCodeEmbed).catch(async (e) => {
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify with their DMs turned off.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify with their DMs turned off.");
             const errorMessage = await messageChannel.send(message.author + ", you have your DMs turned off, please turn them on.");;
             await sleep(10000);
             await errorMessage.delete();
@@ -179,9 +179,9 @@ module.exports.run = async (lanisBot, message, args) => {
                 if (responseMessage.content.toUpperCase() === "DONE") {
                     if (!currentlyCheckingRequirements) {
                         if (timesAttemptedToVerify >= 5) {
-                            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify (typed `done`) already " + timesAttemptedToVerify + " times.");
+                            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify (typed `done`) already " + timesAttemptedToVerify + " times.");
                         } else {
-                            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify.");
+                            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify.");
                         }
                         await DMChannel.send("Currently verifying, please wait.");
                         if (memberToVerify === message.author.username) {
@@ -201,14 +201,14 @@ module.exports.run = async (lanisBot, message, args) => {
                         await DMChannel.send("The bot is currently is reading data off of RealmEye, please wait.");
                     }
                 } else if (responseMessage.content.toUpperCase() === "ABORT" || responseMessage.content.toUpperCase() === "STOP") {
-                    await errorChannel.send("User " + message.member + " (" + message.author.username + ") stopped the verification by saying '" + responseMessage.content + "'");
+                    await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") stopped the verification by saying '" + responseMessage.content + "'");
                     messageCollector.stop("time");
                 } else {
-                    await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to tell the bot '" + responseMessage.content + "' instead of done in any capitalization.");
+                    await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to tell the bot '" + responseMessage.content + "' instead of done in any capitalization.");
                     await DMChannel.send("Please respond with a correct answer: `done` or `stop` / `abort`.");
                 }
             } else {
-                await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to tell the bot '" + responseMessage.content + "' instead of done in any capitalization.");
+                await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to tell the bot '" + responseMessage.content + "' instead of done in any capitalization.");
                 await DMChannel.send("Please respond with a correct answer: `done` or `stop` / `abort`.");
             }
         });
@@ -230,12 +230,12 @@ module.exports.run = async (lanisBot, message, args) => {
         const raiderRole = message.guild.roles.find(role => role.name === "Verified Raider");
         await message.member.setNickname(memberToVerify, "Accepted into the server via Automatic Verification.").catch(async e => {
             noPerms = true;
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
             return await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
         });
         await message.member.addRole(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
             noPerms = true;
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
+            await errorChannel.send("User " + message.member.toString + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
             return await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
         });
         let index;
@@ -257,7 +257,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         await message.delete();
         if (noPerms) return;
-        await errorChannel.send("User " + message.member + " (" + message.author.username + ") got successfully verified.");
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") got successfully verified.");
         await veriCodeEmbed.setFooter("The Verification process is completed.");
         await veriCodeMessage.edit(veriCodeEmbed);
         await DMChannel.send("Verification is successful, welcome to Public Lost Halls!")
@@ -293,10 +293,10 @@ module.exports.run = async (lanisBot, message, args) => {
         }
 
         if (isAlt) {
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify but were suspected to be an alt.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but were suspected to be an alt.");
             await DMChannel.send("There was a problem verifying your account. Please wait for a manual verification to be done by the staff. This is will take 2-3 hours usually, 48 hours if the world is about to end or some emergency is present. Don't message staff about it, as the verification will be looked at eventually, thanks :)");
         } else {
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify but their verification was stopped.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but their verification was stopped.");
             await DMChannel.send("The Verification process is now stopped.");
         }
         clearInterval(updateTimeLeft);
@@ -326,7 +326,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                 const playerName = $('.entity-name').text();
                 if (playerName.toUpperCase() !== memberToVerify.toUpperCase()) {
-                    await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify with an invalid / hidden Realmeye profile.");
+                    await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify with an invalid / hidden Realmeye profile.");
                     return await DMChannel.send("Member not found, please make sure your RealmEye profile isn't private or that the input name is correct. If you recently changed this give the bot a minute to renew your page.");
                 }
 
@@ -443,7 +443,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     })
                     .catch(async e => {
                         console.log(e);
-                        await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify but the bot failed to fetch the name history page on RealmEye.");
+                        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but the bot failed to fetch the name history page on RealmEye.");
                         await DMChannel.send("Failed when trying to read your name history.");
                     })
             }
@@ -458,7 +458,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
             }).catch(async e => {
                 console.log(e);
-                await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify but the bot failed to fetch the graveyard history page on RealmEye.");
+                await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but the bot failed to fetch the graveyard history page on RealmEye.");
                 errorMessages.push("Failed while trying to read your graveyard history.")
             });
 
@@ -496,7 +496,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 })
                 .catch(async e => {
-                    await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify but the bot failed to fetch the guild history page on RealmEye.");
+                    await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but the bot failed to fetch the guild history page on RealmEye.");
                     console.log(e);
                     errorMessages.push("Failed when trying to read your guild history.");
                 })
@@ -507,7 +507,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     errorReport = errorReport + errorMessage + "\n";
                 }
                 await DMChannel.send(errorReport);
-                await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify and had these problems:\n" + errorReport);
+                await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify and had these problems:\n" + errorReport);
             } else if (maxCharCount < 3 || fameCount < 1000 || starCount < 30 || deaths < 100 || oldAccount === false || isBlacklisted || isInBlacklistedGuild) {
                 console.log("Verifying person: " + memberToVerify)
                 console.log("Above 3 max chars: " + maxCharCount)
@@ -523,7 +523,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
                 reportMessage = reportMessage + "[Player Profile](https://www.realmeye.com/player/" + memberToVerify + ")";
 
-                let reportEmbed = new Discord.RichEmbed()
+                let reportEmbed = new Discord.MessageEmbed()
                     .setColor("#940000")
                     .setDescription(message.author + " trying to verify as: " + memberToVerify)
                     .addField("Problems: ", reportMessage)
@@ -535,7 +535,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 messageCollector.stop("CONTINUE");
             }
         }).catch(async e => {
-            await errorChannel.send("User " + message.member + " (" + message.author.username + ") tried to verify and there was a problem sending a request to their RealmEye page.");
+            await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify and there was a problem sending a request to their RealmEye page.");
             console.log(e);
             return await DMChannel.send("Failed while trying to verify.");
         });

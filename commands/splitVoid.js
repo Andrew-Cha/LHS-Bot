@@ -92,7 +92,7 @@ module.exports.run = async (lanisBot, message, args) => {
     "❌"
   ];
 
-  let voidCheckEmbed = new Discord.RichEmbed()
+  let voidCheckEmbed = new Discord.MessageEmbed()
     .addField("Splitting **Raiding Channel Number " + (channelNumber) + "** into groups!", "React below with only one emote from the classes or Marble Seal that you are bringing to void.")
     .addField("If you do not have any of the classes(or the Marble Seal) shown below react with: ", reactEmojis[0]);
   const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments).send(voidCheckEmbed);
@@ -111,7 +111,7 @@ module.exports.run = async (lanisBot, message, args) => {
       const currentMember = voidCheckMessage.guild.member(reaction.users.last()) || await voidCheckMessage.guild.fetchMember(reaction.users.last());
       if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
         collector.stop();
-        //const editedEmbed = new Discord.RichEmbed()
+        //const editedEmbed = new Discord.MessageEmbed()
         //   .setImage("https://i.imgur.com/ykSCdYt.png")
         //   .addField("The Void check has been stopped by " + currentMember.displayName + ".", "Please wait for the next run to start.");
         // await voidCheckMessage.edit(editedEmbed);
@@ -126,7 +126,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
   collector.on("end", async (collected, reason) => {
     // if (reason !== "user") {
-    const editedEmbed = new Discord.RichEmbed()
+    const editedEmbed = new Discord.MessageEmbed()
       .setImage("https://i.imgur.com/ykSCdYt.png")
       .addField("The Void check has been finished.", "Please wait for the next run to start.");
     await voidCheckMessage.edit(editedEmbed);

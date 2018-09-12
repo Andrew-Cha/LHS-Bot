@@ -4,7 +4,7 @@ const channels = require("../dataFiles/channels.json");
 module.exports.run = async (lanisBot, message, args) => {
     const faqChannel = lanisBot.channels.get(channels.faq);
 
-    let faqMessage = new Discord.RichEmbed()
+    let faqMessage = new Discord.MessageEmbed()
         .setAuthor("Frequently Asked Questions")
         .addField("Q: Why can't I see raids?", "A: You probably are not verified yet. Check <#343711922417434634> and follow the bot's instructions in <#471711348095713281>.")
         .addBlankField()

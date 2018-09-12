@@ -8,7 +8,7 @@ const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const hrlRole = message.guild.roles.find(role => role.name === "Raid Leader Council");
-    if (message.member.highestRole.position < hrlRole.position && message.member.id !== "142250464656883713") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
+    if (message.member.roles.highest.position < hrlRole.position && message.member.id !== "142250464656883713") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
     const week = parseInt(day / 8) + 1;
@@ -73,7 +73,7 @@ module.exports.run = async (lanisBot, message, args) => {
     let reportMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let activeLeaders = [];
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
-        const currentLeader = await message.guild.fetchMember(leadingLogs.leaders[i].id).catch(async e => {
+        const currentLeader = await message.guild.members.fetch(leadingLogs.leaders[i].id).catch(async e => {
             await message.channel.send("Found a member with an invalid ID, continuing.")
         });
         if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
@@ -92,7 +92,7 @@ module.exports.run = async (lanisBot, message, args) => {
     activeLeaders.sort(compare);
     for (const leader of activeLeaders) {
         const currentLeader = await message.guild.fetchMember(leader.id);
-        const newReportMessage = reportMessage + "\n" + currentLeader + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
+        const newReportMessage = reportMessage + "\n" + currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
         if (newReportMessage.length > 2000) {
             await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);
             reportMessage = currentLeader + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
@@ -102,8 +102,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let inactiveRaidLeaders = [];
-    await message.guild.fetchMembers().then(guild => {
-        for (const member of guild.members.values()) {
+    await message.guild.members.fetch().then(members => {
+        for (const member of members.values()) {
             let isLeader = false;
             if (member.user.bot === false) {
                 for (role of member.roles.values()) {
@@ -129,10 +129,10 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     for (const leader of inactiveRaidLeaders) {
-        const newReportMessage = reportMessage + "\n" + leader + " hasn't completed or assisted a single run this week.";
+        const newReportMessage = reportMessage + "\n" + leader.toString() + " hasn't completed or assisted a single run this week.";
         if (newReportMessage.length > 2000) {
             await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);
-            reportMessage = leader + " hasn't completed or assisted a single run this week.";
+            reportMessage = leader.toString() + " hasn't completed or assisted a single run this week.";
         } else {
             reportMessage = newReportMessage;
         }

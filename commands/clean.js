@@ -70,7 +70,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
 
-    let abortEmbed = new Discord.RichEmbed()
+    let abortEmbed = new Discord.MessageEmbed()
         .addField(`Abort Cleaning Channel Number **${wantedChannel}**`, `If you made a mistake you can abort the cleaning now.`);
 
     const abortMessage = await message.channel.send(abortEmbed);

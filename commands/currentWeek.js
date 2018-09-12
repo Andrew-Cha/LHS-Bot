@@ -94,7 +94,7 @@ module.exports.run = async (lanisBot, message, args) => {
         });
         if (!currentLeader) continue;
 
-        const leaderName = currentLeader.id === message.author.id ? currentLeader : currentLeader.displayName;
+        const leaderName = currentLeader.id === message.author.id ? currentLeader.toString() : currentLeader.displayName;
         const newReportMessage = reportMessage + "\n" + leaderName + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
         if (newReportMessage.length > 2000) {
             await message.channel.send(reportMessage);
@@ -108,8 +108,8 @@ module.exports.run = async (lanisBot, message, args) => {
     const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
     const rlRole = message.guild.roles.find(role => role.name === "Raid Leader");
 
-    await message.guild.fetchMembers().then(guild => {
-        for (const member of guild.members.values()) {
+    await message.guild.members.fetch().then(members => {
+        for (const member of members.values()) {
             let isLeader = false;
             if (member.user.bot === false) {
                 for (role of member.roles.values()) {
@@ -135,7 +135,7 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     for (const leader of inactiveRaidLeaders) {
-        const leaderName = leader.id === message.author.id ? leader : leader.displayName;
+        const leaderName = leader.id === message.author.id ? leader.toString() : leader.displayName;
         const newReportMessage = reportMessage + "\n" + leaderName + " hasn't completed or assisted a single run this week.";
         if (newReportMessage.length > 2000) {
             await message.channel.send(reportMessage);

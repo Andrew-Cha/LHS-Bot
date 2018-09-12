@@ -10,7 +10,7 @@ module.exports.run = async (lanisBot, message, args) => {
         command = "ALL";
     }
 
-    let commandDescription = new Discord.RichEmbed();
+    let commandDescription = new Discord.MessageEmbed();
 
     switch (command) {
         case ("AFK"):
@@ -22,7 +22,7 @@ module.exports.run = async (lanisBot, message, args) => {
             for (const command of commandListUncapitalized) {
                 let newLineNeeded = false;
                 if (index % 2 === 0) {
-                    newLine = true;
+                    newLineNeeded = true;
                 }
 
                 const newLine = nextLineNeeded ? newList = list + " ឵឵ ឵឵" + command + "\n" : newList = list + " ឵឵ ឵឵" + command;
@@ -79,7 +79,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     await message.channel.send(commandDescription);
     /*
-    let reply = new Discord.RichEmbed()
+    let reply = new Discord.MessageEmbed()
         .addField("-afk (Raiding Channel Number) (Type) (Custom message sent to people who react with key or vial. Optional.)", "There are two types: 'Void' and 'Cult'. Custom message can be used for anything, usually it's used for inputting the location. Example: `-afk 3 Void USNW Right Bazaar.`")
         .addField("-clean (Raiding Channel Number)", "Will remove all current non raid leaders from a specified raiding voice channel, usage:\n `-clean 1`")
         .addField("-currentWeek", "Will display the amount of runs for all the raid leaders since the last issue of the `-endWeek` command.")
