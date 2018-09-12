@@ -81,7 +81,7 @@ module.exports.run = async (lanisBot, message, args) => {
         if (assistantLeadersMentions) {
             for (const leader of assistantLeadersMentions) {
                 if (leader.id !== message.author.id) {
-                    assistantLeaders += " " + leader;
+                    assistantLeaders += " " + leader.toString();
                 }
             }
         }

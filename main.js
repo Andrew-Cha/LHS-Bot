@@ -323,7 +323,7 @@ lanisBot.on("message", async message => {
     let args = messageArray.slice(1);
 
     if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position) {
-        await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+        await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
         return await message.delete()
         console.log("Deleted message with content: " + message.content);
     }

@@ -22,7 +22,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (!memberToSuspend) return await message.channel.send("Please specify the member correctly. Either @ the member or write their ID.");
     if (memberToSuspend.id === message.author.id) return await message.channel.send("You cannot suspend yourself.");
-    if (memberToSuspend.highestRole.position >= message.member.highestRole.position) return await message.channel.send("You cannot suspend that person.");
+    if (memberToSuspend.roles.highest.position >= message.member.roles.highest.position) return await message.channel.send("You cannot suspend that person.");
     if (time === undefined || time === NaN) return await message.channel.send("Input a correct time number.");
     if (timeUnit === undefined) return await message.channel.send("Input a time format.");
 
@@ -108,7 +108,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     if (suspensionReason != "") {
-        await lanisBot.channels.get(channels.suspendLog).send(memberToSuspend + " you have been suspended by: " + message.author + " for " + time + " " + timeUnit + " for " + suspensionReason)
+        await lanisBot.channels.get(channels.suspendLog).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
     } else {
         return await message.channel.send("Please input a reason for the suspension.");
     }
