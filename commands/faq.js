@@ -24,6 +24,8 @@ module.exports.run = async (lanisBot, message, args) => {
         //.addField("Q: I am interested in becoming a Raid Leader, what do I do?", "A: Our Applications can be found here. Read carefully :)\n[Application Link](https://docs.google.com/forms/d/e/1FAIpQLScEce9thYxQb-4eflqc3cmFzYIgAOmdFYDjWcB5VLiPeurAxQ/viewform)")
         .addBlankField()
         .addField("Q: I applied for staff on this Discord and never heard anything back.", "A: We receive many applications and cannot reply to each one. Please understand we only ever approach you if you’re hired.")
+        .addBlankField()
+        .addField("Q: Invite Code?", "Here you go:\nhttps://discord.gg/Ntzh472")
         .setColor("3ea04a")
     await faqChannel.send(faqMessage);
 

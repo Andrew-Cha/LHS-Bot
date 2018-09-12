@@ -91,7 +91,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     activeLeaders.sort(compare);
     for (const leader of activeLeaders) {
-        const currentLeader = await message.guild.fetchMember(leader.id);
+        const currentLeader = await message.guild.members.fetch(leader.id);
         const newReportMessage = reportMessage + "\n" + currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
         if (newReportMessage.length > 2000) {
             await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);

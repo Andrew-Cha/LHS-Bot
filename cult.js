@@ -51,11 +51,11 @@ module.exports.run = async (lanisBot, message, args) => {
     const afkReactions = afkMessage.reactions;
 
     for (reaction of afkReactions.values()) {
-        if (reaction.emoji === lanisBot.emojis.find("name", "cult")) {
+        if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "cult")) {
             const reactedToCult = await reaction.fetchUsers();
             if (reactedToCult.size - 1 > 0) {
                 for (const user of reactedToCult.values()) {
-                    const currentMember = await reaction.message.guild.fetchMember(user);
+                    const currentMember = await reaction.message.guild.members.fetch(user);
                     if (currentMember && currentMember.voiceChannel === raidingChannel && !currentMember.user.bot) {
                         await volunteers.push(currentMember);
                     }

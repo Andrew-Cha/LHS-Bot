@@ -54,7 +54,7 @@ module.exports.run = async (lanisBot, message, args) => {
         await message.channel.send("Are you sure you want to form " + maxGroups + " groups?");
         const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
         const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-        safeGuardCollector.on("collect", async (responseMessage, safeGuardCollector) => {
+        safeGuardCollector.on("collect", async (responseMessage, user) => {
           if (responseMessage.author === message.author) {
             if (responseMessage.content === "-yes") {
               safeGuardCollector.stop("CONTINUE");
@@ -83,12 +83,12 @@ module.exports.run = async (lanisBot, message, args) => {
     }
   }
 
-  const reactEmojis = [lanisBot.emojis.find("name", "LHvoid"),
-  lanisBot.emojis.find("name", "marble"),
-  lanisBot.emojis.find("name", "LHpaladin"),
-  lanisBot.emojis.find("name", "LHwarrior"),
-  lanisBot.emojis.find("name", "knight"),
-  lanisBot.emojis.find("name", "LHpriest"),
+  const reactEmojis = [lanisBot.emojis.find(emoji => emoji.name === "LHvoid"),
+  lanisBot.emojis.find(emoji => emoji.name === "marble"),
+  lanisBot.emojis.find(emoji => emoji.name === "LHpaladin"),
+  lanisBot.emojis.find(emoji => emoji.name === "LHwarrior"),
+  lanisBot.emojis.find(emoji => emoji.name === "knight"),
+  lanisBot.emojis.find(emoji => emoji.name === "LHpriest"),
     "❌"
   ];
 
@@ -98,17 +98,17 @@ module.exports.run = async (lanisBot, message, args) => {
   const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments).send(voidCheckEmbed);
 
   const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
-    reaction.emoji === lanisBot.emojis.find("name", "LHvoid") ||
-    reaction.emoji === lanisBot.emojis.find("name", "marble") ||
-    reaction.emoji === lanisBot.emojis.find("name", "LHpaladin") ||
-    reaction.emoji === lanisBot.emojis.find("name", "LHwarrior") ||
-    reaction.emoji === lanisBot.emojis.find("name", "knight") ||
-    reaction.emoji === lanisBot.emojis.find("name", "LHpriest")) && !user.bot;
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "marble") ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpaladin") ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHwarrior") ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "knight") ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpriest")) && !user.bot;
 
   const collector = new Discord.ReactionCollector(voidCheckMessage, filter, { time: 60000 });
-  collector.on("collect", async (reaction, collector) => {
+  collector.on("collect", async (reaction, user) => {
     if (!reaction.users.last().bot && reaction.emoji.name === "❌") {
-      const currentMember = voidCheckMessage.guild.member(reaction.users.last()) || await voidCheckMessage.guild.fetchMember(reaction.users.last());
+      const currentMember = await message.guild.members.fetch(user.id);
       if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
         collector.stop();
         //const editedEmbed = new Discord.MessageEmbed()
@@ -136,12 +136,12 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let peopleActive = [];
     let duplicateReactors = [];
-    const voidEntityEmoji = lanisBot.emojis.find("name", "LHvoid");
-    const marbleEmoji = lanisBot.emojis.find("name", "marble")
-    const paladinEmoji = lanisBot.emojis.find("name", "LHpaladin");
-    const warriorEmoji = lanisBot.emojis.find("name", "LHwarrior");
-    const knightEmoji = lanisBot.emojis.find("name", "knight");
-    const priestEmoji = lanisBot.emojis.find("name", "LHpriest");
+    const voidEntityEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHvoid");
+    const marbleEmoji = lanisBot.emojis.find(emoji => emoji.name === "marble")
+    const paladinEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHpaladin");
+    const warriorEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHwarrior");
+    const knightEmoji = lanisBot.emojis.find(emoji => emoji.name === "knight");
+    const priestEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHpriest");
 
     const voidEntityReacts = (collected.get(voidEntityEmoji.id) ? collected.get(voidEntityEmoji.id).users : null);
     const marbleReacts = (collected.get(marbleEmoji.id) ? collected.get(marbleEmoji.id).users : null);
@@ -180,7 +180,6 @@ module.exports.run = async (lanisBot, message, args) => {
 
     for (let i = 0; i < usefulReacts.length; i++) {
       const usefulReact = usefulReacts[i];
-      console.log(i);
       if (usefulReact) {
         for (const member of usefulReact.values()) {
           let nextIndex = 0;
@@ -258,7 +257,6 @@ module.exports.run = async (lanisBot, message, args) => {
     for (let i = 0; i < groups.length; i++) {
       const groupAssignments = lanisBot.channels.get(channels.groupAssignments);
       await groupAssignments.send("Group " + (i + 1) + " (" + groups[i].length + " people)" + " :\n" + groups[i].join(" "));
-      await groupAssignments.sendFile(groupImages[i]);
     }
   })
 }

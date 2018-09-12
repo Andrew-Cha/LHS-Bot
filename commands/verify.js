@@ -125,7 +125,9 @@ module.exports.run = async (lanisBot, message, args) => {
                 if (err) return console.log(err);
             });
         } else {
-            await message.delete();
+            await message.delete().catch(error => {
+                console.log(error);
+            });
             await messageCollector.stop();
             await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify when they already have a verification pending.");
             return await DMChannel.send("There is already a verification pending.");
@@ -174,7 +176,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         let currentlyCheckingRequirements = false;
 
-        messageCollector.on("collect", async (responseMessage, messageCollector) => {
+        messageCollector.on("collect", async (responseMessage, user) => {
             if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                 if (responseMessage.content.toUpperCase() === "DONE") {
                     if (!currentlyCheckingRequirements) {
@@ -233,7 +235,7 @@ module.exports.run = async (lanisBot, message, args) => {
             await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
             return await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
         });
-        await message.member.addRole(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
+        await message.member.roles.add(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
             noPerms = true;
             await errorChannel.send("User " + message.member.toString + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
             return await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
@@ -261,7 +263,7 @@ module.exports.run = async (lanisBot, message, args) => {
         await veriCodeEmbed.setFooter("The Verification process is completed.");
         await veriCodeMessage.edit(veriCodeEmbed);
         await DMChannel.send("Verification is successful, welcome to Public Lost Halls!")
-        await lanisBot.channels.get(channels.verificationsLog).send("The bot has verified a member " + message.author + " with the in game name of '" + memberToVerify + "', https://www.realmeye.com/player/" + memberToVerify);
+        await lanisBot.channels.get(channels.verificationsLog).send("The bot has verified a member " + message.author.toString() + " with the in game name of '" + memberToVerify + "', https://www.realmeye.com/player/" + memberToVerify);
         if (!memberVerified) {
             verifiedPeople.members[verifiedPeople.members.length] = {
                 "id": message.author.id,
@@ -302,7 +304,9 @@ module.exports.run = async (lanisBot, message, args) => {
         clearInterval(updateTimeLeft);
         await veriCodeEmbed.setFooter("The Verification process is stopped.");
         await veriCodeMessage.edit(veriCodeEmbed);
-        await message.delete();
+        await message.delete().catch(error => {
+            console.log(error)
+        });
         return;
     });
 
@@ -525,7 +529,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                 let reportEmbed = new Discord.MessageEmbed()
                     .setColor("#940000")
-                    .setDescription(message.author + " trying to verify as: " + memberToVerify)
+                    .setDescription(message.member.toString() + " trying to verify as: " + memberToVerify)
                     .addField("Problems: ", reportMessage)
                 const altReportMessage = await lanisBot.channels.get(channels.verificationsManual).send(reportEmbed);
                 await altReportMessage.react("🔑")

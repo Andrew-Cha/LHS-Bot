@@ -67,11 +67,11 @@ module.exports.run = async (lanisBot, message, args) => {
             "runs": "1",
             "assistedRuns": "0"
         }
-        await message.channel.send(message.member + " this is your first run of the week, keep it up!");
+        await message.channel.send(message.member.toString() + " this is your first run of the week, keep it up!");
     } else {
         const runsDone = parseInt(leadingLogs.leaders[index].runs)
         leadingLogs.leaders[index].runs = parseInt(runsDone) + 1;
-        await message.channel.send(message.member + " you already have " + (runsDone + 1) + " runs done this week, including this one.");
+        await message.channel.send(message.member.toString() + " you already have " + (runsDone + 1) + " runs done this week, including this one.");
     }
 
     if (customMessage) {
@@ -91,7 +91,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Are you sure these people assisted you: " + assistantLeaders + "?");
                 const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
                 const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-                safeGuardCollector.on("collect", async (responseMessage, safeGuardCollector) => {
+                safeGuardCollector.on("collect", async (responseMessage, user) => {
                     if (responseMessage.author === message.author) {
                         if (responseMessage.content === "-yes") {
                             safeGuardCollector.stop("CONTINUE");
@@ -128,14 +128,14 @@ module.exports.run = async (lanisBot, message, args) => {
                         if (leaderAdded === true) {
                             const assistedRunsCount = parseInt(leadingLogs.leaders[index].assistedRuns);
                             leadingLogs.leaders[index].assistedRuns = (parseInt(assistedRunsCount) + 1);
-                            await message.channel.send(leader + " you already have " + (assistedRunsCount + 1) + " assisted runs this week.")
+                            await message.channel.send(leader.toString() + " you already have " + (assistedRunsCount + 1) + " assisted runs this week.")
                         } else if (leaderAdded === false) {
                             leadingLogs.leaders[leadingLogs.leaders.length] = {
                                 "id": "" + leader.id,
                                 "runs": "0",
                                 "assistedRuns": "1"
                             }
-                            await message.channel.send(leader + " this is your first run of the week, keep it up!");
+                            await message.channel.send(leader.toString() + " this is your first run of the week, keep it up!");
                         }
                     }
                 }
@@ -144,7 +144,7 @@ module.exports.run = async (lanisBot, message, args) => {
             });
         }
     }
-    let logMessage = "`" + month + "/" + day + " " + hour + ":" + minutes + " " + timeType + " UTC` **\n" + raidType + "** run by: " + leader;
+    let logMessage = "`" + month + "/" + day + " " + hour + ":" + minutes + " " + timeType + " UTC` **\n" + raidType + "** run by: " + leader.toString();
     if (customMessage) {
         logMessage = logMessage + ", " + customMessage;
     }

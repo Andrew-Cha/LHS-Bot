@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const fetchedGuild = await message.guild.fetchMembers();
+    const fetchedGuild = await message.guild.members.fetch();
 
     const members = fetchedGuild.members;
     const verifiedRaiderRole = message.guild.roles.find(role => role.name === "Verified Raider");

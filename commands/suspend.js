@@ -9,7 +9,7 @@ const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
-    if (message.member.highestRole.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
+    if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
     const regexMatches = memberMention.match(/<@!?(1|\d{17,19})>/)
     if (regexMatches === null) return await message.channel.send("Input a correct user mention.");
@@ -70,10 +70,10 @@ module.exports.run = async (lanisBot, message, args) => {
         if (currentLeader.commands.includes("SUSPEND")) {
             let abortCheck = false;
             await new Promise(async (resolve, reject) => {
-                await message.channel.send("Are you sure you want to suspend " + memberToSuspend + " ?");
+                await message.channel.send("Are you sure you want to suspend " + memberToSuspend.toString() + " ?");
                 const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
                 const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-                safeGuardCollector.on("collect", async (responseMessage, safeGuardCollector) => {
+                safeGuardCollector.on("collect", async (responseMessage, user) => {
                     if (responseMessage.author === message.author) {
                         if (responseMessage.content === "-yes") {
                             safeGuardCollector.stop("CONTINUE");
@@ -122,7 +122,7 @@ module.exports.run = async (lanisBot, message, args) => {
     for (const currentRole of memberToSuspend.roles.values()) {
         if (currentRole.name !== "@everyone") {
             lanisBot.suspensions[memberToSuspend.id].roles.push(currentRole.name);
-            memberToSuspend.removeRole(message.guild.roles.find(role => role.name === currentRole.name));
+            memberToSuspend.roles.remove(message.guild.roles.find(role => role.name === currentRole.name));
         }
     }
 
@@ -131,7 +131,7 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     await message.channel.send("Suspended.");
-    await memberToSuspend.addRole(suspendRole);
+    await memberToSuspend.roles.add(suspendRole);
 }
 
 module.exports.help = {

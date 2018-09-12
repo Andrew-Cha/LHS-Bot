@@ -40,7 +40,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Are you sure you want to clean Raiding Channel Number " + wantedChannel + " from members?");
                 const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
                 const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-                safeGuardCollector.on("collect", async (responseMessage, safeGuardCollector) => {
+                safeGuardCollector.on("collect", async (responseMessage, user) => {
                     if (responseMessage.author === message.author) {
                         if (responseMessage.content === "-yes") {
                             safeGuardCollector.stop("CONTINUE");
@@ -77,7 +77,7 @@ module.exports.run = async (lanisBot, message, args) => {
     abortMessage.react("❌");
     const abortFilter = (reaction, user) => reaction.emoji.name === "❌"
     const abortReactCollector = new Discord.ReactionCollector(abortMessage, abortFilter, { time: 360000 });
-    abortReactCollector.on("collect", async (reaction, afkCheckCollector) => {
+    abortReactCollector.on("collect", async (reaction, user) => {
         const currentMember = await message.guild.members.get(reaction.users.last().id);
         if (reaction.emoji.name === "❌") {
             if (!reaction.users.last().bot) {

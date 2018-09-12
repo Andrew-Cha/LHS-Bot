@@ -99,7 +99,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send(peopleCrashingWarning);
                 let peopleCrashingString = "";
 
-                await message.guild.fetchMembers().then(async guild => {
+                await message.guild.members.fetch().then(async guild => {
                     for (const member of peopleCrashing) {
                         let memberFound = false;
                         for (const guildMember of guild.members.values()) {

@@ -71,7 +71,7 @@ module.exports.run = async (lanisBot, message, args) => {
     let reportMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let activeLeaders = [];
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
-        const currentLeader = await message.guild.fetchMember(leadingLogs.leaders[i].id).catch(async e => {
+        const currentLeader = await message.guild.members.fetch(leadingLogs.leaders[i].id).catch(async e => {
             await message.channel.send("Found a member with an invalid ID, continuing.")
         });
         if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
@@ -89,7 +89,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     activeLeaders.sort(compare);
     for (const leader of activeLeaders) {
-        const currentLeader = await message.guild.fetchMember(leader.id).catch(async e => {
+        const currentLeader = await message.guild.members.fetch(leader.id).catch(async e => {
             await message.channel.send("Found a member with an invalid ID, continuing.")
         });
         if (!currentLeader) continue;

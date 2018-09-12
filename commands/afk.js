@@ -86,11 +86,11 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let queueChannels = [];
-        for (let i = 0; i < Object.keys(channels.queues).length; i++) {
-            const channelID = channels.queues[i];
-            const queueChannel = message.guild.channels.get(channelID);
-            queueChannels.push(queueChannel)
-        }
+    for (let i = 0; i < Object.keys(channels.queues).length; i++) {
+        const channelID = channels.queues[i];
+        const queueChannel = message.guild.channels.get(channelID);
+        queueChannels.push(queueChannel)
+    }
 
     let index;
     let currentLeader;
@@ -141,8 +141,8 @@ module.exports.run = async (lanisBot, message, args) => {
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
     const warningMessage = ("@here started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
-    //const warning = await raidStatusAnnouncements.send(warningMessage);
-    const warning = await botCommands.send(warningMessage);
+    const warning = await raidStatusAnnouncements.send(warningMessage);
+    //const warning = await botCommands.send(warningMessage);
 
     const reactEmojis = [
         raidEmote,
@@ -173,8 +173,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds; 0 people out of 0 moved. Total people: 0.")
 
-    //const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
-    const afkCheckMessage = await botCommands.send(afkCheckEmbed);   
+    const afkCheckMessage = await raidStatusAnnouncements.send(afkCheckEmbed);
+    //const afkCheckMessage = await botCommands.send(afkCheckEmbed);   
 
     let overflow = false;
     let totalPeople = 0;
@@ -237,7 +237,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await message.channel.send("User " + currentMember + " tried to get location as a vial but their DMs are turned off.");
                                     });
                                     const messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
-                                    messageCollector.on("collect", async (responseMessage, messageCollector) => {
+                                    messageCollector.on("collect", async (responseMessage, user) => {
                                         if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                                             if (responseMessage.content.toUpperCase() === "YES") {
                                                 messageCollector.stop("CONTINUE");
@@ -259,7 +259,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                 }).then(async (successMessage) => {
                                     if (keysMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage);
-                                        botCommands.send("Person: " + currentMember + " has reacted with key and location has been sent to them.");
+                                        botCommands.send("Person: " + currentMember.toString() + " has reacted with key and location has been sent to them.");
                                         keysMessaged += 1;
                                     } else {
                                         await currentMember.send("Sorry, some other key holder has already been sent the location.");
@@ -286,7 +286,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     });
                                     peopleMessaged.push(currentMember.id);
                                     const messageCollector = DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
-                                    messageCollector.on("collect", async (responseMessage, messageCollector) => {
+                                    messageCollector.on("collect", async (responseMessage, user) => {
                                         if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                                             if (responseMessage.content.toUpperCase() === "YES") {
                                                 messageCollector.stop("CONTINUE");
@@ -309,7 +309,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are the **main** vial.");
                                         vialsMessaged += 1;
-                                        botCommands.send("Person: " + currentMember + " has reacted with vial and location has been sent to them, they are the **main** vial.");
+                                        botCommands.send("Person: " + currentMember.toString() + " has reacted with vial and location has been sent to them, they are the **main** vial.");
                                     } else {
                                         await currentMember.send("The location has already been sent to the main vial, if you want to become a backup vial please react again.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
@@ -320,14 +320,14 @@ module.exports.run = async (lanisBot, message, args) => {
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
-                            } else if (vialsMessaged < 4) {
+                            } else if (vialsMessaged < 3) {
                                 await new Promise(async (resolve, reject) => {
                                     await currentMember.send("Are you sure you have the vial and want to be sent the location? Not coming to the location with the vial will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
                                         await message.channel.send("User " + currentMember + " tried to get location as a vial but their DMs are turned off.");
                                     });
                                     peopleMessaged.push(currentMember.id);
                                     const messageCollector = DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
-                                    messageCollector.on("collect", async (responseMessage, messageCollector) => {
+                                    messageCollector.on("collect", async (responseMessage, user) => {
                                         if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                                             if (responseMessage.content.toUpperCase() === "YES") {
                                                 messageCollector.stop("CONTINUE");
@@ -350,7 +350,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 4) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are a **backup** vial.");
                                         vialsMessaged += 1;
-                                        botCommands.send("Person: " + currentMember + " has reacted with vial and location has been sent to them, they are a **backup** vial.");
+                                        botCommands.send("Person: " + currentMember.toString() + " has reacted with vial and location has been sent to them, they are a **backup** vial.");
                                     } else {
                                         await currentMember.send("Sorry we already have too many vials.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
@@ -384,7 +384,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 }
                 if (!overflow) {
-                    if (totalPeople === 120) {
+                    if (raidingChannel.members.length === 120) {
                         await afkCheckCollector.stop("overflow");
                         await botCommands.send("AFK #" + wantedChannel + " stopped by the bot due to a member overflow.");
                         overflow = true;
@@ -435,7 +435,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     if (arlLocationMessage) {
                         await arlLocationMessage.delete();
                     }
-                    await message.channel.send("AFK Check aborted by " + currentMember);
+                    await message.channel.send("AFK Check aborted by " + currentMember.toString());
                     console.log("AFK check aborted");
                     return;
                 }
@@ -450,15 +450,11 @@ module.exports.run = async (lanisBot, message, args) => {
     afkCheckCollector.on("end", async (collected, reason) => {
         await abortReactCollector.stop();
         await clearInterval(updateTimeLeft);
-        /*
-        let peopleToMoveReacted = [];
-        //const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
+
+        const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
         for (const collectedEmoji of collected.values()) {
             for (const member of collectedEmoji.users.values()) {
                 if (!member.bot) {
-                    if (peopleToMoveReacted.includes(member.id) === false) {
-                        peopleToMoveReacted.push(member.id);
-                    }
                     const currentMember = message.guild.members.get(member.id);
                     let personInQueue = false;
                     for (queueChannel of queueChannels) {
@@ -471,11 +467,11 @@ module.exports.run = async (lanisBot, message, args) => {
                         await currentMember.setVoiceChannel(raidingChannel.id);
                     }
 
-    }
+                }
             }
         }
-    */
-        // await movingPeopleWarning.delete();
+        await movingPeopleWarning.delete();
+
         let editedEmbed;
         if (reason !== "user") {
             editedEmbed = new Discord.MessageEmbed()
