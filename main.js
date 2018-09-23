@@ -127,19 +127,18 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(' ')[0];
         const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
         const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID);
-
         const accountName = reactionMessage.embeds[0].description.split(': ')[1];
         let noPerms = false;
         const raiderRole = reactionMessage.guild.roles.find(role => role.name === "Verified Raider");
-        await memberVerifying.setNickname(accountName, "Accepted into the server via Automatic Verification.").catch(async e => {
+        await memberVerifying.setNickname(accountName, "Accepted into the server via Manual Verification.").catch(async e => {
             noPerms = true;
             await reactionChannel.send("The bot doesn't have permissions to set " + memberVerifying.toString() + "'s nickname, thus removing their pending application.");
         });
-        await memberVerifying.roles.add(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
+        await memberVerifying.roles.add(raiderRole, "Accepted into the server via Manual Verification.").catch(async e => {
+            console.log(e);
             noPerms = true;
             await reactionChannel.send("The bot doesn't have permissions to set " + memberVerifying.toString() + "'s role, thus removing their pending application.");
         });
-
         let index;
         let memberAlreadyVerifying = false;
         for (let i = 0; i < currentlyVerifying.members.length; i++) {
@@ -162,7 +161,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             await reactionMessage.react("⚠");
             return;
         }
-        
+
         await lanisBot.channels.get(channels.verificationsLog).send("Member " + memberVerifying.toString() + "(" + accountName + ") was verified by " + verifier.toString());
         await reactionMessage.reactions.removeAll();
         await reactionMessage.react("💯");
@@ -196,13 +195,13 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         });
 
         if (reaction.emoji.name === '1⃣') {
-            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel.toString() + "(" + memberVerifying + ") was expelled by " + verifier.toString() + " due to being a suspected mule.");
+            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was expelled by " + verifier.toString() + " due to being a suspected mule.");
             await memberVerifying.send("Your account was suspected to be a mule, please contact <@" + user.id + "> to appeal.");
         } else if (reaction.emoji.name === '2⃣') {
-            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel.toString() + "(" + memberVerifying + ") was expelled by " + verifier.toString() + " due to being in a blacklisted guild.");
+            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was expelled by " + verifier.toString() + " due to being in a blacklisted guild.");
             await memberVerifying.send("Your account is in a blacklisted guild, please contact <@" + user.id + "> to appeal.");
         } else {
-            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel.toString() + "(" + memberVerifying + ") was expelled by " + verifier.toString() + " using silent expulsion.");
+            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was expelled by " + verifier.toString() + " using silent expulsion.");
         }
 
         let index;
@@ -263,35 +262,36 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
-    await lanisBot.channels.get(channels.botCommands).send("Restart successful!");
-    await lanisBot.user.setActivity("in Cansonio's garden", { type: "PLAYING" })
+    await lanisBot.channels.get(channels.botCommands).send("Bot online!");
+    await lanisBot.user.setActivity("to the sweet voice of Cansonio", { type: "LISTENING" })
     lanisBot.setInterval((async () => {
         for (let i in lanisBot.suspensions) {
+            let invalid = false;
             const guildID = lanisBot.suspensions[i].guildID;
             const currentGuild = lanisBot.guilds.get(guildID);
-            const member = lanisBot.guilds.get(guildID).members.get(i);
-            const memberToUnsuspend = currentGuild.members.fetch(member).then(async (person) => {
-
-                if (!person) return;
-                if (Date.now() > lanisBot.suspensions[i].time) {
-                    const suspendRole = currentGuild.roles.find(role => role.name === "Suspended but Verified");
-                    await person.roles.remove(suspendRole);
-
-                    for (let i = 0; i < lanisBot.suspensions[person.id].roles.length; i++) {
-                        const currentRole = currentGuild.roles.find(role => role.name === lanisBot.suspensions[person.id].roles[i]);
-                        await person.addRole(currentRole);
-                    }
-
-                    delete lanisBot.suspensions[person.id];
-                    await fileSystem.writeFile(__dirname + "/dataFiles/suspensions.json", JSON.stringify(lanisBot.suspensions), function (err) {
-                        if (err) return console.log(err);
-                    });
-                    await lanisBot.channels.get(channels.suspendLog).send(person.toString() + " you have been unsuspended.");
-                }
-            }).catch((error) => {
+            const person = await currentGuild.members.fetch(i).catch(error => {
+                invalid = true;
             });
+
+            if (invalid) continue;
+            if (Date.now() > lanisBot.suspensions[i].time) {
+                console.log("Removing " + person.displayName + " from being suspended.");
+                const suspendRole = currentGuild.roles.find(role => role.name === "Suspended but Verified");
+                await person.roles.remove(suspendRole);
+
+                for (let i = 0; i < lanisBot.suspensions[person.id].roles.length; i++) {
+                    const currentRole = currentGuild.roles.find(role => role.name === lanisBot.suspensions[person.id].roles[i]);
+                    await person.roles.add(currentRole);
+                }
+
+                delete lanisBot.suspensions[person.id];
+                await fileSystem.writeFile(__dirname + "/dataFiles/suspensions.json", JSON.stringify(lanisBot.suspensions), function (err) {
+                    if (err) return console.log(err);
+                });
+                await lanisBot.channels.get(channels.suspendLog).send(person.toString() + " you have been unsuspended.");
+            }
         }
-    }), 5000);
+    }), 300000);
 });
 
 lanisBot.on("message", async message => {

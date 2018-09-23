@@ -2,8 +2,14 @@ const Discord = require("discord.js");
 const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
+    const securityRole = message.guild.roles.find(role => role.name === "Security");
+    if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.name === "Verifier")) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const rulesChannel = lanisBot.channels.get(channels.rules);
-
+    await verificationsAutomatic.messages.fetch().then(async messages => {
+        for (const message of messages.values()) {
+            await message.delete();
+        }
+    });
     let rulesMessage = new Discord.MessageEmbed()
         .addField("Discord Rules", "1) Inappropriate language (excessive swears, racial slurs, deliberate attempts to instigate negative reactions, threats of harm or self-harm, etc) will be removed and the User(s) in question will be given a warning, mute, kicked or banned depending on severity.\n\n2) Mentioning any of the above in a joking manor still counts. Exploiting loopholes in our rules such as saying “commit aliven’t” instead of “kys” will get you muted. If it is genuinely friendly/joking, take it to DMs with your peer.\n\n3) Use each channel for its intended purpose, small sidetracking is allowed if a topic leads to it. (Check pins or channel topics, rules in channel topics are just as valid as these), do not spam chats and don't spell out inappropriate/unnecessary words using reactions. (Rules 1, 2 & 3) apply here as well.\n")
         .addField(" ឵឵ ឵឵","4) Remember to be respectful and kind to all members! This includes staff if there is an issue and staff addresses it, abide accordingly. Ping staff only if necessary. Unnecessary pings will get you muted. A history of issues will lead to perma-mute.\n")

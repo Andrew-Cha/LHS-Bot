@@ -84,7 +84,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 if (currentMember) {
                     abortRestart = true;
                     await abortReactCollector.stop();
-                    await message.channel.send("Cleaning aborted by " + currentMember);
+                    await message.channel.send("Cleaning aborted by " + currentMember.toString());
                     console.log("Cleaning aborted by " + currentMember.displayName);
                     return;
                 }
@@ -93,7 +93,9 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     abortReactCollector.on("end", async (collected, reason) => {
-        abortMessage.delete();
+        abortMessage.delete().catch(error => {
+            console.log(error)
+        });
     });
 
     const members = raidingChannel.members;

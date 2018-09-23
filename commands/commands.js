@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const commandListUncapitalized = ["AFK", "all", "clean", "currentWeek", "dice", "duplicateMembers", "endWeek", "expelled", "expelledGuilds", "faq", "fix", "hello", "log", "parseMembers", "restart", "restartVeri", "rules", "safeGuard", "say", "setPresence", "splitVoid", "suspend", "unsuspend", "verify"]
-    const commandList = ["AFK", "ALL", "CLEAN", "CURRENTWEEK", "DICE", "ENDWEEK", "EXPELLED", "EXPELLEDGUILDS", "FIX", "HELLO", "LOG", "PARSEMEMBERS", "RESTART", "RESTARTVERI", "SAFEGUARD", "SETPRESENCE", "SPLITVOID", "SUSPEND", "UNSUSPEND", "VERIFY"];
+    const commandListUncapitalized = ["AFK", "all", "clean", "currentWeek", "dice", "duplicateMembers", "endWeek", "expelled", "expelledGuilds", "faqReset", "fix", "hello", "log", "parseMembers", "restart", "restartVeri", "rulesReset", "safeGuard", "say", "setPresence", "splitVoid", "suspend", "unsuspend", "verify"]
+    const commandList = ["AFK", "ALL", "CLEAN", "CURRENTWEEK", "DICE", "ENDWEEK", "EXPELLED", "EXPELLEDGUILDS", "FAQRESET", "FIX", "HELLO", "LOG", "PARSEMEMBERS", "PENDING", "RESTART", "RESTARTVERI", "RULESRESET", "SAFEGUARD", "SETPRESENCE", "SPLITVOID", "SUSPEND", "UNSUSPEND", "VERIFIED", "VERIFY"];
     let command;
     if (args.length > 0) {
         command = args[0].toUpperCase();
@@ -10,69 +10,119 @@ module.exports.run = async (lanisBot, message, args) => {
         command = "ALL";
     }
 
-    let commandDescription = new Discord.MessageEmbed();
+    let commandDescription = new Discord.MessageEmbed()
+        .setColor("#5042f4")
+        .setFooter("⚠ Capitalization when issuing commands doesn't matter.");
 
     switch (command) {
         case ("AFK"):
-
+            commandDescription.addField("AFK Check", "Begins an AFK check. Has two types `cult` and `void`, if started with a location it will be messaged to the reactees.\n\nUsage:\n`-afk [Raiding Voice Channel Number] [Type - Void / Cult] (Location - Optional)`");
             break;
+
         case ("ALL"):
-            let index = 0;
-            let list = ""
-            for (const command of commandListUncapitalized) {
-                let newLineNeeded = false;
-                if (index % 2 === 0) {
-                    newLineNeeded = true;
-                }
-
-                const newLine = nextLineNeeded ? newList = list + " ឵឵ ឵឵" + command + "\n" : newList = list + " ឵឵ ឵឵" + command;
-
-                if (newList.length > 1024) {
-                    commandDescription.addField(" ឵឵ ឵឵", list);
-                    list = command;
-                } else {
-                    list = newList;
-                }
-                index += 1;
-            }
-            commandDescription.addField("All Commands", list)
+            commandDescription.addField("Server Managment", "Commands, DuplicateMembers, Expelled, ExpelledGuilds, FaqReset, Fix, Pending, RestartVeri, RulesReset, Suspend, Unsuspend, Verify.");
+            commandDescription.addField("Raiding Tools", "AFK, Clean, CurrentWeek, EndWeek, Log, ParseMembers, SafeGuard, SplitVoid");
+            commandDescription.addField("Miscellaneous", "Dice, Hello, Say, SetPresence");
+            commandDescription.addBlankField();
+            commandDescription.addField("Command Search:", "To find out more about a command, type `-commands [Command Name]`");
             break;
+
         case ("CLEAN"):
+            commandDescription.addField("Clean", "Moves all members out of a voice channel to queue, has an option to abort the moving.\n\nUsage:\n`-clean [Raiding Voice Channel Number]`");
             break;
+
         case ("CURRENTWEEK"):
+            commandDescription.addField("Current Week's Run Logs", "Displays the current week's run logs. Pings the command issuer.\n\nUsage:\n`-currentWeek`");
             break;
+
+        case ("COMMANDS"):
+            commandDescription.addField("Commands", "Displays all the commands.\n\nUsage:\n`-commands` or `-commands all`");
+            break;
+
         case ("DICE"):
+            commandDescription.addField("Dice", "Rolls a dice and returns a random result from 1 to 20 in a stylized way.\n\nUsage:\n`-dice`");
             break;
+
+        case ("DUPLICATEMEMBERS"):
+            commandDescription.addField("Duplicate Members", "Finds all members with duplicate nicknames in the server. Very slow and bad, takes around 15 min. Please only use if really needed and if there are no raids.\n\nUsage:\n`-duplicateMembers`");
+            break;
+
         case ("ENDWEEK"):
+            commandDescription.addField("End Week", "A command that clears all recorded runs and logs them in <#446916716455395328>, only usable by RLC and higher or Lanis.\n\nUsage:\n`-endWeek`");
             break;
+
         case ("EXPELLED"):
+            commandDescription.addField("Expelled People", "A command that can either `add`, `remove` or `list` people from the expelled players. Once a person is in this list they can't use the `-verify` command.\n\nUsage:\n`-expelled [add / remove / list] (Player Name, needed only if used alongside with `add` or `remove`)`");
             break;
+
         case ("EXPELLEDGUILDS"):
+            commandDescription.addField("Expelled Guilds", "A command that can either `add`, `remove` or `list` people from the expelled guilds. Once a guild is in this list any of the members that were or are in that guild won't be able to get automatically verified using the `-verify` command.\n\nUsage:\n`-expelled [add / remove / list] (Guild Name, needed only if used alongside with `add` or `remove`)`");
             break;
+
+        case ("FAQRESET"):
+            commandDescription.addField("FAQ Stylized Message", "Simply sends the stylized message in <#482394590721212416>.\n\nUsage:\n`-faqReset`");
+            break;
+
         case ("FIX"):
+            commandDescription.addField("Nicknames in need of a fix", "Lists all the people in the server that don't have a nickname and have a <@&378989711793848332> role.\n\nUsage:\n`-fix`");
             break;
+
         case ("HELLO"):
+            commandDescription.addField("Hello!", "The bot responds with a stylized message and attaches the bot's profile picture.`");
             break;
+
         case ("LOG"):
+            commandDescription.addField("Log", "Logs a run from a <@&372590164943437825> or a <@&384029438188453898>. Can also give additional credits to any other people who helped complete the run.\n\nUsage:\n`-log [Cult / Void] (Any additional comment goes here, any mentions will give a secondary credit to that mentioned person if chosen so.)`");
             break;
+
         case ("PARSEMEMBERS"):
+            commandDescription.addField("Parse Members", "Parses members ***only*** from a /who image in game (it seperates names using a comma as an indicator for the next name) and finds who is in voice but not in game (this part is unreliable as our nicknames in this discord are not consistent) but does find people who are in the server, not in voice, but in game.\n\nUsage:\n`-parseMembers [Raiding Voice Channel Number] + [Image Attachment with a cropped /who list]`");
             break;
+
+        case ("PENDING"):
+            commandDescription.addField("Pending People", "A command that can `remove` people from the pending list. Once a person is in this list they can't use the `-verify` command, this is used for people who get their verification bugged.\n\nUsage:\n`-expelled [remove] [Player Name]`");
+            break;
+
         case ("RESTART"):
+            commandDescription.addField("Restart", "Logs the bot in and out of Discord Servers. Messes up any commands that need a constant connection (most commands). Use at risk, mainly broken.\n\nUsage:\n`-restart`");
             break;
+
         case ("RESTARTVERI"):
+            commandDescription.addField("Verification Stylized Message", "Simply sends the stylized message in <#471711348095713281> that explains how to verify and removes ANY message it can find.\n\nUsage:\n`-restartVeri`");
             break;
+
+        case ("RULESRESET"):
+            commandDescription.addField("Rules Stylized Message", "Simply sends the stylized message in <#482368517568462868>.\n\nUsage:\n`-rulesReset`");
+            break;
+
         case ("SAFEGUARD"):
+            commandDescription.addField("Safeguard", "Adds one of these commands to the safeguard list: `AFK`, `Clean`, `SplitVoid`, `Suspend`, which will prompt an extra check before initializing the commands.\n\nUsage:\n`-safeGuard [add / remove / list] [AFK / Clean / SplitVoid / Suspend]`");
             break;
+
         case ("SETPRESENCE"):
+            commandDescription.addField("Set Presence", "Changes the activity the bot is doing in the members list. Usable only by admins or Lanis.\n\nUsage:\n`-setPresence [Watching / Playing / Listening] [Any words that follow up that prefix]`");
             break;
+
         case ("SPLITVOID"):
+            commandDescription.addField("Void Split", "Sets up a void split in <#443952835059777549>.\n\nUsage:\n`-splitVoid [Raiding Voice Channel Number] [2 / 3 / 4 or Small / Medium / Large]`");
             break;
+
         case ("SUSPEND"):
+            commandDescription.addField("Suspend", "Suspends a person. Usable by <@&372590164943437825>s or higher.\n\nUsage:\n`-suspend [User Mention / ID] [Number of length] [Unit of length: `m` for minutes, `h` for hours, `d` for days, `w` for weeks] [Reason here]`");
             break;
+
         case ("UNSUSPEND"):
+            commandDescription.addField("Unsuspend", "Unsuspends a person. Usable by <@&372590164943437825>s or higher.\n\nUsage:\n`-unsuspend [User Mention / ID]`");
             break;
+
+        case ("VERIFIED"):
+            commandDescription.addField("Verified People", "A command that can `remove` people from the pending list. Once a person is in this list they can't use the `-verify` command, this is used for people who get their verification bugged.\n\nUsage:\n`-expelled [remove] [Player Name]`");
+            break;
+
         case ("VERIFY"):
+            commandDescription.addField("Verify", "Starts a verification for a person if they don't have the <@&378989711793848332>. Generally meant to be used in <#471711348095713281>.\n\nUsage:\n`-verify [In Game Name Here]`");
             break;
+
         default:
             return await message.channel.send("No such command found, type `-commands` for a full list.");
     }

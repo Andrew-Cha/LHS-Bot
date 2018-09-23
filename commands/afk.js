@@ -450,7 +450,7 @@ module.exports.run = async (lanisBot, message, args) => {
     afkCheckCollector.on("end", async (collected, reason) => {
         await abortReactCollector.stop();
         await clearInterval(updateTimeLeft);
-
+/*
         const movingPeopleWarning = await raidStatusAnnouncements.send("Finishing moving the last of the people. Please wait.")
         for (const collectedEmoji of collected.values()) {
             for (const member of collectedEmoji.users.values()) {
@@ -471,7 +471,7 @@ module.exports.run = async (lanisBot, message, args) => {
             }
         }
         await movingPeopleWarning.delete();
-
+*/
         let editedEmbed;
         if (reason !== "user") {
             editedEmbed = new Discord.MessageEmbed()

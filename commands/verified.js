@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const path = require('path');
-const currentlyVerifyingFile = path.normalize(__dirname + "../../dataFiles/currentlyVerifying.json");
-const currentlyVerifying = require(currentlyVerifyingFile);
+const verifiedPath = path.normalize(__dirname + "../../dataFiles/verifiedPeople.json");
+const verified = require(verifiedPath);
 
 module.exports.run = async (lanisBot, message, args) => {
     const securityRole = message.guild.roles.find(role => role.name === "Security");
@@ -10,15 +10,15 @@ module.exports.run = async (lanisBot, message, args) => {
     const action = args[0];
     if (action === undefined) return await message.channel.send("The only action is `remove`.")
     const playerInputted = args[1]
-    if (playerInputted === undefined) return message.channel.send("Please input a user to remove from the pending list.");
+    if (playerInputted === undefined) return message.channel.send("Please input a user to remove from the verified list.");
 
     const actionUpperCase = action.toUpperCase();
 
     let index;
-    let memberVerifying = false;
-    for (let i = 0; i < currentlyVerifying.members.length; i++) {
-        if (currentlyVerifying.members[i].name.toUpperCase() === playerInputted.toUpperCase()) {
-            memberVerifying = true;
+    let memberVerified = false;
+    for (let i = 0; i < verified.members.length; i++) {
+        if (verified.members[i].name.toUpperCase() === playerInputted.toUpperCase()) {
+            memberVerified = true;
             index = i;
             break;
         }
@@ -26,14 +26,14 @@ module.exports.run = async (lanisBot, message, args) => {
 
     switch (actionUpperCase) {
         case "REMOVE":
-            if (memberVerifying) {
-                currentlyVerifying.members.splice(index, 1);
-                await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
+            if (memberVerified) {
+                verified.members.splice(index, 1);
+                await fs.writeFile(verifiedPath, JSON.stringify(verified), function (err) {
                     if (err) return console.log(err);
                 });
-                await message.channel.send("Player's application removed.");
+                await message.channel.send("Player removed from the verified list.");
             } else {
-                return await message.channel.send("This member does not have a pending application.");
+                return await message.channel.send("This member is not verified.");
             }
             break;
 
@@ -44,5 +44,5 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "pending"
+    name: "verified"
 }

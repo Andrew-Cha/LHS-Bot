@@ -5,7 +5,7 @@ const channels = require("../dataFiles/channels.json");
 module.exports.run = async (lanisBot, message, args) => {
     const verificationsAutomatic = lanisBot.channels.get(channels.verificationsAutomatic);
     await message.channel.send("Cleaning the automatic verification channel.");
-    await verificationsAutomatic.fetchMessages().then(async messages => {
+    await verificationsAutomatic.messages.fetch().then(async messages => {
         for (const message of messages.values()) {
             await message.delete();
         }

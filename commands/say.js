@@ -5,7 +5,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let returnMessage = args.join(" ");
 
-    message.channel.send(returnMessage + message.member.toString());
+    message.channel.send(returnMessage);
 }
 
 module.exports.help = {

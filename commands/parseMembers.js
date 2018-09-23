@@ -80,7 +80,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send(notInVoiceWarning);
                 let notInVoiceString = "";
                 for (const member of peopleNotInVoice) {
-                    const newReportMessage = notInVoiceString !== "" ? notInVoiceString + ", " + member : member;
+                    const newReportMessage = notInVoiceString !== "" ? notInVoiceString + ", " + member.toString() : member.toString();
                     if (newReportMessage.length > 2000) {
                         await message.channel.send(notInVoiceString);
                         notInVoiceString = member + ", ";
@@ -99,17 +99,17 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send(peopleCrashingWarning);
                 let peopleCrashingString = "";
 
-                await message.guild.members.fetch().then(async guild => {
+                await message.guild.members.fetch().then(async members => {
                     for (const member of peopleCrashing) {
                         let memberFound = false;
-                        for (const guildMember of guild.members.values()) {
+                        for (const guildMember of members.values()) {
                             if (guildMember.displayName === member) {
                                 console.log("Found member named " + member);
                                 memberFound = true;
                             } else {
                                 continue;
                             }
-                            const newPeopleCrashingMessage = peopleCrashingString !== "" ? peopleCrashingString + ", " + guildMember : guildMember;
+                            const newPeopleCrashingMessage = peopleCrashingString !== "" ? peopleCrashingString + ", " + guildMember.toString() : guildMember.toString();
                             if (newPeopleCrashingMessage.length > 2000) {
                                 await message.channel.send(peopleCrashingString);
                                 peopleCrashingString = guildMember + ", "
@@ -130,6 +130,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                     await message.channel.send(peopleCrashingString);
                 }).catch(async e => {
+                    console.log(e)
                     await message.channel.send("Error at fetching crashers from the server.");
                 })
             } else {

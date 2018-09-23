@@ -87,7 +87,9 @@ module.exports.run = async (lanisBot, message, args) => {
         const verifiedError = await message.channel.send("Sorry, someone has already applied with the nickname of '" + memberVerifiedNickname + "'");
         await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify as an already verified person (who used the bot to verify) named " + memberToVerify + ".");
         await sleep(10000);
-        await message.delete();
+        await message.delete().catch(error => {
+            console.log(error)
+        });
         await verifiedError.delete()
     }
 

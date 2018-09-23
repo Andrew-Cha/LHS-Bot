@@ -11,6 +11,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
     if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
+    if (!memberMention) return await message.channel.send("Input a correct user mention.")
     const regexMatches = memberMention.match(/<@!?(1|\d{17,19})>/)
     if (regexMatches === null) return await message.channel.send("Input a correct user mention.");
     const memberID = regexMatches[1];
@@ -122,7 +123,7 @@ module.exports.run = async (lanisBot, message, args) => {
     for (const currentRole of memberToSuspend.roles.values()) {
         if (currentRole.name !== "@everyone") {
             lanisBot.suspensions[memberToSuspend.id].roles.push(currentRole.name);
-            memberToSuspend.roles.remove(message.guild.roles.find(role => role.name === currentRole.name));
+            await memberToSuspend.roles.remove(message.guild.roles.find(role => role.name === currentRole.name));
         }
     }
 
