@@ -13,7 +13,7 @@ const verifiedPeopleFile = path.normalize(__dirname + "/dataFiles/verifiedPeople
 const verifiedPeople = require(verifiedPeopleFile);
 
 lanisBot.options.fetchAllMembers = true
-//lanisBot.options.disableEveryone = true;
+lanisBot.options.disableEveryone = true;
 lanisBot.commands = new Discord.Collection();
 lanisBot.suspensions = require(__dirname + "/dataFiles/suspensions.json");
 lanisBot.setMaxListeners(0);
