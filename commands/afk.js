@@ -180,18 +180,16 @@ module.exports.run = async (lanisBot, message, args) => {
         .setColor(borderColor)
         .setDescription("Information Panel, Raiding Channel #" + wantedChannel)
         .addField("Key:", "None")
+        .setFooter("AFK check is in progress.");
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
     const informationPanelMessage = await botCommands.send(informationPanel);
 
-    let overflow = false;
     let totalPeople = 0;
     let peopleReactedMovedCount = 0;
     let peopleReactedCount = 0;
     let peopleToMoveReacted = [];
     let peopleMoved = [];
     let peopleReacted = [];
-
-    await message.channel.send("AFK check for channel #" + wantedChannel + " started.");
 
     const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
         reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
@@ -231,7 +229,8 @@ module.exports.run = async (lanisBot, message, args) => {
             if (reaction.emoji.name === "❌") {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
                     await afkCheckCollector.stop();
-                    await botCommands.send("AFK #" + wantedChannel + " stopped by " + currentMember.displayName + ".");
+                    informationPanel.setFooter("AFK check has been stopped by " + currentMember.displayName);
+                    await informationPanelMessage.edit(informationPanel);
                 }
             } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHkey")) {
                 if (locationMessage != "") {
@@ -400,13 +399,6 @@ module.exports.run = async (lanisBot, message, args) => {
                         peopleMoved.push(currentMember.id);
                     }
                 }
-                if (!overflow) {
-                    if (raidingChannel.members.length === 120) {
-                        await afkCheckCollector.stop("overflow");
-                        await botCommands.send("AFK #" + wantedChannel + " stopped by the bot due to a member overflow.");
-                        overflow = true;
-                    }
-                }
             }
         }
     });
@@ -495,10 +487,6 @@ module.exports.run = async (lanisBot, message, args) => {
             editedEmbed = new Discord.MessageEmbed()
                 .setColor(borderColor)
                 .addField("The AFK check has run out of time.", `Please wait for the next run to start.\nTotal raiders: ` + totalPeople);
-        } else if (reason === "overflow") {
-            editedEmbed = new Discord.MessageEmbed()
-                .setColor(borderColor)
-                .addField("The AFK check has stoppe due to a member overflow.", `Please wait for the next run to start.\nTotal raiders: ` + totalPeople);
         } else {
             editedEmbed = new Discord.MessageEmbed()
                 .setColor(borderColor)
