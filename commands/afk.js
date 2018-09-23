@@ -321,7 +321,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are the **main** vial.");
                                         vialsMessaged += 1;
-                                        informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString(), inline: false };
+                                        informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("The location has already been sent to the main vial, if you want to become a backup vial please react again.");
