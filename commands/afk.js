@@ -82,7 +82,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let arlLocationMessage;
     if (locationMessage !== "") {
-        arlLocationMessage = await lanisBot.channels.get(channels.arlChat).send("The location for Raiding Channel Number " + wantedChannel + " (" + raidType + ") is: **" + locationMessage + "**");
+        arlLocationMessage = await lanisBot.channels.get(channels.arlChat).send("The location for a " + raidType + " raid in Raiding Channel Number is: **" + locationMessage + "**");
     }
 
     let queueChannels = [];
@@ -179,6 +179,7 @@ module.exports.run = async (lanisBot, message, args) => {
     let informationPanel = new Discord.MessageEmbed()
         .setColor(borderColor)
         .setDescription("Information Panel, Raiding Channel #" + wantedChannel)
+        .addField("Location:", locationMessage)
         .addField("Key:", "None")
         .setFooter("AFK check is in progress.");
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
@@ -268,7 +269,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (keysMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage);
                                         keysMessaged += 1;
-                                        informationPanel.fields[0] = { name: "Key:", value: currentMember.toString(), inline: false };
+                                        informationPanel.fields[1] = { name: "Key:", value: currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("Sorry, some other key holder has already been sent the location.");
@@ -321,7 +322,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are the **main** vial.");
                                         vialsMessaged += 1;
-                                        informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
+                                        informationPanel.fields[2] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("The location has already been sent to the main vial, if you want to become a backup vial please react again.");
@@ -364,7 +365,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await currentMember.send("The location is: " + locationMessage + ", you are a **backup** vial.");
                                         vialsMessaged += 1;
                                         const oldVials = informationPanel.fields[1]
-                                        informationPanel.fields[1] = { name: "Vials:", value: oldVials.value + "\n" + currentMember.toString(), inline: false };
+                                        informationPanel.fields[2] = { name: "Vials:", value: oldVials.value + "\n" + currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("Sorry we already have too many vials.");

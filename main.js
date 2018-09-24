@@ -13,7 +13,7 @@ const verifiedPeopleFile = path.normalize(__dirname + "/dataFiles/verifiedPeople
 const verifiedPeople = require(verifiedPeopleFile);
 
 lanisBot.options.fetchAllMembers = true
-lanisBot.options.disableEveryone = true;
+//lanisBot.options.disableEveryone = true;
 lanisBot.commands = new Discord.Collection();
 lanisBot.suspensions = require(__dirname + "/dataFiles/suspensions.json");
 lanisBot.setMaxListeners(0);
@@ -117,6 +117,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         await reactionMessage.react('2⃣'); //two
         await reactionMessage.react('3⃣'); //three
         await reactionMessage.react('4⃣'); //four
+        await reactionMessage.react('5⃣'); //five
         await reactionMessage.react("↩"); //back arrow
     } else if (reaction.emoji.name === "↩") {
         await reactionMessage.reactions.removeAll();
@@ -164,6 +165,9 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
         await lanisBot.channels.get(channels.verificationsLog).send("Member " + memberVerifying.toString() + "(" + accountName + ") was verified by " + verifier.toString());
         await reactionMessage.reactions.removeAll();
+        let reactionMessageEmbed = reactionMessage.embeds[0]
+        reactionMessageEmbed.footer = { text: "Verified by " + verifier.displayName }
+        await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("💯");
         await memberVerifying.send("Welcome to Public Lost Halls, you have been accepted.");
 
@@ -222,11 +226,14 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         }
 
         await reactionMessage.reactions.removeAll();
+        let reactionMessageEmbed = reactionMessage.embeds[0]
+        reactionMessageEmbed.footer = { text: "Rejected by " + verifier.displayName }
+        await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("🔨");
-    } else if (reaction.emoji.name === '3⃣') {
+    } else if (reaction.emoji.name === '3⃣' || reaction.emoji.name === '5⃣') {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
         const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
-        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID);
+        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID).catch(error => { console.log(error) });
         const playerToExpel = reactionMessage.embeds[0].description.split(': ')[1];
         let memberExpelled = false;
         for (let i = 0; i < playersExpelled.members.length; i++) {
@@ -240,7 +247,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         let index;
         let memberAlreadyVerifying = false;
         for (let i = 0; i < currentlyVerifying.members.length; i++) {
-            if (currentlyVerifying.members[i].name === playerToExpel.toUpperCase() || currentlyVerifying.members[i].id === memberVerifying.id) {
+            if (currentlyVerifying.members[i].name === playerToExpel.toUpperCase() || currentlyVerifying.members[i].id === memberVerifyingID) {
                 memberAlreadyVerifying = true;
                 index = i;
                 break;
@@ -253,9 +260,16 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                 if (err) return console.log(err);
             });
         }
+        if (reaction.emoji.name === reaction.emoji.name === '3⃣') {
         await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was told to reapply by " + verifier.toString() + " due to having too many pages privated.");
         await memberVerifying.send("Please unprivate **everything** on realmeye except your last seen location and apply again.");
+        } else if (reaction.emoji.name === '5⃣') {
+            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(<@" + memberVerifyingID + ">) had their application removed by " + verifier.toString() + ".");
+        }
         await reactionMessage.reactions.removeAll();
+        let reactionMessageEmbed = reactionMessage.embeds[0]
+        reactionMessageEmbed.footer = { text: "Application removed by " + verifier.displayName }
+        await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("👋");
     }
 });
