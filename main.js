@@ -260,9 +260,9 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                 if (err) return console.log(err);
             });
         }
-        if (reaction.emoji.name === reaction.emoji.name === '3⃣') {
-        await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was told to reapply by " + verifier.toString() + " due to having too many pages privated.");
-        await memberVerifying.send("Please unprivate **everything** on realmeye except your last seen location and apply again.");
+        if (reaction.emoji.name === '3⃣') {
+            await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(" + memberVerifying.toString() + ") was told to reapply by " + verifier.toString() + " due to having too many pages privated.");
+            await memberVerifying.send("Please unprivate **everything** on realmeye except your last seen location and apply again.");
         } else if (reaction.emoji.name === '5⃣') {
             await lanisBot.channels.get(channels.verificationsLog).send("Player " + playerToExpel + "(<@" + memberVerifyingID + ">) had their application removed by " + verifier.toString() + ".");
         }
