@@ -169,6 +169,9 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         reactionMessageEmbed.footer = { text: "Verified by " + verifier.displayName }
         await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("💯");
+        if (reactionMessage.pinned) {
+            await reactionMessage.unpin();
+        }
         await memberVerifying.send("Welcome to Public Lost Halls, you have been accepted.");
 
         verifiedPeople.members[verifiedPeople.members.length] = {
@@ -230,6 +233,9 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         reactionMessageEmbed.footer = { text: "Rejected by " + verifier.displayName }
         await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("🔨");
+        if (reactionMessage.pinned) {
+            await reactionMessage.unpin();
+        }
     } else if (reaction.emoji.name === '3⃣' || reaction.emoji.name === '5⃣') {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
         const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
@@ -271,6 +277,9 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         reactionMessageEmbed.footer = { text: "Application removed by " + verifier.displayName }
         await reactionMessage.edit(reactionMessageEmbed)
         await reactionMessage.react("👋");
+        if (reactionMessage.pinned) {
+            await reactionMessage.unpin();
+        }
     }
 });
 
@@ -311,12 +320,27 @@ lanisBot.on("ready", async () => {
 lanisBot.on("message", async message => {
     if (message.author.bot) return;
     if (message.channel.type === "dm") return;
+    if (message.content.includes("yes") || message.content.includes("no")) {
+        let diceRoll = Math.floor(Math.random() * 1000) + 1;
+        console.log("Lucky roll is: " + diceRoll);
+        if (diceRoll === 77) {
+            if (message.content.includes("yes")) {
+                return await message.channel.send("No.");
+            } else if (message.content.includes("no")) {
+                return await message.channel.send("Yes.");
+            }
+        }
+    }
     const devRole = message.guild.roles.find(role => role.name === "Developer");
+    console.log(message.member.displayName + " said in " + message.channel.name + " : " + message.content);
     if (message.content.indexOf(config.prefix) !== 0) {
         if (message.channel.id === channels.verificationsAutomatic) {
             if (message.member.roles.highest.position < devRole.position) {
                 console.log("Deleted message with content: " + message.content);
-                await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+                await lanisBot.channels.get(channels.verificationAttempts).send("User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+                const errorMessage = await message.channel.send("Please input the verification command correctly.");
+                await sleep(10000);
+                await errorMessage.delete()
                 return await message.delete();
             }
         } else {
@@ -336,11 +360,15 @@ lanisBot.on("message", async message => {
     let command = messageArray[0];
     let args = messageArray.slice(1);
 
-    if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position) {
-        await lanisBot.channels.get(channels.verificiationAttempts).send("User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+    if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position || message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position) {
+        await lanisBot.channels.get(channels.verificationAttempts).send("User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in #get-verified : '" + message.content + "'");
+        const errorMessage = await message.channel.send("Please input the verification command correctly.");
+        await sleep(10000);
+        await errorMessage.delete()
         return await message.delete()
         console.log("Deleted message with content: " + message.content);
     }
+
     let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());
     if (commandFile) commandFile.run(lanisBot, message, args);
 
@@ -354,3 +382,9 @@ lanisBot.on("message", async message => {
 lanisBot.on("error", console.error);
 
 lanisBot.login(config.token);
+
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms)
+    })
+}

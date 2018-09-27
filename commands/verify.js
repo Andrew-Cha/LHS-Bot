@@ -15,7 +15,7 @@ const verifiedPeopleFile = path.normalize(__dirname + "../../dataFiles/verifiedP
 const verifiedPeople = require(verifiedPeopleFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    const errorChannel = lanisBot.channels.get(channels.verificiationAttempts);
+    const errorChannel = lanisBot.channels.get(channels.verificationAttempts);
 
     if (message.member === null) {
         const errorMessage = await message.channel.send("You are offline on Discord, please change your status to online..");
@@ -40,7 +40,9 @@ module.exports.run = async (lanisBot, message, args) => {
         await errorChannel.send("A Verified Raider " + message.member.toString() + " (" + message.author.username + ") tried to verify.");
         await sleep(10000);
         await errorMessage.delete();
-        await message.delete();
+        await message.delete().catch(e => {
+            console.log(e);
+        });
         return;
     }
 
@@ -276,6 +278,7 @@ module.exports.run = async (lanisBot, message, args) => {
             });
         }
     }).catch(async (e) => {
+        console.log(e);
         await messageCollector.stop();
         let index;
         let memberAlreadyVerifying = false;
@@ -533,8 +536,18 @@ module.exports.run = async (lanisBot, message, args) => {
                     .setColor("#940000")
                     .setDescription(message.member.toString() + " trying to verify as: " + memberToVerify)
                     .addField("Problems: ", reportMessage)
-                const altReportMessage = await lanisBot.channels.get(channels.verificationsManual).send(reportEmbed);
+
+                const verificationsManual = lanisBot.channels.get(channels.verificationsManual)
+                const altReportMessage = await verificationsManual.send(reportEmbed);
                 await altReportMessage.react("🔑")
+                await altReportMessage.pin();
+                const systemMesssages = await verificationsManual.messages.fetch({ after: altReportMessage.id}).catch(e => { console.log(e) });
+                for (let message of systemMesssages.values()) {
+                    if (message.system) {
+                        await message.delete();
+                    }
+                }
+                console.log(systemMesssages)
 
                 messageCollector.stop("STOP");
             } else {

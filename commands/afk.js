@@ -183,7 +183,7 @@ module.exports.run = async (lanisBot, message, args) => {
         .setFooter("AFK check is in progress.");
 
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
-    if (location !== "") { informationPanel.addField("Location:", locationMessage) }
+    if (locationMessage !== "") { informationPanel.addField("Location:", locationMessage) }
     const informationPanelMessage = await botCommands.send(informationPanel);
 
     let totalPeople = 0;
