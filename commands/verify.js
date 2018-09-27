@@ -85,6 +85,14 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     }
 
+    if (memberToVerify.toUpperCase() === "YOUR_ROTMG_NAME_HERE") {
+        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify with a placeholder name.");
+        const wrongInput = await message.channel.send("Input your actual name, not a placeholder.");
+        await sleep(10000);
+        await wrongInput.delete();
+        await message.delete();
+    }
+
     if (memberVerified) {
         const verifiedError = await message.channel.send("Sorry, someone has already applied with the nickname of '" + memberVerifiedNickname + "'");
         await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify as an already verified person (who used the bot to verify) named " + memberToVerify + ".");
@@ -541,7 +549,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 const altReportMessage = await verificationsManual.send(reportEmbed);
                 await altReportMessage.react("🔑")
                 await altReportMessage.pin();
-                const systemMesssages = await verificationsManual.messages.fetch({ after: altReportMessage.id}).catch(e => { console.log(e) });
+                const systemMesssages = await verificationsManual.messages.fetch({ after: altReportMessage.id }).catch(e => { console.log(e) });
                 for (let message of systemMesssages.values()) {
                     if (message.system) {
                         await message.delete();
