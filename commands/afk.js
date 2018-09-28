@@ -58,6 +58,11 @@ module.exports.run = async (lanisBot, message, args) => {
         return;
     }
 
+
+    if (raidingChannel.name.toUpperCase().includes("JOIN")) {
+        return await message.channel.send(message.member.toString() + ", it seems there is an active AFK check in that channel as it has the word 'Join' in it's title.")
+    }
+
     if (wantedType != undefined) {
         if (wantedType.toUpperCase() === "CULT") {
             raidEmote = lanisBot.emojis.find(emoji => emoji.name === "cultist");
@@ -136,27 +141,33 @@ module.exports.run = async (lanisBot, message, args) => {
     console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
     let noPermissions = false;
-    const oldName = raidingChannel.name;
-    const newName = raidingChannel.name + "! Active !";
-    await raidingChannel.setUserLimit(0, "Starting Raid for Raiding Channel #" + wantedChannel);
-    await raidingChannel.setName(newName, "Starting Raid for Raiding Channel #" + wantedChannel);
+    const oldName = "raiding-" + wantedChannel
+    const newName = oldName + " <-- Join!";
+    await raidingChannel.setName(newName, "Starting Raid for Raiding Channel #" + wantedChannel)
+        .catch(e => {
+            noPermissions = true
+        });
     const verifiedRaiderRole = message.guild.roles.find(role => role.name === "Verified Raider");
     await raidingChannel.updateOverwrite(
         verifiedRaiderRole, {
             CONNECT: true
         },
         "Starting Raid for Raiding Channel #" + wantedChannel
-    ).catch(async e => {
+    ).catch(e => {
         console.log(e);
         noPermissions = true;
     });
+    await raidingChannel.setUserLimit(0, "Starting Raid for Raiding Channel #" + wantedChannel)
+        .catch(e => {
+            noPermissions = true
+        });
 
-    
+
     if (noPermissions) return await message.channel.send("No permissions to open the voice channel for raiders, sorry.");
 
     let arlLocationMessage;
     if (locationMessage !== "") {
-        arlLocationMessage = await lanisBot.channels.get(channels.arlChat).send("The location for a " + raidType + " raid in Raiding Channel Number is: **" + locationMessage + "**");
+        arlLocationMessage = await lanisBot.channels.get(channels.arlChat).send("The location for a " + raidType + " raid in Raiding Channel Number " + wantedChannel + " is: **" + locationMessage + "**");
     }
 
     const warningMessage = ("@here started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
@@ -225,7 +236,6 @@ module.exports.run = async (lanisBot, message, args) => {
     let vialsMessaged = 0;
     let keysMessaged = 0;
 
-    await message.guild.members.fetch();
     const afkCheckCollector = new Discord.ReactionCollector(afkCheckMessage, filter, { time: 360000 });
     afkCheckCollector.on("collect", async (reaction, user) => {
         const currentMember = await message.guild.members.get(user.id);
@@ -443,6 +453,26 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                     await message.channel.send("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.toString());
                     console.log("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.displayName);
+                    await raidingChannel.setUserLimit(99, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
+                        .catch(e => {
+                            noPermissions = true
+                        });
+                    await raidingChannel.setName(oldName, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
+                        .catch(e => {
+                            noPermissions = true
+                        });
+                    await raidingChannel.updateOverwrite(
+                        verifiedRaiderRole, {
+                            CONNECT: null
+                        },
+                        "Stopping AFK Check for Raiding Channel #" + wantedChannel)
+                        .catch(async e => {
+                            console.log(e);
+                            noPermissions = true;
+                        });
+
+                    if (noPermissions) return await message.channel.send("No permissions to close the voice channel for raiders, sorry.");
+
                     return;
                 }
             }
@@ -454,8 +484,10 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     afkCheckCollector.on("end", async (collected, reason) => {
-        await raidingChannel.setUserLimit(99, "Stopping AFK Check for Raiding Channel #" + wantedChannel);
-        await raidingChannel.setName(oldName, "Stopping AFK Check for Raiding Channel #" + wantedChannel);
+        await raidingChannel.setName(oldName, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
+            .catch(e => {
+                noPermissions = true
+            });
         await raidingChannel.updateOverwrite(
             verifiedRaiderRole, {
                 CONNECT: null
@@ -464,6 +496,10 @@ module.exports.run = async (lanisBot, message, args) => {
             .catch(async e => {
                 console.log(e);
                 noPermissions = true;
+            });
+        await raidingChannel.setUserLimit(99, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
+            .catch(e => {
+                noPermissions = true
             });
 
         if (noPermissions) return await message.channel.send("No permissions to close the voice channel for raiders, sorry.");
