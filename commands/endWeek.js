@@ -70,7 +70,11 @@ module.exports.run = async (lanisBot, message, args) => {
             month = "Unknown Month";
             break;
     }
-    let reportMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
+    let reportEmbed = new Discord.MessageEmbed()
+        .setColor("3ea04a");
+    const weekMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
+    let reportMessage = "";
+    reportEmbed.setDescription(weekMessage);
     let activeLeaders = [];
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
         const currentLeader = await message.guild.members.fetch(leadingLogs.leaders[i].id).catch(async e => {
@@ -93,8 +97,8 @@ module.exports.run = async (lanisBot, message, args) => {
     for (const leader of activeLeaders) {
         const currentLeader = await message.guild.members.fetch(leader.id);
         const newReportMessage = reportMessage + "\n" + currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
-        if (newReportMessage.length > 2000) {
-            await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);
+        if (newReportMessage.length > 1024) {
+            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
         } else {
             reportMessage = newReportMessage;
@@ -130,15 +134,16 @@ module.exports.run = async (lanisBot, message, args) => {
 
     for (const leader of inactiveRaidLeaders) {
         const newReportMessage = reportMessage + "\n" + leader.toString() + " hasn't completed or assisted a single run this week.";
-        if (newReportMessage.length > 2000) {
-            await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);
+        if (newReportMessage.length > 1024) {
+            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = leader.toString() + " hasn't completed or assisted a single run this week.";
         } else {
             reportMessage = newReportMessage;
         }
     }
 
-    await lanisBot.channels.get(channels.leadingActivityLogs).send(reportMessage);
+    reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+    await lanisBot.channels.get(channels.leadingActivityLogs).send(reportEmbed);
 
     leadingLogs.leaders = [];
     fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (err) {

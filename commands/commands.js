@@ -83,6 +83,10 @@ module.exports.run = async (lanisBot, message, args) => {
             commandDescription.addField("Pending People", "A command that can `remove` people from the pending list. Once a person is in this list they can't use the `-verify` command, this is used for people who get their verification bugged.\n\nUsage:\n`-expelled [remove] [Player Name]`");
             break;
 
+        case ("RESETCHANNEL"):
+        commandDescription.addField("Reset Channel", "Resets the name, permissions and member limit for the specified raiding channel.\n\nUsage:\n`-resetChannel [Raiding Channel Number]`");
+            break;
+
         case ("RESTART"):
             commandDescription.addField("Restart", "Logs the bot in and out of Discord Servers. Messes up any commands that need a constant connection (most commands). Use at risk, mainly broken.\n\nUsage:\n`-restart`");
             break;
@@ -113,6 +117,10 @@ module.exports.run = async (lanisBot, message, args) => {
 
         case ("UNSUSPEND"):
             commandDescription.addField("Unsuspend", "Unsuspends a person. Usable by <@&372590164943437825>s or higher.\n\nUsage:\n`-unsuspend [User Mention / ID]`");
+            break;
+
+        case ("VERIFAQRESET"):
+        commandDescription.addField("Veri-Faq Message", "Resets the message in <#494552872650801152> channel, delets all messages.\n\nUsage:\n`-veriFaqReset`");
             break;
 
         case ("VERIFIED"):

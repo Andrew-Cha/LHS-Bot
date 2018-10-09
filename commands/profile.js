@@ -16,15 +16,15 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let informationEmbed = new Discord.MessageEmbed()
-    .setAuthor(guildMember.user.tag, await guildMember.user.avatarURL())
-    .setDescription(guildMember.presence.status + guildMember.toString(), true)
-    .setThumbnail(await guildMember.user.avatarURL(), true)
-    .addField("User ID", guildMember.user.id)
-    .addField("Joined Discord", guildMember.user.createdAt.toUTCString())
-    .addField("Joined Server", guildMember.joinedAt.toUTCString())
-    .addField("Highest Role", guildMember.roles.highest, true)
-    .addField("Member #","Sort guild members zZzzZZ", true)
-
+        .setAuthor(guildMember.user.tag, await guildMember.user.avatarURL())
+        .setDescription(guildMember.presence.status + guildMember.toString(), true)
+        .setThumbnail(await guildMember.user.avatarURL(), true)
+        .addField("User ID", guildMember.user.id)
+        .addField("Joined Discord", guildMember.user.createdAt.toUTCString())
+        .addField("Joined Server", guildMember.joinedAt.toUTCString())
+        .addField("Highest Role", guildMember.roles.highest, true)
+        .addField("Member #", "Sort guild members zZzzZZ", true)
+        .setColor("3ea04a");
     await message.channel.send(informationEmbed)
 }
 

@@ -68,7 +68,11 @@ module.exports.run = async (lanisBot, message, args) => {
             month = "Unknown Month";
             break;
     }
-    let reportMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
+    let reportEmbed = new Discord.MessageEmbed()
+    .setColor("3ea04a");
+    const weekMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
+    let reportMessage = "";
+    reportEmbed.setDescription(weekMessage);
     let activeLeaders = [];
     for (let i = 0; i < leadingLogs.leaders.length; i++) {
         const currentLeader = await message.guild.members.fetch(leadingLogs.leaders[i].id).catch(async e => {
@@ -76,7 +80,7 @@ module.exports.run = async (lanisBot, message, args) => {
         });
         if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
     }
-    
+
     function compare(a, b) {
         if (a.runs < b.runs) {
             return 1;
@@ -96,8 +100,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
         const leaderName = currentLeader.id === message.author.id ? currentLeader.toString() : currentLeader.displayName;
         const newReportMessage = reportMessage + "\n" + leaderName + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
-        if (newReportMessage.length > 2000) {
-            await message.channel.send(reportMessage);
+        if (newReportMessage.length > 1024) {
+            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = leaderName + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
         } else {
             reportMessage = newReportMessage;
@@ -137,15 +141,16 @@ module.exports.run = async (lanisBot, message, args) => {
     for (const leader of inactiveRaidLeaders) {
         const leaderName = leader.id === message.author.id ? leader.toString() : leader.displayName;
         const newReportMessage = reportMessage + "\n" + leaderName + " hasn't completed or assisted a single run this week.";
-        if (newReportMessage.length > 2000) {
-            await message.channel.send(reportMessage);
+        if (newReportMessage.length > 1024) {
+            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = leaderName + " hasn't completed or assisted a single run this week.";
         } else {
             reportMessage = newReportMessage;
         }
     }
 
-    await message.channel.send(reportMessage);
+    reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+    await message.channel.send(reportEmbed);
 }
 
 module.exports.help = {

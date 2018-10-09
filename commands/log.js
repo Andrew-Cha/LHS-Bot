@@ -37,10 +37,13 @@ module.exports.run = async (lanisBot, message, args) => {
     const type = args[0];
     if (type === undefined) return await message.channel.send("Please input a raid type.");
     let raidType = "";
+    let borderColor;
     if (type.toUpperCase() === "CULT") {
         raidType = "Cult";
+        borderColor = "#cf0202"; //Red
     } else if (type.toUpperCase() === "VOID") {
         raidType = "Void";
+        borderColor = "#24048b"; //Purple
     } else {
         return await message.channel.send("Incorrect raid type, input one of these types: `Cult` or `Void`.")
     }
@@ -63,7 +66,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (leaderAdded === false) {
         leadingLogs.leaders[leadingLogs.leaders.length] = {
-            "id":  message.author.id,
+            "id": message.author.id,
             "runs": "1",
             "assistedRuns": "0"
         }
@@ -144,11 +147,13 @@ module.exports.run = async (lanisBot, message, args) => {
             });
         }
     }
-    let logMessage = "`" + month + "/" + day + " " + hour + ":" + minutes + " " + timeType + " UTC` **\n" + raidType + "** run by: " + leader.toString();
+    let logEmbed = new Discord.MessageEmbed()
+        .setColor(borderColor)
+        .addField("**" + raidType + "** run", "At: `" + month + "/" + day + " " + hour + ":" + minutes + " " + timeType + " UTC`\nBy: " + leader.toString())
     if (customMessage) {
-        logMessage = logMessage + ", " + customMessage;
+        logEmbed.addField("Additions: ", customMessage)
     }
-    await lanisBot.channels.get(channels.leadingLogs).send(logMessage);
+    await lanisBot.channels.get(channels.leadingLogs).send(logEmbed);
 
     fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (err) {
         if (err) return console.log(err);
