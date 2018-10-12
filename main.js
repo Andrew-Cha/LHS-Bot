@@ -352,7 +352,12 @@ lanisBot.on("message", async message => {
                     .setFooter("User ID: " + message.member.id)
                     .setColor("#cf0202");
                 await lanisBot.channels.get(channels.verificationAttempts).send(errorEmbed);
-                const errorMessage = await message.channel.send("Please input the verification command correctly.");
+                let errorMessage;
+                if (message.content.toUpperCase() === "DONE" || message.content.toUpperCase() === "STOP" || message.content.toUpperCase() === "ABORT") {
+                    errorMessage = await message.channel.send("Send this input to the conversation you have with the bot, not here.");
+                } else {
+                    errorMessage = await message.channel.send("Please input the verification command correctly.");
+                }
                 await sleep(10000);
                 await errorMessage.delete()
                 return await message.delete();
@@ -370,10 +375,10 @@ lanisBot.on("message", async message => {
     }
 
     let prefix = config.prefix;
-    let messageArray = message.content.split(" ");
+    let messageArray = message.content.match(/\S+/g);
     let command = messageArray[0];
     let args = messageArray.slice(1);
-
+    console.log(args)
     if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position || message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()
             .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")

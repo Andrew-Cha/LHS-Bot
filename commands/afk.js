@@ -165,16 +165,6 @@ module.exports.run = async (lanisBot, message, args) => {
         borderColor = "#24048b"; //Purple
     }
 
-    let arlLocationMessage;
-    let locationEmbed = new Discord.MessageEmbed()
-    if (locationMessage !== "") {
-        locationEmbed.setColor(borderColor)
-            .setDescription(raidType + " run in Raiding Channel #" + wantedChannel)
-            .addField("Location", locationMessage)
-            .setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
-        arlLocationMessage = await lanisBot.channels.get(channels.arlChat).send(locationEmbed);
-    }
-
     const warningMessage = ("@here started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
     const warning = await raidStatusAnnouncements.send(warningMessage);
     //const warning = await botCommands.send(warningMessage);
@@ -213,7 +203,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
     if (locationMessage !== "") { informationPanel.addField("Location:", locationMessage) }
     const informationPanelMessage = await botCommands.send(informationPanel);
-
+    const arlChatInformationPanelMessage = await lanisBot.channels.get(channels.arlChat).send(informationPanel);
     let totalPeople = 0;
     let peopleReacted = [];
 
@@ -287,6 +277,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         keysMessaged += 1;
                                         informationPanel.fields[0] = { name: "Key:", value: currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
+                                        await arlChatInformationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("Sorry, some other key holder has already been sent the location.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
@@ -340,6 +331,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         vialsMessaged += 1;
                                         informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
                                         await informationPanelMessage.edit(informationPanel);
+                                        await arlChatInformationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("The location has already been sent to the main vial, if you want to become a backup vial please react again.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
@@ -383,6 +375,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         const oldVials = informationPanel.fields[1]
                                         informationPanel.fields[1] = { name: "Vials:", value: oldVials.value + "\n" + currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
+                                        await arlChatInformationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("Sorry we already have too many vials.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
@@ -432,7 +425,7 @@ module.exports.run = async (lanisBot, message, args) => {
         .addField(`Abort Raiding Channel Number **${wantedChannel}**`, `If you made a mistake you can abort the AFK check now, no people will be moved to AFK.`);
 
     const abortMessage = await botCommands.send(abortEmbed);
-    abortMessage.react("❌");
+    await abortMessage.react("❌");
     const abortFilter = (reaction, user) => reaction.emoji.name === "❌"
     const abortReactCollector = new Discord.ReactionCollector(abortMessage, abortFilter, { time: 360000 });
     abortReactCollector.on("collect", async (reaction, user) => {
@@ -446,9 +439,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     await abortReactCollector.stop();
                     await clearInterval(updateTimeLeft);
                     await informationPanelMessage.delete();
-                    if (arlLocationMessage) {
-                        await arlLocationMessage.delete();
-                    }
+                    await arlChatInformationPanelMessage.delete();
                     await message.channel.send("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.toString());
                     console.log("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.displayName);
                     await raidingChannel.setUserLimit(99, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
@@ -482,8 +473,9 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     afkCheckCollector.on("end", async (collected, reason) => {
-        locationEmbed.setFooter("AFK check stopped by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
-        await arlLocationMessage.edit(locationEmbed);
+        informationPanel.setFooter("AFK check stopped by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
+        await informationPanelMessage.edit(informationPanel);
+        await arlChatInformationPanelMessage.edit(informationPanel);
         await raidingChannel.setName(oldName, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
             .catch(e => {
                 console.log(e);

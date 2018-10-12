@@ -70,7 +70,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Please opt in the safeguard before trying to remove a command.");
                 break;
             }
-            if (commandToAdd) {
+            if (commandToRemove) {
                 if (channelList.includes(commandToRemove.toUpperCase())) {
                     if (!safeGuardConfigs.leaders[index].commands.includes(commandToRemove.toUpperCase())) {
                         await message.channel.send("Command already is not in the safeguard list.");
