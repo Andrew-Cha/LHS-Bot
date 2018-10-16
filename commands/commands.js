@@ -20,7 +20,7 @@ module.exports.run = async (lanisBot, message, args) => {
             break;
 
         case ("ALL"):
-            commandDescription.addField("Server Managment", "Commands, DuplicateMembers, Expelled, ExpelledGuilds, FaqReset, Fix, Pending, RestartVeri, RulesReset, Suspend, Unsuspend, VeriFaqReset, Verify.");
+            commandDescription.addField("Server Managment", "Commands, DuplicateMembers, Expelled, ExpelledGuilds, FaqReset, Fix, Pending, RestartVeri, RulesReset, Suspend, Unsuspend, VeriFaqReset, Verified, Verify.");
             commandDescription.addField("Raiding Tools", "AFK, Clean, CurrentWeek, EndWeek, Log, ParseMembers, ResetChannel, SafeGuard, SplitVoid");
             commandDescription.addField("Miscellaneous", "Dice, Hello, Say, SetPresence");
             commandDescription.addBlankField();

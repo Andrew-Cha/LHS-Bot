@@ -1,12 +1,12 @@
-const Discord = require("discord.js");
+const Roles = require("../dataFiles/roles.json")
 const fs = require('fs');
 const path = require('path');
 const currentlyVerifyingFile = path.normalize(__dirname + "../../dataFiles/currentlyVerifying.json");
 const currentlyVerifying = require(currentlyVerifyingFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    const securityRole = message.guild.roles.find(role => role.name === "Security");
-    if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.name === "Verifier")) return await message.channel.send("You can not use this command as a non Security or Verifier.");
+    const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
+    if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
     if (action === undefined) return await message.channel.send("The only action is `remove`.")
     const playerInputted = args[1]

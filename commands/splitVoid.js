@@ -14,7 +14,7 @@ module.exports.run = async (lanisBot, message, args) => {
   let maxGroups = 2;
 
   if (0 < channelNumber && channelNumber <= raidingChannelCount) {
-    raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber - 1]);
+    raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber - 1]);
   } else {
     const error = "Can't find such a channel to set up the void split for.";
     await message.channel.send(error);
@@ -95,7 +95,7 @@ module.exports.run = async (lanisBot, message, args) => {
   let voidCheckEmbed = new Discord.MessageEmbed()
     .addField("Splitting **Raiding Channel Number " + (channelNumber) + "** into groups!", "React below with only one emote from the classes or Marble Seal that you are bringing to void.")
     .addField("If you do not have any of the classes(or the Marble Seal) shown below react with: ", reactEmojis[0]);
-  const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments).send(voidCheckEmbed);
+  const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments.id).send(voidCheckEmbed);
 
   const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
     reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
@@ -254,8 +254,8 @@ module.exports.run = async (lanisBot, message, args) => {
       }
     }
 
+    const groupAssignments = lanisBot.channels.get(channels.groupAssignments.id);
     for (let i = 0; i < groups.length; i++) {
-      const groupAssignments = lanisBot.channels.get(channels.groupAssignments);
       await groupAssignments.send("Group " + (i + 1) + " (" + groups[i].length + " people)" + " :\n" + groups[i].join(" "));
     }
   })

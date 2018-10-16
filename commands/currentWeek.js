@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 
-const channels = require("../dataFiles/channels.json");
-const fs = require('fs');
+const Roles = require("../dataFiles/roles.json")
 const path = require('path');
 const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.json");
 const leadingLogs = require(leadingLogsFile);
@@ -109,8 +108,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let inactiveRaidLeaders = [];
-    const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
-    const rlRole = message.guild.roles.find(role => role.name === "Raid Leader");
+    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
+    const rlRole = message.guild.roles.find(role => role.name === Roles.raidLeader.id);
 
     await message.guild.members.fetch().then(members => {
         for (const member of members.values()) {

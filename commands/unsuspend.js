@@ -5,10 +5,11 @@ const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGua
 const safeGuardConfigs = require(safeGuardConfigsFile);
 const suspensionsFile = path.normalize(__dirname + "../../dataFiles/suspensions.json");
 const suspensions = require(suspensionsFile);
-const channels = require("../dataFiles/channels.json");
+const Channels = require("../dataFiles/channels.json");
+const Roles = require("../dataFiles/roles.json")
 
 module.exports.run = async (lanisBot, message, args) => {
-    const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
+    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
     if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not unsuspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
     const regexMatches = memberMention.match(/<@!?(1|\d{17,19})>/)
@@ -63,7 +64,7 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     }
 
-    const suspendRole = message.guild.roles.find(role => role.name === "Suspended but Verified");
+    const suspendRole = message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
     if (suspensions[memberToUnsuspend.id] !== undefined) {
         memberToUnsuspend.roles.remove(suspendRole);
         for (let i = 0; i < suspensions[memberToUnsuspend.id].roles.length; i++) {
@@ -78,7 +79,7 @@ module.exports.run = async (lanisBot, message, args) => {
     fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (err) {
         if (err) return console.log(err);
     });
-    await lanisBot.channels.get(channels.suspendLog).send(memberToUnsuspend.toString() + " you have been unsuspended.");
+    await lanisBot.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended.");
 }
 
 module.exports.help = {

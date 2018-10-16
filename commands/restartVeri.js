@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const verificationsAutomatic = lanisBot.channels.get(channels.verificationsAutomatic);
+    const verificationsAutomatic = lanisBot.channels.get(channels.verificationsAutomatic.id);
     await message.channel.send("Cleaning the automatic verification channel.");
     await verificationsAutomatic.messages.fetch().then(async messages => {
         for (const message of messages.values()) {

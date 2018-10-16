@@ -153,7 +153,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (customMessage) {
         logEmbed.addField("Additions: ", customMessage)
     }
-    await lanisBot.channels.get(channels.leadingLogs).send(logEmbed);
+    await lanisBot.channels.get(channels.leadingLogs.id).send(logEmbed);
 
     fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (err) {
         if (err) return console.log(err);

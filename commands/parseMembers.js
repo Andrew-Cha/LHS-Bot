@@ -19,7 +19,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber]);
+        raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber]);
     } else {
         const error = "No such raiding channel found to set up for raiding.";
         await message.channel.send(error);

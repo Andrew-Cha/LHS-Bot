@@ -1,16 +1,16 @@
-const Discord = require("discord.js");
-const channels = require("../dataFiles/channels.json");
+const Roles = require("../dataFiles/roles.json")
+const Channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(Channels.raidingChannels).length;
     let wantedChannel = args[0];
     let channelNumber;
     let raidingChannel;
-    const verifiedRaiderRole = message.guild.roles.find(role => role.name === "Verified Raider");
+    const verifiedRaiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber]);
+        raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
         if (raidingChannel === undefined) {
             const error = "No such raiding channel found to set up for raiding.";
             await message.channel.send(error);

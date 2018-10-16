@@ -1,14 +1,16 @@
 const Discord = require("discord.js");
+
 const fs = require('fs');
 const path = require('path');
 const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 const suspensionsFile = path.normalize(__dirname + "../../dataFiles/suspensions.json");
 const suspensions = require(suspensionsFile);
-const channels = require("../dataFiles/channels.json");
+const Channels = require("../dataFiles/channels.json");
+const Roles = require("../dataFiles/roles.json")
 
 module.exports.run = async (lanisBot, message, args) => {
-    const arlRole = message.guild.roles.find(role => role.name === "Almost Raid Leader");
+    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
     if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
     if (!memberMention) return await message.channel.send("Input a correct user mention.")
@@ -52,7 +54,7 @@ module.exports.run = async (lanisBot, message, args) => {
             return await message.channel.send("Input a valid time format.");
     }
 
-    const suspendRole = message.guild.roles.find(role => role.name === "Suspended but Verified");
+    const suspendRole = message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
     if (suspensions[memberToSuspend.id] !== undefined) {
         return await message.channel.send("Member already suspended.");
     }
@@ -109,7 +111,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     if (suspensionReason != "") {
-        await lanisBot.channels.get(channels.suspendLog).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+        await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
     } else {
         return await message.channel.send("Please input a reason for the suspension.");
     }

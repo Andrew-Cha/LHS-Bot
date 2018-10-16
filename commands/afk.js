@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 
-const channels = require("../dataFiles/channels.json");
+const Channels = require("../dataFiles/channels.json");
+const Roles = require("../dataFiles/roles.json")
 const fs = require('fs');
 const path = require('path');
 const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
@@ -10,7 +11,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const authorRoles = message.member.roles.values();
     let isLeader = false;
     for (role of authorRoles) {
-        if (role.name === "Raid Leader" || role.name === "Almost Raid Leader") {
+        if (role.id === Roles.raidLeader.id || role.id === Roles.almostRaidLeader.id) {
             isLeader = true;
             break;
         }
@@ -33,9 +34,9 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let aborted = false;
-    const raidingChannelCount = Object.keys(channels.raidingChannels).length;
-    const botCommands = lanisBot.channels.get(channels.botCommands);
-    const raidStatusAnnouncements = lanisBot.channels.get(channels.raidStatusAnnouncements);
+    const raidingChannelCount = Object.keys(Channels.raidingChannels).length;
+    const botCommands = lanisBot.channels.get(Channels.botCommands.id);
+    const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
     const wantedChannel = args[0];
     const wantedType = args[1];
     const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.name === "marble");
@@ -46,7 +47,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber]);
+        raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
         if (raidingChannel === undefined) {
             const error = "No such raiding channel found to set up for raiding.";
             await message.channel.send(error);
@@ -140,7 +141,7 @@ module.exports.run = async (lanisBot, message, args) => {
         .catch(e => {
             noPermissions = true
         });
-    const verifiedRaiderRole = message.guild.roles.find(role => role.name === "Verified Raider");
+    const verifiedRaiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
     await raidingChannel.updateOverwrite(
         verifiedRaiderRole, {
             CONNECT: true
@@ -203,7 +204,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
     if (locationMessage !== "") { informationPanel.addField("Location:", locationMessage) }
     const informationPanelMessage = await botCommands.send(informationPanel);
-    const arlChatInformationPanelMessage = await lanisBot.channels.get(channels.arlChat).send(informationPanel);
+    const arlChatInformationPanelMessage = await lanisBot.channels.get(Channels.arlChat.id).send(informationPanel);
     let totalPeople = 0;
     let peopleReacted = [];
 
@@ -518,7 +519,7 @@ module.exports.run = async (lanisBot, message, args) => {
             if (!member.bot) {
                 if (!aborted) {
                     if ((member.deaf && !member.hasPermission("MOVE_MEMBERS")) || (peopleReacted.includes(member.id) === false && member.hasPermission("MOVE_MEMBERS") == false)) {
-                        await member.setVoiceChannel(channels.afk);
+                        await member.setVoiceChannel(Channels.afk);
                         console.log("Moving to AFK from raiding channel " + wantedChannel + " : " + member.displayName);
                     }
                 }
@@ -538,8 +539,8 @@ module.exports.help = {
 
 async function makePostAFKCheck(borderColor, channel, intoChannel) {
     let queueChannels = [];
-    for (let i = 0; i < Object.keys(channels.queues).length; i++) {
-        const channelID = channels.queues[i];
+    for (let i = 0; i < Object.keys(Channels.queues).length; i++) {
+        const channelID = Channels.queues[i];
         const queueChannel = channel.guild.channels.get(channelID);
         queueChannels.push(queueChannel)
     }

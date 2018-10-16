@@ -4,11 +4,12 @@ const fileSystem = require("fs");
 const path = require('path');
 
 const config = require("./dataFiles/config.json");
-const channels = require("./dataFiles/channels.json");
+const Channels = require("./dataFiles/channels.json");
 const currentlyVerifyingFile = path.normalize(__dirname + "/dataFiles/currentlyVerifying.json");
 const currentlyVerifying = require(currentlyVerifyingFile);
 const playersExpelledFile = path.normalize(__dirname + "/dataFiles/expelledPeople.json");
 const playersExpelled = require(playersExpelledFile);
+const Roles = require("./dataFiles/roles.json")
 const verifiedPeopleFile = path.normalize(__dirname + "/dataFiles/verifiedPeople.json");
 const verifiedPeople = require(verifiedPeopleFile);
 
@@ -46,7 +47,7 @@ const events = {
 lanisBot.on('raw', async event => {
     if (!events.hasOwnProperty(event.t)) return;
     const { d: data } = event;
-    if (data.channel_id !== channels.verificationsManual) return;
+    if (data.channel_id !== Channels.verificationsManual.id) return;
 
     const user = lanisBot.users.get(data.user_id);
     const channel = lanisBot.channels.get(data.channel_id);
@@ -101,7 +102,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     const reactionChannel = reactionMessage.channel;
     const verifier = await reactionMessage.guild.members.fetch(user.id);
     if (user.bot) return;
-    if (reactionChannel.id !== channels.verificationsManual) return;
+    if (reactionChannel.id !== Channels.verificationsManual.id) return;
 
     if (reaction.emoji.name === "🔑") {
         await reactionMessage.reactions.removeAll();
@@ -130,7 +131,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID);
         const accountName = reactionMessage.embeds[0].description.split(': ')[1];
         let noPerms = false;
-        const raiderRole = reactionMessage.guild.roles.find(role => role.name === "Verified Raider");
+        const raiderRole = reactionMessage.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
         await memberVerifying.setNickname(accountName, "Accepted into the server via Manual Verification.").catch(async e => {
             noPerms = true;
             await reactionChannel.send("The bot doesn't have permissions to set " + memberVerifying.toString() + "'s nickname, thus removing their pending application.");
@@ -167,7 +168,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             .setFooter("User ID: " + memberVerifying)
             .setColor("3ea04a")
             .addField("Successful Verification", verifier.toString() + " has verified a member " + memberVerifying.toString() + " with the in game name of '" + accountName + "'\n[Player Profile](https://www.realmeye.com/player/" + accountName + ")");
-        await lanisBot.channels.get(channels.verificationsLog).send(successfulVerificationLogEmbed);
+        await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
         await reactionMessage.reactions.removeAll();
         let reactionMessageEmbed = reactionMessage.embeds[0]
         reactionMessageEmbed.footer = { text: "Verified by " + verifier.displayName }
@@ -218,7 +219,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         } else {
             failedVerificationLogEmbed.addField("Application Rejected", "Player " + playerToExpel + "(" + memberVerifying.toString() + ") was expelled by " + verifier.toString() + " using silent expulsion.");
         }
-        await lanisBot.channels.get(channels.verificationsLog).send(failedVerificationLogEmbed);
+        await lanisBot.channels.get(Channels.verificationsLog.id).send(failedVerificationLogEmbed);
         let index;
         let memberAlreadyVerifying = false;
         for (let i = 0; i < currentlyVerifying.members.length; i++) {
@@ -285,7 +286,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             failedVerificationLogEmbed.addField("Application Removed", "Player " + playerToExpel + "(<@" + memberVerifyingID + ">) had their application removed by " + verifier.toString() + ".");
         }
 
-        await lanisBot.channels.get(channels.verificationsLog).send(failedVerificationLogEmbed);
+        await lanisBot.channels.get(Channels.verificationsLog.id).send(failedVerificationLogEmbed);
         await reactionMessage.reactions.removeAll();
         let reactionMessageEmbed = reactionMessage.embeds[0]
         reactionMessageEmbed.footer = { text: "Application removed by " + verifier.displayName }
@@ -299,7 +300,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
-    await lanisBot.channels.get(channels.botCommands).send("Bot online!");
+    await lanisBot.channels.get(Channels.botCommands.id).send("Bot online!");
     await lanisBot.user.setActivity("to the sweet voice of Cansonio", { type: "LISTENING" })
     lanisBot.setInterval((async () => {
         for (let i in lanisBot.suspensions) {
@@ -313,7 +314,7 @@ lanisBot.on("ready", async () => {
             if (invalid) continue;
             if (Date.now() > lanisBot.suspensions[i].time) {
                 console.log("Removing " + person.displayName + " from being suspended.");
-                const suspendRole = currentGuild.roles.find(role => role.name === "Suspended but Verified");
+                const suspendRole = currentGuild.roles.find(role => role.id === Roles.suspendedButVerified.id);
                 await person.roles.remove(suspendRole);
 
                 for (let i = 0; i < lanisBot.suspensions[person.id].roles.length; i++) {
@@ -325,7 +326,7 @@ lanisBot.on("ready", async () => {
                 await fileSystem.writeFile(__dirname + "/dataFiles/suspensions.json", JSON.stringify(lanisBot.suspensions), function (err) {
                     if (err) return console.log(err);
                 });
-                await lanisBot.channels.get(channels.suspendLog).send(person.toString() + " you have been unsuspended.");
+                await lanisBot.channels.get(Channels.suspendLog.id).send(person.toString() + " you have been unsuspended.");
             }
         }
     }), 300000);
@@ -341,17 +342,17 @@ lanisBot.on("message", async message => {
             return await message.channel.send("no no u");
         }
     }
-    const devRole = message.guild.roles.find(role => role.name === "Developest");
+    const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
     console.log(message.member.displayName + " said in " + message.channel.name + " : " + message.content);
     if (message.content.indexOf(config.prefix) !== 0) {
-        if (message.channel.id === channels.verificationsAutomatic) {
+        if (message.channel.id === Channels.verificationsAutomatic.id) {
             if (message.member.roles.highest.position < devRole.position) {
                 console.log("Deleted message with content: " + message.content);
                 let errorEmbed = new Discord.MessageEmbed()
                     .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
                     .setFooter("User ID: " + message.member.id)
                     .setColor("#cf0202");
-                await lanisBot.channels.get(channels.verificationAttempts).send(errorEmbed);
+                await lanisBot.channels.get(Channels.verificationAttempts.id).send(errorEmbed);
                 let errorMessage;
                 if (message.content.toUpperCase() === "DONE" || message.content.toUpperCase() === "STOP" || message.content.toUpperCase() === "ABORT") {
                     errorMessage = await message.channel.send("Send this input to the conversation you have with the bot, not here.");
@@ -367,9 +368,9 @@ lanisBot.on("message", async message => {
         }
     }
 
-    if (message.channel.id !== channels.botCommands && message.channel.id !== channels.verifierLogChat && message.channel.id !== channels.verificationsAutomatic) return;
+    if (message.channel.id !== Channels.botCommands.id && message.channel.id !== Channels.verifierLogChat.id && message.channel.id !== Channels.verificationsAutomatic.id) return;
 
-    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== channels.verificationsAutomatic) {
+    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id) {
         message.delete();
         return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
     }
@@ -379,12 +380,12 @@ lanisBot.on("message", async message => {
     let command = messageArray[0];
     let args = messageArray.slice(1);
     console.log(args)
-    if (message.channel.id === channels.verificationsAutomatic && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position || message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position) {
+    if (message.channel.id === Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position || message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()
             .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
             .setFooter("User ID: " + message.member.id)
             .setColor("#cf0202");
-        await lanisBot.channels.get(channels.verificationAttempts).send(errorEmbed);
+        await lanisBot.channels.get(Channels.verificationAttempts.id).send(errorEmbed);
         const errorMessage = await message.channel.send("Please input the verification command correctly.");
         await sleep(10000);
         await errorMessage.delete()

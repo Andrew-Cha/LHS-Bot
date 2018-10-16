@@ -1,12 +1,12 @@
-const Discord = require("discord.js");
+const Roles = require("../dataFiles/roles.json")
 const fs = require('fs');
 const path = require('path');
 const expelledGuildsFile = path.normalize(__dirname + "../../dataFiles/expelledGuilds.json");
 const expelledGuilds = require(expelledGuildsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    const securityRole = message.guild.roles.find(role => role.name === "Security");
-    if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.name === "Verifier")) return await message.channel.send("You can not use this command as a non Security or Verifier.");
+    const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
+    if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
     if (action === undefined) return await message.channel.send("Input whether you want to `add` or `remove` a guild to the expelled guilds list, to view the list use the `list` argument.")
     let guildInputted = "";

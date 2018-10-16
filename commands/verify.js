@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-const channels = require("../dataFiles/channels.json");
+const Channels = require("../dataFiles/channels.json");
+const Roles = require("../dataFiles/roles.json")
 const axios = require("axios");
 const cheerio = require("cheerio");
 
@@ -15,7 +16,7 @@ const verifiedPeopleFile = path.normalize(__dirname + "../../dataFiles/verifiedP
 const verifiedPeople = require(verifiedPeopleFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    const errorChannel = lanisBot.channels.get(channels.verificationAttempts);
+    const errorChannel = lanisBot.channels.get(Channels.verificationAttempts.id);
     let errorEmbed = new Discord.MessageEmbed()
         .setColor("#cf0202");
 
@@ -265,7 +266,7 @@ module.exports.run = async (lanisBot, message, args) => {
         clearInterval(updateTimeLeft);
         await messageCollector.stop();
         let noPerms = false;
-        const raiderRole = message.guild.roles.find(role => role.name === "Verified Raider");
+        const raiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
         await message.member.setNickname(memberToVerify, "Accepted into the server via Automatic Verification.").catch(async e => {
             noPerms = true;
             await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
@@ -308,7 +309,7 @@ module.exports.run = async (lanisBot, message, args) => {
             .setFooter("User ID: " + message.member.id)
             .setColor("3ea04a")
             .addField("Successful Verification", "The bot has verified a member " + message.author.toString() + " with the in game name of '" + memberToVerify + "'\n[Player Profile](https://www.realmeye.com/player/" + memberToVerify + ")");
-        await lanisBot.channels.get(channels.verificationsLog).send(successfulVerificationLogEmbed);
+        await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
         if (!memberVerified) {
             verifiedPeople.members[verifiedPeople.members.length] = {
                 "id": message.author.id,
@@ -493,7 +494,6 @@ module.exports.run = async (lanisBot, message, args) => {
                                 if (blackListedNames.includes(previousName.toUpperCase())) {
                                     isBlacklisted = true;
                                     reportMessages.push("Member has a blacklisted name in their name history: " + previousName);
-                                    break;
                                 }
                             }
                         }
@@ -547,7 +547,6 @@ module.exports.run = async (lanisBot, message, args) => {
                             if (blackListedGuilds.includes(previousName.toUpperCase())) {
                                 isInBlacklistedGuild = true;
                                 reportMessages.push("Member has been in a blacklisted guild before: " + previousName);
-                                break;
                             }
                         }
                     }
@@ -589,7 +588,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     .setDescription(message.member.toString() + " trying to verify as: " + memberToVerify)
                     .addField("Problems: ", reportMessage)
 
-                const verificationsManual = lanisBot.channels.get(channels.verificationsManual)
+                const verificationsManual = lanisBot.channels.get(Channels.verificationsManual.id)
                 const altReportMessage = await verificationsManual.send(reportEmbed);
                 await altReportMessage.react("🔑")
                 await altReportMessage.pin();

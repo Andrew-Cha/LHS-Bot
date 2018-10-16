@@ -8,7 +8,7 @@ const channels = require("../channels.json");
 module.exports.run = async (lanisBot, message, args) => {
     //const memberCollection = await new Enmap({ provider: Provider });
     const raidingChannelCount = Object.keys(channels.raidingChannels).length;
-    const messageFetchChannel = lanisBot.channels.get(channels.raidStatusAnnouncements);
+    const messageFetchChannel = lanisBot.channels.get(channels.raidStatusAnnouncements.id);
 
     let channelNumber;
     let cultChannel;
@@ -16,8 +16,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < args && args <= raidingChannelCount) {
         channelNumber = args - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels[channelNumber]);
-        cultChannel = lanisBot.channels.get(channels.cultChannels[channelNumber]);
+        raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber]);
+        cultChannel = lanisBot.channels.get(channels.cultChannels.id[channelNumber]);
     } else {
         const error = "**No such raiding channel found to set up for cult.**";
         await message.channel.send(error);
@@ -79,7 +79,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await member.setVoiceChannel(cultChannel.id);
             }
 
-            await lanisBot.channels.get(channels.groupAssignments).send("These members are supposed to go to cult:\n" + membersInCult.join("\n"));
+            await lanisBot.channels.get(channels.groupAssignments.id).send("These members are supposed to go to cult:\n" + membersInCult.join("\n"));
         }
     }
 }
