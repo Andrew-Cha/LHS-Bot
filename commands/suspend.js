@@ -129,8 +129,8 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     }
 
-    fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (err) {
-        if (err) return console.log(err);
+    fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (e) {
+        if (err) return console.log(e);
     });
 
     await message.channel.send("Suspended.");

@@ -28,8 +28,8 @@ module.exports.run = async (lanisBot, message, args) => {
         case "REMOVE":
             if (memberVerified) {
                 verified.members.splice(index, 1);
-                await fs.writeFile(verifiedPath, JSON.stringify(verified), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(verifiedPath, JSON.stringify(verified), function (e) {
+                    if (err) return console.log(e);
                 });
                 await message.channel.send("Player removed from the verified list.");
             } else {

@@ -39,8 +39,8 @@ module.exports.run = async (lanisBot, message, args) => {
                 expelledGuilds.guilds[expelledGuilds.guilds.length] = {
                     "name": guildInputted.toUpperCase()
                 }
-                await fs.writeFile(expelledGuildsFile, JSON.stringify(expelledGuilds), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(expelledGuildsFile, JSON.stringify(expelledGuilds), function (e) {
+                    if (err) return console.log(e);
                 });
                 await message.channel.send("The guild is now expelled.")
             } else {
@@ -51,8 +51,8 @@ module.exports.run = async (lanisBot, message, args) => {
         case "REMOVE":
             if (guildExpelled) {
                 expelledGuilds.guilds.splice(index, 1);
-                await fs.writeFile(expelledGuildsFile, JSON.stringify(expelledGuilds), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(expelledGuildsFile, JSON.stringify(expelledGuilds), function (e) {
+                    if (err) return console.log(e);
                 });
                 await message.channel.send("Guild unbanned.");
             } else {

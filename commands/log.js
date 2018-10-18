@@ -155,8 +155,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     await lanisBot.channels.get(channels.leadingLogs.id).send(logEmbed);
 
-    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (err) {
-        if (err) return console.log(err);
+    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (e) {
+        if (err) return console.log(e);
     });
 
 }

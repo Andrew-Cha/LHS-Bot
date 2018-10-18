@@ -76,8 +76,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     delete suspensions[memberToUnsuspend.id];
     await message.channel.send("Unsuspended.");
-    fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (err) {
-        if (err) return console.log(err);
+    fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (e) {
+        if (err) return console.log(e);
     });
     await lanisBot.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended.");
 }

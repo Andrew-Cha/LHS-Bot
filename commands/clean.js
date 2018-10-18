@@ -92,8 +92,8 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     abortReactCollector.on("end", async (collected, reason) => {
-        abortMessage.delete().catch(error => {
-            console.log(error)
+        abortMessage.delete().catch(e => {
+            console.log(e)
         });
     });
 

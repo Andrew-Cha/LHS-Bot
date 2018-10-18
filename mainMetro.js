@@ -22,8 +22,8 @@ lanisBot.setMaxListeners(0);
 let antiflood = new Set();
 let antifloodTime = 1;  // in seconds
 
-fileSystem.readdir("./commands", (err, files) => {
-    if (err) console.log(err);
+fileSystem.readdir("./commands", (e, files) => {
+    if (e) console.log(e);
 
     let file = files.filter(f => f.split(".").pop() === "js");
 
@@ -89,8 +89,8 @@ lanisBot.on('guildMemberRemove', async (member) => {
 
         if (isVerified) {
             verifiedPeople.members.splice(index, 1);
-            await fileSystem.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (err) {
-                if (err) return console.log(err);
+            await fileSystem.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (e) {
+                if (e) return console.log(e);
             });
         }
     }
@@ -152,8 +152,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
         if (memberAlreadyVerifying) {
             currentlyVerifying.members.splice(index, 1);
-            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                if (err) return console.log(err);
+            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                if (e) return console.log(e);
             });
         }
 
@@ -182,8 +182,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             "id": memberVerifying.id,
             "name": accountName.toUpperCase()
         }
-        await fileSystem.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (err) {
-            if (err) return console.log(err);
+        await fileSystem.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (e) {
+            if (e) return console.log(e);
         });
     } else if (reaction.emoji.name === '1⃣' || reaction.emoji.name === '2⃣' || reaction.emoji.name === '4⃣') {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
@@ -201,8 +201,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         playersExpelled.members[playersExpelled.members.length] = {
             "name": playerToExpel.toUpperCase()
         }
-        await fileSystem.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (err) {
-            if (err) return console.log(err);
+        await fileSystem.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (e) {
+            if (e) return console.log(e);
         });
 
         let failedVerificationLogEmbed = new Discord.MessageEmbed()
@@ -231,8 +231,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
         if (memberAlreadyVerifying) {
             currentlyVerifying.members.splice(index, 1);
-            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                if (err) return console.log(err);
+            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                if (e) return console.log(e);
             });
         }
 
@@ -247,7 +247,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     } else if (reaction.emoji.name === '3⃣' || reaction.emoji.name === '5⃣') {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
         const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
-        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID).catch(error => { console.log(error) });
+        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID).catch(e => { console.log(e) });
         const playerToExpel = reactionMessage.embeds[0].description.split(': ')[1];
         let memberExpelled = false;
         for (let i = 0; i < playersExpelled.members.length; i++) {
@@ -270,8 +270,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
         if (memberAlreadyVerifying) {
             currentlyVerifying.members.splice(index, 1);
-            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                if (err) return console.log(err);
+            await fileSystem.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                if (e) return console.log(e);
             });
         }
         let failedVerificationLogEmbed = new Discord.MessageEmbed()
@@ -321,8 +321,8 @@ lanisBot.on("ready", async () => {
                 }
 
                 delete lanisBot.suspensions[person.id];
-                await fileSystem.writeFile(__dirname + "/dataFiles/suspensions.json", JSON.stringify(lanisBot.suspensions), function (err) {
-                    if (err) return console.log(err);
+                await fileSystem.writeFile(__dirname + "/dataFiles/suspensions.json", JSON.stringify(lanisBot.suspensions), function (e) {
+                    if (e) return console.log(e);
                 });
                 await lanisBot.channels.get(Channels.suspendLog.id).send(person.toString() + " you have been unsuspended.");
             }

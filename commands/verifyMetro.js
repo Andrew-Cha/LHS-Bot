@@ -109,8 +109,8 @@ module.exports.run = async (lanisBot, message, args) => {
         errorEmbed.addField("Invalid Action", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify as an already verified person (who used the bot to verify) named " + memberToVerify + ".");
         await errorChannel.send(errorEmbed);
         await sleep(10000);
-        await message.delete().catch(error => {
-            console.log(error)
+        await message.delete().catch(e => {
+            console.log(e)
         });
         await verifiedError.delete()
     }
@@ -163,12 +163,12 @@ module.exports.run = async (lanisBot, message, args) => {
                 "id": message.author.id,
                 "name": memberToVerify.toUpperCase()
             }
-            await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                if (err) return console.log(err);
+            await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                if (e) return console.log(e);
             });
         } else {
-            await message.delete().catch(error => {
-                console.log(error);
+            await message.delete().catch(e => {
+                console.log(e);
             });
             await messageCollector.stop();
             errorEmbed.addField("Invalid Action", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify when they already have a verification pending.");
@@ -291,8 +291,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
         if (memberAlreadyVerifying) {
             currentlyVerifying.members.splice(index, 1);
-            await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                if (err) return console.log(err);
+            await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                if (err) return console.log(e);
             });
         }
 
@@ -317,8 +317,8 @@ module.exports.run = async (lanisBot, message, args) => {
                 "id": message.author.id,
                 "name": memberToVerify.toUpperCase()
             }
-            await fs.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (err) {
-                if (err) return console.log(err);
+            await fs.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (e) {
+                if (err) return console.log(e);
             });
         }
     }).catch(async (e) => {
@@ -336,8 +336,8 @@ module.exports.run = async (lanisBot, message, args) => {
         if (!isAlt) {
             if (memberAlreadyVerifying) {
                 currentlyVerifying.members.splice(index, 1);
-                await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                    if (err) return console.log(e);
                 });
             }
         }
@@ -358,8 +358,8 @@ module.exports.run = async (lanisBot, message, args) => {
         await veriCodeEmbed.setFooter("The Verification process is stopped.");
         await veriCodeMessage.edit(veriCodeEmbed);
         await errorChannel.send(verificationDoneEmbed);
-        await message.delete().catch(error => {
-            console.log(error)
+        await message.delete().catch(e => {
+            console.log(e)
         });
         return;
     });
@@ -619,8 +619,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
                 if (memberAlreadyVerifying) {
                     currentlyVerifying.members.splice(index, 1);
-                    await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
-                        if (err) return console.log(err);
+                    await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
+                        if (err) return console.log(e);
                     });
                 }
 

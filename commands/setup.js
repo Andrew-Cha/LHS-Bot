@@ -17,6 +17,8 @@ module.exports.run = async (lanisBot, message, args) => {
         actionCapitalized = "CHANNELS";
     } else if (category.toUpperCase() === "ROLES") {
         actionCapitalized = "ROLES";
+    } else if (category.toUpperCase() === "EMOJIS") {
+        actionCapitalized = "EMOJIS";
     }
 
     switch (actionCapitalized) {

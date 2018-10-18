@@ -33,8 +33,8 @@ module.exports.run = async (lanisBot, message, args) => {
                 playersExpelled.members[playersExpelled.members.length] = {
                     "name": playerInputted.toUpperCase()
                 }
-                await fs.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (e) {
+                    if (err) return console.log(e);
                 });
                 await message.channel.send("Player is now expelled.")
             } else {
@@ -45,8 +45,8 @@ module.exports.run = async (lanisBot, message, args) => {
         case "REMOVE":
             if (memberExpelled) {
                 playersExpelled.members.splice(index, 1);
-                await fs.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (err) {
-                    if (err) return console.log(err);
+                await fs.writeFile(playersExpelledFile, JSON.stringify(playersExpelled), function (e) {
+                    if (err) return console.log(e);
                 });
                 await message.channel.send("Player unbanned.");
             } else {
