@@ -11,7 +11,6 @@ module.exports.run = async (lanisBot, message, args) => {
     await howtoVerifyTutorialChannel.messages.fetch().then(async messages => {
         for (const message of messages.values()) {
             await message.delete();
-            console.log("deleted message");
         }
     });
 

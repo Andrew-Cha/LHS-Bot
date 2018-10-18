@@ -19,7 +19,6 @@ module.exports.run = async (lanisBot, message, args) => {
         actionCapitalized = "ROLES";
     }
 
-    console.log(actionCapitalized);
     switch (actionCapitalized) {
         case "CHANNELS":
             let channelString = " ";

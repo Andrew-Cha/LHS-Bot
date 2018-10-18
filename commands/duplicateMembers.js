@@ -31,9 +31,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         allMembers.push(memberObject);
     }
-
-    console.log(foundMembers.length)
-    console.log(allMembers.length);
+    
     for (const member of foundMembers) {
         await message.channel.send(`<@${member.id}>`);
     }

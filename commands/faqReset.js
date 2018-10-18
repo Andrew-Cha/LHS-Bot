@@ -10,7 +10,6 @@ module.exports.run = async (lanisBot, message, args) => {
     await faqChannel.messages.fetch().then(async messages => {
         for (const message of messages.values()) {
             await message.delete();
-            console.log("deleted message");
         }
     });
 
