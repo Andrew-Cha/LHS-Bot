@@ -36,7 +36,6 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     if (abortRestart) return;
-    console.log("Bot restart by: " + message.member.displayName);
     await lanisBot.destroy();
     await lanisBot.login(config.token);
 }

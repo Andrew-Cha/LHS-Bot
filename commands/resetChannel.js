@@ -2,7 +2,7 @@ const Roles = require("../dataFiles/roles.json")
 const Channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
-    const raidingChannelCount = Object.keys(Channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
     let wantedChannel = args[0];
     let channelNumber;
     let raidingChannel;

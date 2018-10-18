@@ -8,7 +8,7 @@ const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     const wantedChannel = args[0];
-    const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
     let abortRestart = false;
 
     if (!wantedChannel) return await message.channel.send("Input an existing raiding channel number to clean up in.");
@@ -85,7 +85,6 @@ module.exports.run = async (lanisBot, message, args) => {
                     abortRestart = true;
                     await abortReactCollector.stop();
                     await message.channel.send("Cleaning aborted by " + currentMember.toString());
-                    console.log("Cleaning aborted by " + currentMember.displayName);
                     return;
                 }
             }
@@ -102,12 +101,10 @@ module.exports.run = async (lanisBot, message, args) => {
     await message.channel.send("Cleaning is started.");
     for (member of members.values()) {
         if (!abortRestart) {
-            console.log("attempting to move into queue from raiding channel " + wantedChannel + " to queue " + member.displayName);
             if (!member.bot) {
                 if (raidingChannel.members.has(member.id)) {
                     if (!member.hasPermission("MOVE_MEMBERS")) {
-                        console.log("Moving person named " + member.displayName + "to queue");
-                        await member.setVoiceChannel(channels.queues[0]);
+                        await member.setVoiceChannel(channels.queues.id[0]);
                     }
                 }
             }

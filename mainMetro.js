@@ -67,9 +67,9 @@ lanisBot.on('guildMemberRemove', async (member) => {
     let isRaider = false;
 
     for (const role of memberRoles.values()) {
-        if (role.name === "Suspended but Verified" || role.name === "Suspended") {
+        if (role.id === Roles.suspendedButVerified.id || role.id === Roles.suspended.id) {
             isSuspended = true;
-        } else if (role.name === "Verified Raider") {
+        } else if (role.id = Roles.verifiedRaider.id) {
             if (!isSuspended) {
                 isRaider = true;
             }
@@ -88,7 +88,6 @@ lanisBot.on('guildMemberRemove', async (member) => {
         }
 
         if (isVerified) {
-            console.log("Removed person named " + verifiedPeople.members[index].name + " from the verified people list.");
             verifiedPeople.members.splice(index, 1);
             await fileSystem.writeFile(verifiedPeopleFile, JSON.stringify(verifiedPeople), function (err) {
                 if (err) return console.log(err);
@@ -177,7 +176,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         if (reactionMessage.pinned) {
             await reactionMessage.unpin();
         }
-        await memberVerifying.send("Welcome to Public Lost Halls, you have been accepted.");
+        await memberVerifying.send("Welcome to Metro Boomin, you have been accepted.");
 
         verifiedPeople.members[verifiedPeople.members.length] = {
             "id": memberVerifying.id,
@@ -301,7 +300,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
     await lanisBot.channels.get(Channels.botCommands.id).send("Bot online!");
-    await lanisBot.user.setActivity("to the sweet voice of Cansonio", { type: "LISTENING" })
+    await lanisBot.user.setActivity("RotMG", { type: "PLAYING" })
     lanisBot.setInterval((async () => {
         for (let i in lanisBot.suspensions) {
             let invalid = false;
@@ -313,7 +312,6 @@ lanisBot.on("ready", async () => {
 
             if (invalid) continue;
             if (Date.now() > lanisBot.suspensions[i].time) {
-                console.log("Removing " + person.displayName + " from being suspended.");
                 const suspendRole = currentGuild.roles.find(role => role.id === Roles.suspendedButVerified.id);
                 await person.roles.remove(suspendRole);
 
@@ -337,17 +335,14 @@ lanisBot.on("message", async message => {
     if (message.channel.type === "dm") return;
     if (message.content.includes("no u")) {
         let diceRoll = Math.floor(Math.random() * 100) + 1;
-        console.log("Lucky roll is: " + diceRoll);
         if (diceRoll === 77) {
             return await message.channel.send("no no u");
         }
     }
     const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
-    console.log(message.member.displayName + " said in " + message.channel.name + " : " + message.content);
     if (message.content.indexOf(config.prefix) !== 0) {
         if (message.channel.id === Channels.verificationsAutomatic.id) {
             if (message.member.roles.highest.position < devRole.position) {
-                console.log("Deleted message with content: " + message.content);
                 let errorEmbed = new Discord.MessageEmbed()
                     .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
                     .setFooter("User ID: " + message.member.id)
@@ -379,8 +374,8 @@ lanisBot.on("message", async message => {
     let messageArray = message.content.match(/\S+/g);
     let command = messageArray[0];
     let args = messageArray.slice(1);
-    console.log(args)
-    if (message.channel.id === Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position || message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position) {
+
+    if (message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position || message.channel.id === Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()
             .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
             .setFooter("User ID: " + message.member.id)
@@ -390,7 +385,6 @@ lanisBot.on("message", async message => {
         await sleep(10000);
         await errorMessage.delete()
         return await message.delete()
-        console.log("Deleted message with content: " + message.content);
     }
 
     let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());

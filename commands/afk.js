@@ -34,7 +34,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let aborted = false;
-    const raidingChannelCount = Object.keys(Channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
     const botCommands = lanisBot.channels.get(Channels.botCommands.id);
     const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
     const wantedChannel = args[0];
@@ -131,8 +131,6 @@ module.exports.run = async (lanisBot, message, args) => {
             if (abortCheck) return;
         }
     }
-    const date = new Date().toISOString();
-    console.log("New AFK Check at: " + date + " by: " + message.member.displayName);
 
     let noPermissions = false;
     const oldName = "raiding-" + wantedChannel
@@ -231,9 +229,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         if (!currentMember.user.bot) {
             let DMChannel = await currentMember.createDM();
-            if (currentMember) {
-                console.log("Got reaction from: " + currentMember.displayName + " of " + reaction.emoji.name);
-            }
+
             if (reaction.emoji.name === "❌") {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
                     await afkCheckCollector.stop();
@@ -284,8 +280,8 @@ module.exports.run = async (lanisBot, message, args) => {
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
-                                }).catch(async (failureMessage) => {
-                                    console.log(failureMessage);
+                                }).catch(async (e) => {
+                                    console.log(e);
                                     await currentMember.send("Not sending the location.");
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
@@ -382,8 +378,8 @@ module.exports.run = async (lanisBot, message, args) => {
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
-                                }).catch(async (failureMessage) => {
-                                    console.log(failureMessage)
+                                }).catch(async (e) => {
+                                    console.log(e)
                                     await currentMember.send("Not sending the location.");
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
@@ -442,7 +438,6 @@ module.exports.run = async (lanisBot, message, args) => {
                     await informationPanelMessage.delete();
                     await arlChatInformationPanelMessage.delete();
                     await message.channel.send("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.toString());
-                    console.log("AFK check for Raiding Channel #" + wantedChannel + " aborted by " + currentMember.displayName);
                     await raidingChannel.setUserLimit(99, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
                         .catch(e => {
                             noPermissions = true
@@ -519,8 +514,7 @@ module.exports.run = async (lanisBot, message, args) => {
             if (!member.bot) {
                 if (!aborted) {
                     if ((member.deaf && !member.hasPermission("MOVE_MEMBERS")) || (peopleReacted.includes(member.id) === false && member.hasPermission("MOVE_MEMBERS") == false)) {
-                        await member.setVoiceChannel(Channels.afk);
-                        console.log("Moving to AFK from raiding channel " + wantedChannel + " : " + member.displayName);
+                        member.setVoiceChannel(Channels.afk.id);
                     }
                 }
             }
@@ -539,8 +533,8 @@ module.exports.help = {
 
 async function makePostAFKCheck(borderColor, channel, intoChannel) {
     let queueChannels = [];
-    for (let i = 0; i < Object.keys(Channels.queues).length; i++) {
-        const channelID = Channels.queues[i];
+    for (let i = 0; i < Object.keys(Channels.queues.id).length; i++) {
+        const channelID = Channels.queues.id[i];
         const queueChannel = channel.guild.channels.get(channelID);
         queueChannels.push(queueChannel)
     }

@@ -1,0 +1,260 @@
+{
+    "afk": {
+        "name": "AFK Voice Channel",
+        "id": "400775663902130176"
+    },
+    "arlChat": {
+        "name": "Almost Raid Leader Text Chat",
+        "id": "395718182708445204"
+    },
+    "botCommands": {
+        "name": "Bot Commands Text Chat",
+        "id": "432995686678790144"
+    },
+    "faq": {
+        "name": "Frequently Asked Questions Text Chat",
+        "id": "482394590721212416"
+    },
+    "groupAssignments": {
+        "name": "Group Assignments Text Chat",
+        "id": "443952835059777549"
+    },
+    "howToVerify": {
+        "name": "How To Verify Text Chat",
+        "id": "494552872650801152"
+    },
+    "leadingActivityLogs": {
+        "name": "Leader Activity Report Text Chat",
+        "id": "446916716455395328"
+    },
+    "leadingLogs": {
+        "name": "Leader Leading Logs Text Chat",
+        "id": "428635482872741893"
+    },
+    "queues": {
+        "name": "Queue / Lounge Voice Channel(s)",
+        "id": [
+            "378991138683748364"
+        ]
+    },
+    "raidingChannels": {
+        "name": "Raiding Voice Channel(s)",
+        "id": [
+            "372590941938122752",
+            "381897331286474753",
+            "449947425273151498",
+            "472159189993783343",
+            "472161325179469855"
+        ]
+    },
+    "raidStatusAnnouncements": {
+        "name": "Raiding Status Announcements Text Chat",
+        "id": "379779029479194624"
+    },
+    "rules": {
+        "name": "Rules Text Chat",
+        "id": "482368517568462868"
+    },
+    "suspendLog": {
+        "name": "Suspend Log Text Chat",
+        "id": "384237088033341443"
+    },
+    "verificationAttempts": {
+        "name": "Verification Attempts Log Text Chat",
+        "id": "477203736444403722"
+    },
+    "verificationsAutomatic": {
+        "name": "Get Verified Text Chat",
+        "id": "471711348095713281"
+    },
+    "verificationsLog": {
+        "name": "Verification Log Text Chat",
+        "id": "473702116213653504"
+    },
+    "verificationsManual": {
+        "name": "Verifications Pending Text Chat",
+        "id": "471711541465579521"
+    },
+    "verifierLogChat": {
+        "name": "Verifier Log Text Chat",
+        "id": "451596266502356994"
+    }
+}
+ROLES ____
+
+{
+    "admin": {
+        "name":"Admin",
+        "id": "343709010832261121"
+    },
+    "almostRaidLeader": {
+        "name":"Almost Raid Leader",
+        "id": "384029438188453898"
+    },
+    "developer": {
+        "name":"Developer",
+        "id": "433070114112274432"
+    },
+    "headRaidLeader": {
+        "name":"Head Raid Leader",
+        "id": "382652069682610177"
+    },
+    "security": {
+        "name":"Security",
+        "id": "343769895881801728"
+    },
+    "suspended": {
+        "name":"Suspended",
+        "id": "379503400511078400"
+    },
+    "suspendedButVerified": {
+        "name":"Suspended But Verified",
+        "id": "389537287907573763"
+    },
+    "raidLeader": {
+        "name":"Raid Leader",
+        "id": "372590164943437825"
+    },
+    "verifiedRaider": {
+        "name":"Verified Raider",
+        "id": "378989711793848332"
+    },
+    "verifier": {
+        "name":"Verifier",
+        "id": "451576648828059658"
+    }
+}
+
+LHS ______
+
+
+{
+    "afk": {
+        "name": "AFK Voice Channel",
+        "id": "501970630342606859"
+    },
+    "arlChat": {
+        "name": "Almost Raid Leader Text Chat",
+        "id": "395718182708445204"
+    },
+    "botCommands": {
+        "name": "Bot Commands Text Chat",
+        "id": "502007467643764736"
+    },
+    "faq": {
+        "name": "Frequently Asked Questions Text Chat",
+        "id": "482394590721212416"
+    },
+    "groupAssignments": {
+        "name": "Group Assignments Text Chat",
+        "id": "443952835059777549"
+    },
+    "howToVerify": {
+        "name": "How To Verify Text Chat",
+        "id": "502011860585938945"
+    },
+    "leadingActivityLogs": {
+        "name": "Leader Activity Report Text Chat",
+        "id": "446916716455395328"
+    },
+    "leadingLogs": {
+        "name": "Leader Leading Logs Text Chat",
+        "id": "428635482872741893"
+    },
+    "queues": {
+        "name": "Queue / Lounge Voice Channel(s)",
+        "id": [
+            "378991138683748364"
+        ]
+    },
+    "raidingChannels": {
+        "name": "Raiding Voice Channel(s)",
+        "id": [
+            "372590941938122752",
+            "381897331286474753",
+            "449947425273151498",
+            "472159189993783343",
+            "472161325179469855"
+        ]
+    },
+    "raidStatusAnnouncements": {
+        "name": "Raiding Status Announcements Text Chat",
+        "id": "379779029479194624"
+    },
+    "rules": {
+        "name": "Rules Text Chat",
+        "id": "501974757403525141"
+    },
+    "suspendLog": {
+        "name": "Suspend Log Text Chat",
+        "id": "384237088033341443"
+    },
+    "verificationAttempts": {
+        "name": "Verification Attempts Log Text Chat",
+        "id": "502006033082875904"
+    },
+    "verificationsAutomatic": {
+        "name": "Get Verified Text Chat",
+        "id": "501969371057356802"
+    },
+    "verificationsLog": {
+        "name": "Verification Log Text Chat",
+        "id": "502005930930601994"
+    },
+    "verificationsManual": {
+        "name": "Verifications Pending Text Chat",
+        "id": "502009139200000000"
+    },
+    "verifierLogChat": {
+        "name": "Verifier Log Text Chat",
+        "id": "502006267896791040"
+    }
+}
+
+ROLES _____
+
+{
+    "admin": {
+        "name":"Admin",
+        "id": "501967575262035968"
+    },
+    "almostRaidLeader": {
+        "name":"Almost Raid Leader",
+        "id": "501980309185626121"
+    },
+    "developer": {
+        "name":"Developer",
+        "id": "501980589877100546"
+    },
+    "headRaidLeader": {
+        "name":"Head Raid Leader",
+        "id": "501980309185626121"
+    },
+    "security": {
+        "name":"Security",
+        "id": "501980589877100546"
+    },
+    "suspended": {
+        "name":"Suspended",
+        "id": "379503400511078400"
+    },
+    "suspendedButVerified": {
+        "name":"Suspended But Verified",
+        "id": "389537287907573763"
+    },
+    "raidLeader": {
+        "name":"Raid Leader",
+        "id": "501980309185626121"
+    },
+    "verifiedRaider": {
+        "name":"Verified Raider",
+        "id": "501979785140895744"
+    },
+    "verifier": {
+        "name":"Verifier",
+        "id": "501980589877100546"
+    }
+}
+
+
+METRO ____

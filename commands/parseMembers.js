@@ -15,7 +15,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (wantedChannel === undefined) return await message.channel.send("Please input which raiding channel should the bot parse members for.");
     let raidingChannel;
     let channelNumber;
-    const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
@@ -104,7 +104,6 @@ module.exports.run = async (lanisBot, message, args) => {
                         let memberFound = false;
                         for (const guildMember of members.values()) {
                             if (guildMember.displayName === member) {
-                                console.log("Found member named " + member);
                                 memberFound = true;
                             } else {
                                 continue;

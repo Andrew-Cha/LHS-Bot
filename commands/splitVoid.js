@@ -6,7 +6,7 @@ const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGua
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-  const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+  const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
   const groupImages = ["https://i.imgur.com/Auj5j8e.png", "https://i.imgur.com/JsxemyK.png", "https://i.imgur.com/M06pChe.png", "https://i.imgur.com/XaxkV7i.png"];
   let channelNumber = args[0];
   let groupParameter = args[1];

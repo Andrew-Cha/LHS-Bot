@@ -13,6 +13,8 @@ module.exports.run = async (lanisBot, message, args) => {
         let verificationEmbed = new Discord.MessageEmbed()
             .setColor('#337b0a')
             .setAuthor('Public Lost Halls Discord', lanisBot.user.avatarURL)
+            .addField("Requirements:", "20k+ Fame\nAt least 6 6/8 Characters\n45+ Stars\n100+ Deaths\n1+ Year Old Account\nNot blacklisted in any way")
+            .addBlankField()
             .addField("Follow these steps to verify: ", "\n1) Type `-verify Your_RotMG_Name_Here` in this channel\n2) Go to the DM the bot sends you\n3) Follow the steps it tells you to do")
             .setFooter("⚠ Please make sure that you don't have DMs turned off");
         await verificationsAutomatic.send(verificationEmbed);

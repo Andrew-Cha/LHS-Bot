@@ -7,7 +7,7 @@ const channels = require("../channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     //const memberCollection = await new Enmap({ provider: Provider });
-    const raidingChannelCount = Object.keys(channels.raidingChannels).length;
+    const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
     const messageFetchChannel = lanisBot.channels.get(channels.raidStatusAnnouncements.id);
 
     let channelNumber;

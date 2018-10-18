@@ -142,7 +142,7 @@ module.exports.run = async (lanisBot, message, args) => {
             numbers: true
         });
 
-        veriCode = "LHS_" + veriCode;
+        veriCode = "Metro_" + veriCode;
 
         veriCodeEmbed = new Discord.MessageEmbed()
             .setColor('#337b0a')
@@ -187,6 +187,7 @@ module.exports.run = async (lanisBot, message, args) => {
         });
 
         if (disabledDM) return;
+
 
         let timeTotal = messageCollector.options.time;
         updateTimeLeft = setInterval(() => {
@@ -305,7 +306,7 @@ module.exports.run = async (lanisBot, message, args) => {
         await errorChannel.send(successfulVerificationEmbed);
         await veriCodeEmbed.setFooter("The Verification process is completed.");
         await veriCodeMessage.edit(veriCodeEmbed);
-        await DMChannel.send("Verification is successful, welcome to Public Lost Halls!")
+        await DMChannel.send("Verification is successful, welcome to Metro Boomin!")
         let successfulVerificationLogEmbed = new Discord.MessageEmbed()
             .setFooter("User ID: " + message.member.id)
             .setColor("3ea04a")
@@ -321,7 +322,6 @@ module.exports.run = async (lanisBot, message, args) => {
             });
         }
     }).catch(async (e) => {
-        console.log(e);
         await messageCollector.stop();
         let index;
         let memberAlreadyVerifying = false;
@@ -348,7 +348,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             verificationDoneEmbed.addField("Suspected Alt Found", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but were suspected to be an alt.")
                 .setColor("3ea04a");
-            await DMChannel.send("There was a problem verifying your account. Please wait for a manual verification to be done by the staff. This is will take 2-3 hours usually, 48 hours if the world is about to end or some emergency is present. Don't message staff about it, as the verification will be looked at eventually, thanks :)");
+            await DMChannel.send("You do not meet the requirements, although there might be a chance that you might be manually accepted by staff, what we recommend is gaining more fame and stars and reapplying.");
         } else {
             verificationDoneEmbed.addField("Verification Stopped", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but their verification was stopped.")
                 .setColor("#cf0202");
@@ -377,7 +377,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let errorMessages = [];
         let reportMessages = [];
         let deaths;
-        await axios.get("https://www.realmeye.com/player/" + memberToVerify, { headers: { 'User-Agent': 'Public Halls (LHS) Verification Bot' } }).then(async response => {
+        await axios.get("https://www.realmeye.com/player/" + memberToVerify, { headers: { 'User-Agent': 'Metro Boomin Verification Bot' } }).then(async response => {
             if (response.status === 200) {
                 const htmlData = response.data;
                 const $ = cheerio.load(htmlData);
@@ -385,14 +385,14 @@ module.exports.run = async (lanisBot, message, args) => {
                 const playerName = $('.entity-name').text();
                 if (playerName.toUpperCase() !== memberToVerify.toUpperCase()) {
                     const invalidProfileEmbed = new Discord.MessageEmbed()
-                    .setColor("cf0202")
-                    .addField("Invalid Profile", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify with an invalid / hidden Realmeye profile.");
-                await errorChannel.send(invalidProfileEmbed);
-                return await DMChannel.send("Member not found, please make sure your RealmEye profile isn't private or that the input name is correct. If you recently changed this give the bot a minute to renew your page.");
+                        .setColor("cf0202")
+                        .addField("Invalid Profile", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify with an invalid / hidden Realmeye profile.");
+                    await errorChannel.send(invalidProfileEmbed);
+                    return await DMChannel.send("Member not found, please make sure your RealmEye profile isn't private or that the input name is correct. If you recently changed this give the bot a minute to renew your page.");
                 }
 
                 let descriptionLines = [];
-                let descriptions = $('.description-line').each(function (i, elem) {
+                $('.description-line').each(function (i, elem) {
                     descriptionLines[i] = $(this).text()
                 });
 
@@ -415,12 +415,12 @@ module.exports.run = async (lanisBot, message, args) => {
 
                 if (charStatsSplit) {
                     for (const charStats of charStatsSplit) {
-                        if (charStats !== "0/8" && charStats !== "1/8" && charStats !== "2/8") maxCharCount += 1;
+                        if (charStats === "6/8" || charStats === "7/8" || charStats === "8/8") maxCharCount += 1;
                     }
                 }
 
-                if (maxCharCount < 3) {
-                    reportMessages.push("Doesn't have enough characters above 3/8.");
+                if (maxCharCount < 6) {
+                    reportMessages.push("Doesn't have enough characters above 6/8.");
                 }
 
                 const firstSeen = $('.summary').text().split(" ");
@@ -447,8 +447,8 @@ module.exports.run = async (lanisBot, message, args) => {
                 }).children().last().text().replace(/ *\([^)]*\) */g, "");
 
                 if (fameCount) {
-                    if (fameCount < 1000) {
-                        reportMessages.push("Has below 1000 fame");
+                    if (fameCount < 15000) {
+                        reportMessages.push("Has below 15000 fame");
                     }
                 } else {
                     errorMessages.push("Failed to fetch the fame from your profile, please make sure it's not hidden.");
@@ -473,38 +473,38 @@ module.exports.run = async (lanisBot, message, args) => {
                     reportMessages.push("Couldn't find guild or guild is private.");
                 }
 
-                await axios.get('https://www.realmeye.com/name-history-of-player/' + memberToVerify, { headers: { 'User-Agent': 'Public Halls (LHS) Verification Bot' } })
-                .then(async response => {
-                    if (response.status === 200) {
-                        const html = response.data;
-                        const $ = cheerio.load(html);
+                await axios.get('https://www.realmeye.com/name-history-of-player/' + memberToVerify, { headers: { 'User-Agent': 'Metro Boomin Verification Bot' } })
+                    .then(async response => {
+                        if (response.status === 200) {
+                            const html = response.data;
+                            const $ = cheerio.load(html);
 
-                        let previousNames = [];
-                        $('#e tbody tr').each(function () {
-                            previousNames.push($(this).children().first().text())
-                        })
+                            let previousNames = [];
+                            $('#e tbody tr').each(function () {
+                                previousNames.push($(this).children().first().text())
+                            })
 
-                        if (previousNames.length === 0) {
-                            let errorMessage = $('h3').text();
-                            if (errorMessage === "Name history is hidden") {
-                                errorMessages.push("Your name history is hidden, please unprivate it. If you recently changed this give the bot a minute to renew your page.")
-                            } else {
-                                reportMessages.push("Has no previous names.")
+                            if (previousNames.length === 0) {
+                                let errorMessage = $('h3').text();
+                                if (errorMessage === "Name history is hidden") {
+                                    errorMessages.push("Your name history is hidden, please unprivate it. If you recently changed this give the bot a minute to renew your page.")
+                                } else {
+                                    reportMessages.push("Has no previous names.")
+                                }
+                            }
+
+                            for (const name of playersExpelled.members) {
+                                blackListedNames.push(name.name);
+                            }
+
+                            for (const previousName of previousNames) {
+                                if (blackListedNames.includes(previousName.toUpperCase())) {
+                                    isBlacklisted = true;
+                                    reportMessages.push("Member has a blacklisted name in their name history: " + previousName);
+                                }
                             }
                         }
-
-                        for (const name of playersExpelled.members) {
-                            blackListedNames.push(name.name);
-                        }
-
-                        for (const previousName of previousNames) {
-                            if (blackListedNames.includes(previousName.toUpperCase())) {
-                                isBlacklisted = true;
-                                reportMessages.push("Member has a blacklisted name in their name history: " + previousName);
-                            }
-                        }
-                    }
-                })
+                    })
                     .catch(async e => {
                         console.log(e);
                         await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but the bot failed to fetch the name history page on RealmEye.");
@@ -512,7 +512,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     })
             }
 
-            await axios.get("https://www.realmeye.com/graveyard-summary-of-player/" + memberToVerify, { headers: { 'User-Agent': 'Public Halls (LHS) Verification Bot' } }).then(async response => {
+            await axios.get("https://www.realmeye.com/graveyard-summary-of-player/" + memberToVerify, { headers: { 'User-Agent': 'Metro Boomin Verification Bot' } }).then(async response => {
                 if (response.status === 200) {
                     const html = response.data;
                     const $ = cheerio.load(html);
@@ -539,34 +539,34 @@ module.exports.run = async (lanisBot, message, args) => {
                 reportMessages.push("No Data for the deaths of the player or they are hidden.")
             }
 
-            await axios.get('https://www.realmeye.com/guild-history-of-player/' + memberToVerify, { headers: { 'User-Agent': 'Public Halls (LHS) Verification Bot' } })
-            .then(async response => {
-                if (response.status === 200) {
-                    const html = response.data;
-                    const $ = cheerio.load(html);
-                    let previousNames = [];
-                    $('#e tbody tr').each(function () {
-                        previousNames.push($(this).children().first().text())
-                    })
+            await axios.get('https://www.realmeye.com/guild-history-of-player/' + memberToVerify, { headers: { 'User-Agent': 'Metro Boomin Verification Bot' } })
+                .then(async response => {
+                    if (response.status === 200) {
+                        const html = response.data;
+                        const $ = cheerio.load(html);
+                        let previousNames = [];
+                        $('#e tbody tr').each(function () {
+                            previousNames.push($(this).children().first().text())
+                        })
 
-                    if (previousNames.length === 0) {
-                        isInBlacklistedGuild = true;
-                        let errorMessage = $('h3').text();
-                        if (errorMessage === "Guild history is hidden") {
-                            errorMessages.push("Your guild history is hidden, please unprivate it. If you recently changed this give the bot a minute to renew your page.")
-                        } else {
-                            reportMessages.push("Has no previous guilds.")
-                        }
-                    }
-
-                    for (const previousName of previousNames) {
-                        if (blackListedGuilds.includes(previousName.toUpperCase())) {
+                        if (previousNames.length === 0) {
                             isInBlacklistedGuild = true;
-                            reportMessages.push("Member has been in a blacklisted guild before: " + previousName);
+                            let errorMessage = $('h3').text();
+                            if (errorMessage === "Guild history is hidden") {
+                                errorMessages.push("Your guild history is hidden, please unprivate it. If you recently changed this give the bot a minute to renew your page.")
+                            } else {
+                                reportMessages.push("Has no previous guilds or failed to read them.")
+                            }
+                        }
+
+                        for (const previousName of previousNames) {
+                            if (blackListedGuilds.includes(previousName.toUpperCase())) {
+                                isInBlacklistedGuild = true;
+                                reportMessages.push("Member has been in a blacklisted guild before: " + previousName);
+                            }
                         }
                     }
-                }
-            })
+                })
                 .catch(async e => {
                     await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify but the bot failed to fetch the guild history page on RealmEye.");
                     console.log(e);
@@ -584,7 +584,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     .setColor("#cf0202");
                 verificationProblemsEmbed.addField("Problems While Verifying", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify and had these problems:\n" + errorReport);
                 await errorChannel.send(verificationProblemsEmbed);
-            } else if (maxCharCount < 3 || fameCount < 1000 || starCount < 30 || deaths < 100 || oldAccount === false || isBlacklisted || isInBlacklistedGuild) {
+            } else if (maxCharCount < 6 || fameCount < 20000 || starCount < 45 || deaths < 100 || oldAccount === false || isBlacklisted || isInBlacklistedGuild) {
                 let reportMessage = "";
                 for (const errorMessage of reportMessages) {
                     reportMessage = reportMessage + errorMessage + "\n";
@@ -607,6 +607,23 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 }
 
+                let index;
+                let memberAlreadyVerifying = false;
+                for (let i = 0; i < currentlyVerifying.members.length; i++) {
+                    if (currentlyVerifying.members[i].name === memberToVerify.toUpperCase() || currentlyVerifying.members[i].id === message.author.id) {
+                        memberAlreadyVerifying = true;
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (memberAlreadyVerifying) {
+                    currentlyVerifying.members.splice(index, 1);
+                    await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (err) {
+                        if (err) return console.log(err);
+                    });
+                }
+
                 messageCollector.stop("STOP");
             } else {
                 messageCollector.stop("CONTINUE");
@@ -620,7 +637,7 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "verify"
+    name: "verify2"
 }
 
 function sleep(ms) {
