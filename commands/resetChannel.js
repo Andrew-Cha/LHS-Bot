@@ -12,12 +12,12 @@ module.exports.run = async (lanisBot, message, args) => {
         channelNumber = wantedChannel - 1;
         raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
         if (raidingChannel === undefined) {
-            const error = "No such raiding channel found to set up for raiding.";
+            const error = "No such raiding channel found to reset for raiding.";
             await message.channel.send(error);
             return;
         }
     } else {
-        const error = "No such raiding channel found to set up for raiding.";
+        const error = "No such raiding channel found to reset for raiding.";
         await message.channel.send(error);
         return;
     }

@@ -68,7 +68,7 @@
         "id": "471711348095713281"
     },
     "verificationsLog": {
-        "name": "Verification Log Text Chat",
+        "name": "Verification Logs Text Chat",
         "id": "473702116213653504"
     },
     "verificationsManual": {

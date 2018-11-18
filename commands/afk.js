@@ -1,8 +1,10 @@
 const Discord = require("discord.js");
 
 const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
-const fs = require('fs');
+const Roles = require("../dataFiles/roles.json");
+const Emojis = require("../dataFiles/emojis.json")
+
+
 const path = require('path');
 const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
@@ -34,52 +36,272 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let aborted = false;
-    const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
-    const botCommands = lanisBot.channels.get(Channels.botCommands.id);
-    const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
+    const botCommands = lanisBot.channels.get(message.channel.id);
+    let raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusEventAnnouncements.id);
     const wantedChannel = args[0];
     const wantedType = args[1];
-    const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.name === "marble");
+    const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal);
+    const vialEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial);
+    let maxKeys = 4;
+    let borderColor;
     let raidEmote;
+    let raidKey;
     let raidType;
     let channelNumber;
     let raidingChannel;
 
-    if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
-        channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
-        if (raidingChannel === undefined) {
+
+    if (!wantedChannel) return await message.channel.send("Please input a raiding channel number.");
+    if (isNaN(wantedChannel)) return await message.channel.send("Please input an actual number for the raiding channel.");
+
+    if (wantedType != undefined) {
+        const wantedTypeToUppercase = wantedType.toUpperCase();
+
+        switch (wantedTypeToUppercase) {
+            case "ABYSSOFDEMONS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.key);
+                raidType = "**Abyss of Demons**"
+                borderColor = "#c40b1b" //demon red
+                break;
+
+            case "CANDYLAND":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.candyLand.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.candyLand.key);
+                raidType = "**Candy Land**"
+                borderColor = "##f453ea" //pink
+                break;
+
+            case "CNIDARIANREEF":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.key);
+                raidType = "**Cnidarian Reef**"
+                borderColor = "#62aed1" //light blue
+                break;
+
+            case "CRAWLINGDEPTHS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.key);
+                raidType = "**Crawling Depths**"
+                borderColor = "#632f09" //brown
+                break;
+
+            case "DAVYJONESLOCKER":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.key);
+                raidType = "**Davy Jone's Locker**"
+                borderColor = "#1c188e" //dark blue
+                break;
+
+            case "DEADWATERDOCKS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.key);
+                raidType = "**Deadwater Docks**"
+                borderColor = "#9b9692" //gray
+                break;
+
+            case "HAUNTEDCEMETERY":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.key);
+                raidType = "**Haunted Cemetary**"
+                borderColor = "#238c55" //dark green
+                break;
+
+            case "ICECAVE":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceCave.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceCave.key);
+                raidType = "**Ice Cave**"
+                borderColor = "#3ee3f2" //light blue
+                break;
+
+            case "LAIROFDRACONIS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.key);
+                raidType = "**Lair of Draconis**"
+                borderColor = "#efec2f" //soft yellow
+                break;
+
+            case "LAIROFSHAITAN":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.key);
+                raidType = "**Lair of Shaitan**"
+                borderColor = "#c60b1e" //red warm
+                break;
+
+            case "MADLAB":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.madLab.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.madLab.key);
+                raidType = "**Mad Lab**"
+                borderColor = "#4d0687" //purple
+                break;
+
+            case "MANOROFIMMORTALS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.key);
+                raidType = "**Manor of Immortals**"
+                borderColor = "#4d0687" //purple 
+                break;
+
+            case "MOUNTAINTEMPLE":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.mountainTemple.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.mountainTemple.key);
+                raidType = "**Mountain Temple**"
+                borderColor = "#683503" //brown
+                break;
+
+            case "NEST":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.nest.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.nest.key);
+                raidType = "**The Nest**"
+                borderColor = "#d38f19" //mix of orange and yellow
+                break;
+
+            case "OCEANTRENCH":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.oceanTrench.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.oceanTrench.key);
+                raidType = "**Ocean Trench**"
+                borderColor = "#0c91a0" //muddy blue
+                break;
+
+            case "PARASITECHAMBERS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.key);
+                raidType = "**Parasite Chambers**"
+                borderColor = "#bc1640" //red more towards black
+                break;
+
+            case "PUPPETMASTERSENCORE":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.key);
+                raidType = "**Puppet Master's Encore**"
+                borderColor = "#292f4c" //dark blue more like dark
+                break;
+
+            case "PUPPETMASTERSTHEATRE":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.key);
+                raidType = "**Puppet Master's Theatre**"
+                borderColor = "#5b3521" //brown
+                break;
+
+            case "SECLUDEDTHICKET":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.secludedThicket.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.secludedThicket.key);
+                raidType = "**Secluded Thicket**"
+                borderColor = "#337a3b" //green
+                break;
+
+            case "SHATTERS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.shatters.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.shatters.key);
+                raidType = "**Shatters**"
+                borderColor = "#110a0c" //black
+                break;
+
+            case "SNAKEPIT":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.snakePit.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.snakePit.key);
+                raidType = "**Snake Pit**"
+                borderColor = "#337a3b" //green
+                break;
+
+            case "TOMBOFTHEANCIENTS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.key);
+                raidType = "**Tomb of the Ancients**"
+                borderColor = "#e1e81b" //yellow
+                break;
+
+            case "TOXICSEWERS":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.toxicSewers.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.toxicSewers.key);
+                raidType = "**Toxic Sewers**"
+                borderColor = "#393756" //purple blue ish
+                break;
+
+            case "UNDEADLAIR":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.undeadLair.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.undeadLair.key);
+                raidType = "**Undead Lair**"
+                borderColor = "#55555b" //gray
+                break;
+
+            case "WOODLANDLABYRINTH":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.dungeon);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.key);
+                raidType = "**Woodland Labyrinth**"
+                borderColor = "#6b6546" //muddy
+                break;
+
+            case "CULT":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.cultist);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
+                raidType = "**Cult**";
+                borderColor = "#cf0202"; //Red
+                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
+                maxKeys = 1;
+                break;
+
+            case "VOID":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
+                raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
+                raidType = "**Void**";
+                borderColor = "#24048b"; //Purple
+                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
+                maxKeys = 1;
+                break;
+
+            default:
+                return await message.channel.send("Please input a correct raid type.");
+        }
+    } else {
+        message.channel.send("Please input a correct raid type.");
+        return;
+    }
+
+    let oldName;
+    if (wantedType.toUpperCase() === "VOID" || wantedType.toUpperCase() === "CULT") {
+        const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
+        if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
+            channelNumber = wantedChannel - 1;
+            raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
+            oldName = "raiding-" + wantedChannel;
+            if (raidingChannel === undefined) {
+                const error = "No such raiding channel found to set up for raiding.";
+                await message.channel.send(error);
+                return;
+            }
+        } else {
             const error = "No such raiding channel found to set up for raiding.";
             await message.channel.send(error);
             return;
         }
     } else {
-        const error = "No such raiding channel found to set up for raiding.";
-        await message.channel.send(error);
-        return;
-    }
-
-
-    if (raidingChannel.name.toUpperCase().includes("JOIN")) {
-        return await message.channel.send(message.member.toString() + ", it seems there is an active AFK check in that channel as it has the word 'Join' in it's title.")
-    }
-
-    if (wantedType != undefined) {
-        if (wantedType.toUpperCase() === "CULT") {
-            raidEmote = lanisBot.emojis.find(emoji => emoji.name === "cultist");
-            raidType = "**Cult**";
-        } else if (wantedType.toUpperCase() === "VOID") {
-            raidEmote = lanisBot.emojis.find(emoji => emoji.name === "LHvoid");
-            raidType = "**Void**";
+        const raidingChannelCount = Object.keys(Channels.eventRaidingChannels.id).length;
+        if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
+            if (wantedChannel < 3) {
+                oldName = "Event Dungeons " + wantedChannel;
+            } else {
+                oldName = "Random Dungeons " + wantedChannel;
+            }
+            channelNumber = wantedChannel - 1;
+            raidingChannel = lanisBot.channels.get(Channels.eventRaidingChannels.id[channelNumber]);
+            if (raidingChannel === undefined) {
+                const error = "No such raiding channel found to set up for raiding.";
+                await message.channel.send(error);
+                return;
+            }
         } else {
-            message.channel.send("Please input a correct raid type: Cult or Void");
+            const error = "No such raiding channel found to set up for raiding.";
+            await message.channel.send(error);
             return;
         }
-    } else {
-        message.channel.send("Please input a correct raid type: Cult or Void");
-        return;
     }
 
+    if (raidingChannel.name.toUpperCase().includes("JOIN")) {
+        return await message.channel.send(message.member.toString() + ", it seems there is an active AFK check in that channel as it has the word 'Join' in its title.")
+    }
+    
     let locationMessage = "";
 
     for (i = 2; i < args.length; i++) {
@@ -133,7 +355,6 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let noPermissions = false;
-    const oldName = "raiding-" + wantedChannel
     const newName = oldName + " <-- Join!";
     await raidingChannel.setName(newName, "Starting Raid for Raiding Channel #" + wantedChannel)
         .catch(e => {
@@ -157,36 +378,28 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (noPermissions) return await message.channel.send("No permissions to open the voice channel for raiders, sorry.");
 
-    let borderColor;
-    if (wantedType.toUpperCase() === "CULT") {
-        borderColor = "#cf0202"; //Red
-    } else if (wantedType.toUpperCase() === "VOID") {
-        borderColor = "#24048b"; //Purple
-    }
-
-    const warningMessage = ("@here started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
+    const warningMessage = ("@here " + raidType + " started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
     const warning = await raidStatusAnnouncements.send(warningMessage);
     //const warning = await botCommands.send(warningMessage);
 
     const reactEmojis = [
         raidEmote,
-        lanisBot.emojis.find(emoji => emoji.name === "vial"),
-        lanisBot.emojis.find(emoji => emoji.name === "LHwarrior"),
-        lanisBot.emojis.find(emoji => emoji.name === "LHpaladin"),
-        lanisBot.emojis.find(emoji => emoji.name === "knight"),
-        lanisBot.emojis.find(emoji => emoji.name === "LHpriest"),
-        lanisBot.emojis.find(emoji => emoji.name === "LHkey"),
+        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
+        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
+        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight),
+        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest),
+        raidKey,
         "❌"
     ];
 
     let afkCheckEmbed = new Discord.MessageEmbed()
         .setColor(borderColor);
     if (wantedType.toUpperCase() === "VOID") {
-        const voidEmbedMessage = "To join, **connect to the raiding channel by clicking it's name** and react to " + raidEmote.toString() + "\nIf you have a key react with: " + reactEmojis[6].toString() + "\nIf you have a vial react with:" + reactEmojis[1].toString() + "\nIf you have a marble seal react with:" + marbleSealEmote.toString() + "\nTo indicate your class choice react with: " + reactEmojis[2].toString() + reactEmojis[3].toString() + reactEmojis[4].toString() + reactEmojis[5].toString() + "\nIf you are a leader and want the AFK check to END, react with:" + reactEmojis[7];
-        afkCheckEmbed.addField("Void AFK Check" + raidEmote.toString(), voidEmbedMessage, false);
-    } else if (wantedType.toUpperCase() === "CULT") {
-        const cultEmbedMessage = "To join, **connect the raiding channel by clicking it's name** and react to " + raidEmote.toString() + "\nIf you have a key react with: " + reactEmojis[6].toString() + "\nTo indicate your class choice react with: " + reactEmojis[2].toString() + reactEmojis[3].toString() + reactEmojis[4].toString() + reactEmojis[5].toString() + "\nIf you are a leader and want the AFK check to END, react with:" + reactEmojis[7];
-        afkCheckEmbed.addField("Cult AFK Check", cultEmbedMessage, false);
+        const voidEmbedMessage = "To join, **connect to the raiding channel by clicking its name** and react to " + raidEmote.toString() + "\nIf you have a key or vial, react to " + reactEmojis[5].toString() + " or " + vialEmote.toString() + "\nTo indicate your class or gear choices, react to " + reactEmojis[1].toString() + " " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + " " + marbleSealEmote.toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[6];
+        afkCheckEmbed.addField("**Void** AFK Check" + raidEmote.toString(), voidEmbedMessage, false);
+    } else {
+        const cultEmbedMessage = "To join, **connect the raiding channel by clicking its name** and, react to " + raidEmote.toString() + "\nIf you have a key, react to " + reactEmojis[5].toString() + "\nTo indicate your class choice, react to " + reactEmojis[1].toString() + " " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[6];
+        afkCheckEmbed.addField(raidType + " AFK Check", cultEmbedMessage, false);
     }
     afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds; Total people: 0.")
 
@@ -195,8 +408,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let informationPanel = new Discord.MessageEmbed()
         .setColor(borderColor)
-        .setDescription("Information Panel, Raiding Channel #" + wantedChannel)
-        .addField("Key:", "None")
+        .setDescription("Information Panel, Raiding Channel #" + wantedChannel + ", " + raidType)
+        .addField("Keys:", "None")
         .setFooter("AFK check is in progress.");
 
     if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
@@ -206,22 +419,19 @@ module.exports.run = async (lanisBot, message, args) => {
     let totalPeople = 0;
     let peopleReacted = [];
 
-    const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "cultist") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHkey") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "vial") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpaladin") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHwarrior") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "knight") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "marble") ||
-        reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpriest")) && user.bot === false;
+
+    const filter = (reaction, user) => {
+        if (user.bot) return false;
+        if (reaction.emoji.name === "❌") return true;
+        if (reactEmojis.find(emoji => emoji.id === reaction.emoji.id === true)) return true;
+    }
 
     const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
 
     let peopleMessaged = [];
     let vialsMessaged = 0;
     let keysMessaged = 0;
+    let firstKeyMessaged = false;
 
     const afkCheckCollector = new Discord.ReactionCollector(afkCheckMessage, filter, { time: 360000 });
     afkCheckCollector.on("collect", async (reaction, user) => {
@@ -233,18 +443,16 @@ module.exports.run = async (lanisBot, message, args) => {
             if (reaction.emoji.name === "❌") {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
                     await afkCheckCollector.stop();
-                    informationPanel.setFooter("AFK check has been stopped by " + currentMember.displayName);
-                    await informationPanelMessage.edit(informationPanel);
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHkey")) {
+            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === raidKey.id)) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true) {
-                            if (keysMessaged < 1) {
+                            if (keysMessaged < maxKeys) {
                                 await new Promise(async (resolve, reject) => {
                                     peopleMessaged.push(currentMember.id);
                                     await currentMember.send("Are you sure you have the key and want to be sent the location? Not coming to the location with the key will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
-                                        await message.channel.send("User " + currentMember.toString() + " tried to get location as a vial but their DMs are turned off.");
+                                        await message.channel.send("User " + currentMember.toString() + " tried to get location as a key but their DMs are turned off.");
                                     });
                                     const messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
                                     messageCollector.on("collect", async (responseMessage, user) => {
@@ -269,14 +477,20 @@ module.exports.run = async (lanisBot, message, args) => {
                                         }
                                     })
                                 }).then(async (successMessage) => {
-                                    if (keysMessaged < 1) {
+                                    if (keysMessaged < maxKeys) {
                                         await currentMember.send("The location is: " + locationMessage);
                                         keysMessaged += 1;
-                                        informationPanel.fields[0] = { name: "Key:", value: currentMember.toString(), inline: false };
+                                        if (firstKeyMessaged) {
+                                            const oldText = informationPanel.fields[0].value;
+                                            informationPanel.fields[0] = { name: "Keys:", value: oldText + "\n" + currentMember.toString(), inline: false };
+                                        } else {
+                                            informationPanel.fields[0] = { name: "Keys:", value: currentMember.toString() + " / Main", inline: false };
+                                        }
                                         await informationPanelMessage.edit(informationPanel);
                                         await arlChatInformationPanelMessage.edit(informationPanel);
+                                        if (!firstKeyMessaged) firstKeyMessaged = true;
                                     } else {
-                                        await currentMember.send("Sorry, some other key holder has already been sent the location.");
+                                        await currentMember.send("Sorry, enough key holders have already been sent the location.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
@@ -290,7 +504,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     }
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "vial")) {
+            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial)) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true) {
@@ -374,7 +588,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await informationPanelMessage.edit(informationPanel);
                                         await arlChatInformationPanelMessage.edit(informationPanel);
                                     } else {
-                                        await currentMember.send("Sorry we already have too many vials.");
+                                        await currentMember.send("Sorry, we already have too many vials.");
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
@@ -397,10 +611,9 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     });
 
-    if (wantedType.toUpperCase() === "CULT") {
-        reactEmojis.splice(1, 1);
-    } else if (wantedType.toUpperCase() === "VOID") {
-        reactEmojis.splice(2, 0, marbleSealEmote);
+    if (wantedType.toUpperCase() === "VOID") {
+        reactEmojis.splice(2, 0, marbleSealEmote); //if it's a void run, add the marble seal with vial
+        reactEmojis.splice(2, 0, lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial));
     }
 
     for (const emoji of reactEmojis) {
@@ -567,6 +780,7 @@ async function makePostAFKCheck(borderColor, channel, intoChannel) {
     });
 
 }
+
 function sleep(ms) {
     return new Promise(resolve => {
         setTimeout(resolve, ms)

@@ -1,23 +1,27 @@
 {
     "admin": {
         "name":"Admin",
-        "id": "501967575262035968"
+        "id": "343709010832261121"
     },
     "almostRaidLeader": {
         "name":"Almost Raid Leader",
-        "id": "501980309185626121"
+        "id": "384029438188453898"
     },
     "developer": {
         "name":"Developer",
-        "id": "501980589877100546"
+        "id": "433070114112274432"
+    },
+    "events": {
+        "name": "Events Role",
+        "id": "506379889541251082"
     },
     "headRaidLeader": {
         "name":"Head Raid Leader",
-        "id": "501980309185626121"
+        "id": "382652069682610177"
     },
     "security": {
         "name":"Security",
-        "id": "501980589877100546"
+        "id": "343769895881801728"
     },
     "suspended": {
         "name":"Suspended",
@@ -29,14 +33,14 @@
     },
     "raidLeader": {
         "name":"Raid Leader",
-        "id": "501980309185626121"
+        "id": "372590164943437825"
     },
     "verifiedRaider": {
         "name":"Verified Raider",
-        "id": "501979785140895744"
+        "id": "378989711793848332"
     },
     "verifier": {
         "name":"Verifier",
-        "id": "501980589877100546"
+        "id": "451576648828059658"
     }
 }

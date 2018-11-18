@@ -69,7 +69,7 @@ lanisBot.on('guildMemberRemove', async (member) => {
     for (const role of memberRoles.values()) {
         if (role.id === Roles.suspendedButVerified.id || role.id === Roles.suspended.id) {
             isSuspended = true;
-        } else if (role.id = Roles.verifiedRaider.id) {
+        } else if (role.id === Roles.verifiedRaider.id) {
             if (!isSuspended) {
                 isRaider = true;
             }
@@ -363,17 +363,18 @@ lanisBot.on("message", async message => {
         }
     }
 
-    if (message.channel.id !== Channels.botCommands.id && message.channel.id !== Channels.verifierLogChat.id && message.channel.id !== Channels.verificationsAutomatic.id) return;
-
-    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id) {
-        message.delete();
-        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
-    }
-
     let prefix = config.prefix;
     let messageArray = message.content.match(/\S+/g);
     let command = messageArray[0];
     let args = messageArray.slice(1);
+
+ 
+    if (message.channel.id !== Channels.botCommands.id && message.channel.id !== Channels.verifierLogChat.id && message.channel.id !== Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "PURGE") return;
+
+    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id && message.member.roles.highest.position >= devRole.position) {
+        message.delete();
+        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
+    }
 
     if (message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position || message.channel.id === Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()

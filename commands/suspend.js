@@ -18,7 +18,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (regexMatches === null) return await message.channel.send("Input a correct user mention.");
     const memberID = regexMatches[1];
     if (!memberID) return await message.channel.send("Specify which member you want to suspend.");
-    const time = args[1];
+    let time = args[1];
     let timeUnit = args[2];
     let timeMultiplier;
     const memberToSuspend = message.guild.members.get(memberID);
@@ -54,7 +54,6 @@ module.exports.run = async (lanisBot, message, args) => {
             return await message.channel.send("Input a valid time format.");
     }
 
-    const suspendRole = message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
     if (suspensions[memberToSuspend.id] !== undefined) {
         return await message.channel.send("Member already suspended.");
     }
@@ -96,7 +95,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 })
             }).then(async (successMessage) => {
-                await message.channel.send("Suspending the person.");
+                await message.channel.send("Continuing.");
             }).catch(async (failureMessage) => {
                 await message.channel.send("Not suspending the person.");
                 abortCheck = true;
@@ -110,8 +109,53 @@ module.exports.run = async (lanisBot, message, args) => {
         suspensionReason = suspensionReason + args[i] + " ";
     }
 
-    if (suspensionReason != "") {
-        await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+    let toBeExpelled = false;
+    if (suspensionReason !== "") {
+        console.log(timeUnit)
+        console.log(time)
+        if (timeUnit !== "weeks" || time < 10) {
+            console.log("Suspended")
+            await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+        } else if (timeUnit === "weeks" && time >= 10) {
+            await new Promise(async (resolve, reject) => {
+                await message.channel.send("Would you like to suspend " + memberToSuspend.toString() + " permanently instead?");
+                const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
+                const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
+                safeGuardCollector.on("collect", async (responseMessage, user) => {
+                    if (responseMessage.author === message.author) {
+                        if (responseMessage.content === "-yes") {
+                            safeGuardCollector.stop("CONTINUE");
+                        } else if (responseMessage.content === "-no") {
+                            safeGuardCollector.stop("STOP");;
+                        } else {
+                            await message.channel.send("Please respond with a correct answer: `-yes` or `-no`.");
+                        }
+                    }
+                });
+
+                safeGuardCollector.on("end", async (collected, reason) => {
+                    if (reason === "CONTINUE") {
+                        resolve("SUCCESS");
+                    } else if (reason === "STOP" || reason === "time") {
+                        reject("FAILURE");
+                    }
+                })
+            }).then(async (successMessage) => {
+                await message.channel.send("Suspending the person.");
+                toBeExpelled = true;
+            }).catch(async (failureMessage) => {
+                await message.channel.send("Not suspending the person permanently.");
+            });
+
+            if (toBeExpelled) {
+                console.log("perma ban")
+                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " **permanently** for " + suspensionReason);
+                time = 9999;
+            } else {
+                console.log("Ban");
+                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+            }
+        }
     } else {
         return await message.channel.send("Please input a reason for the suspension.");
     }
@@ -130,10 +174,11 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (e) {
-        if (err) return console.log(e);
+        if (e) return console.log(e);
     });
 
     await message.channel.send("Suspended.");
+    let suspendRole = toBeExpelled ? message.guild.roles.find(role => role.id === Roles.suspended.id) : message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
     await memberToSuspend.roles.add(suspendRole);
 }
 

@@ -1,3 +1,143 @@
 {
-    
+    "abyssOfDemons": {
+        "dungeon":"506054529444479008",
+        "key":"506063070762762240",
+        "name": "Abyss of Demons"
+    },
+    "candyLand": {
+        "dungeon": "506055052272730112",
+        "key": "506063386904363018",
+        "name": "Candy Land"
+    }, 
+    "cnidarianReef": {
+        "dungeon": "506065279856672779",
+        "key": "506065723647328258",
+        "name": "Cnidarian Reef"
+    },
+    "classes": {
+        "name": "Classes",
+        "knight": "506090862388707358",
+        "paladin": "506090870697885707",
+        "priest": "506091001148997663",
+        "warrior": "506091010774794241"
+    },
+    "crawlingDepths": {
+        "dungeon": "506065828387487744",
+        "key": "506066092343689237",
+        "name": "Crawling Depths"
+    },
+    "davyJonesLocker": {
+        "dungeon": "506066192554000404",
+        "key": "506066459500478485",
+        "name": "Davy Jones’s Locker"
+    },
+    "deadwaterDocks": {
+        "dungeon": "506066997130428417",
+        "key": "506067221080965143",
+        "name": "Deadwater Docks"
+    },
+    "hauntedCemetery": {
+        "dungeon": "506194209292812324",
+        "key": "506080258299265034",
+        "name": "Haunted Cemetery"
+    },
+    "iceCave": {
+        "dungeon": "506072122519453708",
+        "key": "506080270668136448",
+        "name": "Ice Cave"
+    },
+    "lairOfDraconis": {
+        "dungeon": "506072137782788096",
+        "key": "506080282487554048",
+        "name": "Lair of Draconis"
+    },
+    "lairOfShaitan": {
+        "dungeon": "506072234595450882",
+        "key": "506080293225234432",
+        "name": "Lair of Shaitan"
+    },
+    "lostHalls": {
+        "dungeon": "506072260139024395",
+        "key": "506080313974325248",
+        "name": "Lost Halls",
+        "cultist": "506091048469004291",
+        "marbleSeal": "506091029934374913",
+        "vial": "506091071655378974",
+        "voidEntity": "506091097970442257"
+    },
+    "madLab": {
+        "dungeon": "506072278354755615",
+        "key": "506080326515163136",
+        "name": "Mad Lab"
+    },
+    "manorOfImmortals": {
+        "dungeon": "506072296088141834",
+        "key": "506080359293648898",
+        "name": "Manor of Immortals"
+    },
+    "mountainTemple": {
+        "dungeon": "506072317265444864",
+        "key": "506080379036368896",
+        "name": "Mountain Temple"
+    },
+    "nest": {
+        "dungeon": "506072344905777153",
+        "key": "506080394605494272",
+        "name": "The Nest"
+    },
+    "oceanTrench": {
+        "dungeon": "506072365927759874",
+        "key": "506080410074349588",
+        "name": "Ocean Trench"
+    },
+    "parasiteChambers": {
+        "dungeon": "506073107744817162",
+        "key": "506080426356637737",
+        "name": "Parasite Chambers"
+    },
+    "puppetMastersEncore": {
+        "dungeon": "506073179568209920",
+        "key": "506080445687922688",
+        "name": "Puppet Master's Encore"
+    },
+    "puppetMastersTheatre": {
+        "dungeon": "506073208903041044",
+        "key": "506080482828615680",
+        "name": "Puppet Master's Theatre"
+    },
+    "secludedThicket": {
+        "dungeon": "506073240666374164",
+        "key": "506080506333626368",
+        "name": "Secluded Thicket"
+    },
+    "shatters": {
+        "dungeon": "506073263923789824",
+        "key": "506080520153726990",
+        "name": "Shatters"
+    },
+    "snakePit": {
+        "dungeon": "506073278603853835",
+        "key": "506080534922002432",
+        "name": "Snake Pit"
+    },
+    "tombOfTheAncients": {
+        "dungeon": "506073292394856459",
+        "key": "506080549421711370",
+        "name": "Tomb of the Ancients"
+    },
+    "toxicSewers": {
+        "dungeon": "506073309587439627",
+        "key": "506080561518084106",
+        "name": "Toxic Sewers"
+    },
+    "undeadLair": {
+        "dungeon": "506073333339652096",
+        "key": "506080577116569621",
+        "name": "Undead Lair"
+    },
+    "woodlandLabyrinth": {
+        "dungeon": "506073347252027392",
+        "key": "506080594766331925",
+        "name": "Woodland Labyrinth"
+    }
 }

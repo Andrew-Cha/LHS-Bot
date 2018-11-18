@@ -29,7 +29,7 @@ module.exports.run = async (lanisBot, message, args) => {
             if (memberVerifying) {
                 currentlyVerifying.members.splice(index, 1);
                 await fs.writeFile(currentlyVerifyingFile, JSON.stringify(currentlyVerifying), function (e) {
-                    if (err) return console.log(e);
+                    if (e) return console.log(e);
                 });
                 await message.channel.send("Player's application removed.");
             } else {

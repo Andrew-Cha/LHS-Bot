@@ -1,15 +1,29 @@
 {
     "afk": {
         "name": "AFK Voice Channel",
-        "id": "501970630342606859"
+        "id": "400775663902130176"
     },
     "arlChat": {
         "name": "Almost Raid Leader Text Chat",
         "id": "395718182708445204"
     },
     "botCommands": {
-        "name": "Bot Commands Text Chat",
-        "id": "502007467643764736"
+        "name": "Bot Commands Text Channels",
+        "id": [
+            "432995686678790144",
+            "451596266502356994",
+            "506892722830049292",
+            "464829705728819220"
+        ]
+    },
+    "eventRaidingChannels": {
+        "name": "Event Void Channel(s)",
+        "id": [
+            "506715719975829504",
+            "506893237890580490",
+            "506716689480810496",
+            "506893270589374474"
+        ]
     },
     "faq": {
         "name": "Frequently Asked Questions Text Chat",
@@ -21,7 +35,7 @@
     },
     "howToVerify": {
         "name": "How To Verify Text Chat",
-        "id": "502011860585938945"
+        "id": "494552872650801152"
     },
     "leadingActivityLogs": {
         "name": "Leader Activity Report Text Chat",
@@ -51,32 +65,40 @@
         "name": "Raiding Status Announcements Text Chat",
         "id": "379779029479194624"
     },
+    "raidStatusEventAnnouncements": {
+        "name": "Event Raiding Status Announcements Text Chat",
+        "id": "506310337457553430"
+    },
     "rules": {
         "name": "Rules Text Chat",
-        "id": "501974757403525141"
+        "id": "482368517568462868"
     },
     "suspendLog": {
         "name": "Suspend Log Text Chat",
         "id": "384237088033341443"
     },
+    "verificationActive": {
+        "name": "Verification Active Text Chat",
+        "id": "497457671059013653"
+    },
     "verificationAttempts": {
         "name": "Verification Attempts Log Text Chat",
-        "id": "502006033082875904"
+        "id": "477203736444403722"
     },
     "verificationsAutomatic": {
         "name": "Get Verified Text Chat",
-        "id": "501969371057356802"
+        "id": "471711348095713281"
+    },
+    "verificationsEvents": {
+        "name": "Event Verification Text Chat",
+        "id": "506310212026630154"
     },
     "verificationsLog": {
         "name": "Verification Log Text Chat",
-        "id": "502005930930601994"
+        "id": "473702116213653504"
     },
     "verificationsManual": {
         "name": "Verifications Pending Text Chat",
-        "id": "502009139200000000"
-    },
-    "verifierLogChat": {
-        "name": "Verifier Log Text Chat",
-        "id": "502006267896791040"
+        "id": "471711541465579521"
     }
 }

@@ -106,7 +106,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     fs.writeFile(safeGuardConfigsFile, JSON.stringify(safeGuardConfigs), function (e) {
-        if (err) return console.log(e);
+        if (e) return console.log(e);
     });
 }
 

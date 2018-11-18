@@ -1,12 +1,13 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
 const Channels = require("../dataFiles/channels.json");
+const Emojis = require("../dataFiles/emojis.json");
+const Roles = require("../dataFiles/roles.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     const setupEmbed = new Discord.MessageEmbed()
         .setDescription(`Setup for ${lanisBot.user.username}`)
         .setColor("#5042f4")
-        .setFooter("⚠ Keep in mind that Lanis has to add these roles and channels manually for security reasons, this is an indicator of how much is ready for the current server.");
+        .setFooter("⚠ Keep in mind that Lanis has to add these emojis, roles and channels manually for security reasons, this is an indicator of how much is ready for the current server.");
 
     const category = args[0];
 
@@ -21,10 +22,10 @@ module.exports.run = async (lanisBot, message, args) => {
         actionCapitalized = "EMOJIS";
     }
 
+    let crossedLimit = false;
     switch (actionCapitalized) {
         case "CHANNELS":
             let channelString = " ";
-            let crossedLimit = false;
 
             for (const key in Channels) {
                 const currentChannel = Channels[key];
@@ -79,6 +80,52 @@ module.exports.run = async (lanisBot, message, args) => {
                 setupEmbed.addField("Available Channels To Setup", channelString);
             } else {
                 setupEmbed.addField(" ឵឵ ឵឵", channelString);
+            }
+
+            break;
+
+        case "EMOJIS":
+            let emojiString = " ";
+
+            for (const key in Emojis) {
+                const currentEmoji = Emojis[key];
+                let emojiDungeon;
+                let emojiKey;
+
+                if (currentEmoji) {
+                    if (currentEmoji.dungeon) {
+                        emojiDungeon = "<:" + key + ":" + currentEmoji.dungeon + ">";
+                    } else {
+                        emojiDungeon = "Not Yet Setup";
+                    }
+
+                    if (currentEmoji.key) {
+                        emojiKey = "<:" + key + ":" + currentEmoji.key + ">"
+                    } else {
+                        emojiKey = "Not Yet Setup";
+                    }
+                } else {
+                    await message.channel.send("Failed to fetch an emoji from the list named " + key + ".");
+                }
+
+                const newEmojiString = emojiString + `\n • ${currentEmoji.name} - ${emojiDungeon} - ${emojiKey}`;
+                if (newEmojiString.length > 1024) {
+                    if (!crossedLimit) {
+                        setupEmbed.addField("Available Emojis To Setup", emojiString);
+                        crossedLimit = true;
+                    } else {
+                        setupEmbed.addField(" ឵឵ ឵឵", emojiString);
+                    }
+                    emojiString = `\n • ${currentEmoji.name} - ${emojiDungeon} - ${emojiKey}`;
+                } else {
+                    emojiString = newEmojiString;
+                }
+            }
+
+            if (!crossedLimit) {
+                setupEmbed.addField("Available Emojis To Setup", emojiString);
+            } else {
+                setupEmbed.addField(" ឵឵ ឵឵", emojiString);
             }
             break;
 

@@ -47,8 +47,7 @@ const events = {
 lanisBot.on('raw', async event => {
     if (!events.hasOwnProperty(event.t)) return;
     const { d: data } = event;
-    if (data.channel_id !== Channels.verificationsManual.id) return;
-
+    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id) return;
     const user = lanisBot.users.get(data.user_id);
     const channel = lanisBot.channels.get(data.channel_id);
 
@@ -57,7 +56,6 @@ lanisBot.on('raw', async event => {
     const message = await channel.messages.fetch(data.message_id);
     const emojiKey = (data.emoji.id) ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
     const reaction = message.reactions.get(emojiKey);
-
     lanisBot.emit(events[event.t], reaction, user);
 });
 
@@ -69,7 +67,7 @@ lanisBot.on('guildMemberRemove', async (member) => {
     for (const role of memberRoles.values()) {
         if (role.id === Roles.suspendedButVerified.id || role.id === Roles.suspended.id) {
             isSuspended = true;
-        } else if (role.id = Roles.verifiedRaider.id) {
+        } else if (role.id === Roles.verifiedRaider.id) {
             if (!isSuspended) {
                 isRaider = true;
             }
@@ -101,6 +99,53 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     const reactionChannel = reactionMessage.channel;
     const verifier = await reactionMessage.guild.members.fetch(user.id);
     if (user.bot) return;
+
+    if (reactionChannel.id === Channels.verificationsEvents.id) {
+        const member = await reactionMessage.guild.members.fetch(user.id);
+        const eventRole = reactionMessage.guild.roles.find(role => role.id === Roles.events.id);
+        let addedToAntiFlood = false; //needed to we can check if we should send the message the first time they react.
+
+        if (!antiflood.has(member.id)) {
+            console.log("Added " + member.displayName + " to antiflood cuz spam react");
+            antiflood.add(member.id);
+            addedToAntiFlood = true;
+
+            setTimeout(() => {
+                antiflood.delete(member.id);
+            }, antifloodTime * 1000 * 10)
+        }
+        if (reaction.emoji.name === "✅") {
+            if (member.roles.find(role => role.id === Roles.events.id === true)) {
+                if (addedToAntiFlood) {
+                    const errorMessage = await reactionChannel.send(member.toString() + ", you already have the events role.");
+                    await sleep(10000);
+                    await errorMessage.delete()
+                }
+            } else {
+                await member.roles.add(eventRole);
+                if (addedToAntiFlood) {
+                    const successMessage = await reactionChannel.send(member.toString() + ", gave you the events role.");
+                    await sleep(10000);
+                    await successMessage.delete()
+                }
+            }
+        } else if (reaction.emoji.name === "❌") {
+            if (member.roles.find(role => role.id === Roles.events.id === true)) {
+                await member.roles.remove(eventRole);
+                if (addedToAntiFlood) {
+                    const successMessage = await reactionChannel.send(member.toString() + ", removed your event role.");
+                    await sleep(10000);
+                    await successMessage.delete()
+                }
+            } else {
+                if (addedToAntiFlood) {
+                    const errorMessage = await reactionChannel.send(member.toString() + ", you don't have the event role.");
+                    await sleep(10000);
+                    await errorMessage.delete()
+                }
+            }
+        }
+    }
     if (reactionChannel.id !== Channels.verificationsManual.id) return;
 
     if (reaction.emoji.name === "🔑") {
@@ -127,8 +172,12 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     } else if (reaction.emoji.name === "✅") {
         const memberVerifyingTag = reactionMessage.embeds[0].description.split(' ')[0];
         const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
-        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID);
         const accountName = reactionMessage.embeds[0].description.split(': ')[1];
+        const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID).catch(async e => {
+            console.log(e)
+            return reactionChannel.send(verifier.toString() + ", " +  accountName + " has left the server, please reject them using 5⃣")
+        })
+
         let noPerms = false;
         const raiderRole = reactionMessage.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
         await memberVerifying.setNickname(accountName, "Accepted into the server via Manual Verification.").catch(async e => {
@@ -299,7 +348,10 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
 
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`);
-    await lanisBot.channels.get(Channels.botCommands.id).send("Bot online!");
+    for (const channelID of Channels.botCommands.id) {
+        await lanisBot.channels.get(channelID).send("Bot online!");
+    }
+
     await lanisBot.user.setActivity("a silly game.", { type: "PLAYING" })
     lanisBot.setInterval((async () => {
         for (let i in lanisBot.suspensions) {
@@ -363,17 +415,21 @@ lanisBot.on("message", async message => {
         }
     }
 
-    if (message.channel.id !== Channels.botCommands.id && message.channel.id !== Channels.verifierLogChat.id && message.channel.id !== Channels.verificationsAutomatic.id) return;
-
-    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id) {
-        message.delete();
-        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
-    }
 
     let prefix = config.prefix;
     let messageArray = message.content.match(/\S+/g);
     let command = messageArray[0];
     let args = messageArray.slice(1);
+
+    let permittedChannels = Channels.botCommands.id + Channels.verificationsAutomatic.id
+    
+    if (!permittedChannels.includes(message.channel.id) && command.toUpperCase() !== "PURGE") return
+
+    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id && message.member.roles.highest.position >= devRole.position) {
+        message.delete();
+        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
+    }
+
     if (message.content.indexOf(config.prefix) !== 0 && message.member.roles.highest.position < devRole.position || message.channel.id === Channels.verificationsAutomatic.id && command.slice(prefix.length).toUpperCase() !== "VERIFY" && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()
             .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
