@@ -1,11 +1,8 @@
 const Discord = require("discord.js");
 
-const fs = require('fs');
 const path = require('path');
 const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
-const suspensionsFile = path.normalize(__dirname + "../../dataFiles/suspensions.json");
-const suspensions = require(suspensionsFile);
 const Channels = require("../dataFiles/channels.json");
 const Roles = require("../dataFiles/roles.json")
 
@@ -54,132 +51,128 @@ module.exports.run = async (lanisBot, message, args) => {
             return await message.channel.send("Input a valid time format.");
     }
 
-    if (suspensions[memberToSuspend.id] !== undefined) {
-        return await message.channel.send("Member already suspended.");
-    }
-
-    let index;
-    let currentLeader;
-    for (let i = 0; i < safeGuardConfigs.leaders.length; i++) {
-        if (safeGuardConfigs.leaders[i].id === message.author.id) {
-            index = i;
-            break;
+    lanisBot.database.get(`SELECT * FROM suspended WHERE ID = ${memberID}`, async (error, row) => {
+        if (error) {
+            throw error
         }
-    }
+        
+        if (row !== undefined) return message.channel.send("Member already suspended.")
 
-    if (index != undefined) {
-        currentLeader = safeGuardConfigs.leaders[index];
-        if (currentLeader.commands.includes("SUSPEND")) {
-            let abortCheck = false;
-            await new Promise(async (resolve, reject) => {
-                await message.channel.send("Are you sure you want to suspend " + memberToSuspend.toString() + " ?");
-                const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
-                const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-                safeGuardCollector.on("collect", async (responseMessage, user) => {
-                    if (responseMessage.author === message.author) {
-                        if (responseMessage.content === "-yes") {
-                            safeGuardCollector.stop("CONTINUE");
-                        } else if (responseMessage.content === "-no") {
-                            safeGuardCollector.stop("STOP");;
-                        } else {
-                            await message.channel.send("Please respond with a correct answer: `-yes` or `-no`.");
-                        }
-                    }
-                });
-
-                safeGuardCollector.on("end", async (collected, reason) => {
-                    if (reason === "CONTINUE") {
-                        resolve("SUCCESS");
-                    } else if (reason === "STOP" || reason === "time") {
-                        reject("FAILURE");
-                    }
-                })
-            }).then(async (successMessage) => {
-                await message.channel.send("Continuing.");
-            }).catch(async (failureMessage) => {
-                await message.channel.send("Not suspending the person.");
-                abortCheck = true;
-            });
-            if (abortCheck) return;
-        }
-    }
-
-    let suspensionReason = ""
-    for (i = 3; i < args.length; i++) {
-        suspensionReason = suspensionReason + args[i] + " ";
-    }
-
-    let toBeExpelled = false;
-    if (suspensionReason !== "") {
-        console.log(timeUnit)
-        console.log(time)
-        if (timeUnit !== "weeks" || time < 10) {
-            console.log("Suspended")
-            await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
-        } else if (timeUnit === "weeks" && time >= 10) {
-            await new Promise(async (resolve, reject) => {
-                await message.channel.send("Would you like to suspend " + memberToSuspend.toString() + " permanently instead?");
-                const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
-                const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
-                safeGuardCollector.on("collect", async (responseMessage, user) => {
-                    if (responseMessage.author === message.author) {
-                        if (responseMessage.content === "-yes") {
-                            safeGuardCollector.stop("CONTINUE");
-                        } else if (responseMessage.content === "-no") {
-                            safeGuardCollector.stop("STOP");;
-                        } else {
-                            await message.channel.send("Please respond with a correct answer: `-yes` or `-no`.");
-                        }
-                    }
-                });
-
-                safeGuardCollector.on("end", async (collected, reason) => {
-                    if (reason === "CONTINUE") {
-                        resolve("SUCCESS");
-                    } else if (reason === "STOP" || reason === "time") {
-                        reject("FAILURE");
-                    }
-                })
-            }).then(async (successMessage) => {
-                await message.channel.send("Suspending the person.");
-                toBeExpelled = true;
-            }).catch(async (failureMessage) => {
-                await message.channel.send("Not suspending the person permanently.");
-            });
-
-            if (toBeExpelled) {
-                console.log("perma ban")
-                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " **permanently** for " + suspensionReason);
-                time = 9999;
-            } else {
-                console.log("Ban");
-                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+        let index;
+        let currentLeader;
+        for (let i = 0; i < safeGuardConfigs.leaders.length; i++) {
+            if (safeGuardConfigs.leaders[i].id === message.author.id) {
+                index = i;
+                break;
             }
         }
-    } else {
-        return await message.channel.send("Please input a reason for the suspension.");
-    }
 
-    lanisBot.suspensions[memberToSuspend.id] = {
-        time: Date.now() + parseInt(time) * timeMultiplier,
-        roles: [],
-        guildID: message.guild.id
-    }
+        if (index != undefined) {
+            currentLeader = safeGuardConfigs.leaders[index];
+            if (currentLeader.commands.includes("SUSPEND")) {
+                let abortCheck = false;
+                await new Promise(async (resolve, reject) => {
+                    await message.channel.send("Are you sure you want to suspend " + memberToSuspend.toString() + " ?");
+                    const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
+                    const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
+                    safeGuardCollector.on("collect", async (responseMessage, user) => {
+                        if (responseMessage.author === message.author) {
+                            if (responseMessage.content === "-yes") {
+                                safeGuardCollector.stop("CONTINUE");
+                            } else if (responseMessage.content === "-no") {
+                                safeGuardCollector.stop("STOP");;
+                            } else {
+                                await message.channel.send("Please respond with a correct answer: `-yes` or `-no`.");
+                            }
+                        }
+                    });
 
-    for (const currentRole of memberToSuspend.roles.values()) {
-        if (currentRole.name !== "@everyone") {
-            lanisBot.suspensions[memberToSuspend.id].roles.push(currentRole.name);
-            await memberToSuspend.roles.remove(message.guild.roles.find(role => role.name === currentRole.name));
+                    safeGuardCollector.on("end", async (collected, reason) => {
+                        if (reason === "CONTINUE") {
+                            resolve("SUCCESS");
+                        } else if (reason === "STOP" || reason === "time") {
+                            reject("FAILURE");
+                        }
+                    })
+                }).then(async (successMessage) => {
+                    await message.channel.send("Continuing.");
+                }).catch(async (failureMessage) => {
+                    await message.channel.send("Not suspending the person.");
+                    abortCheck = true;
+                });
+                if (abortCheck) return;
+            }
         }
-    }
 
-    fs.writeFile(suspensionsFile, JSON.stringify(suspensions), function (e) {
-        if (e) return console.log(e);
-    });
+        let suspensionReason = ""
+        for (i = 3; i < args.length; i++) {
+            suspensionReason = suspensionReason + args[i] + " ";
+        }
 
-    await message.channel.send("Suspended.");
-    let suspendRole = toBeExpelled ? message.guild.roles.find(role => role.id === Roles.suspended.id) : message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
-    await memberToSuspend.roles.add(suspendRole);
+        let toBeExpelled = false;
+        if (suspensionReason !== "") {
+            if (timeUnit !== "weeks" || time < 10) {
+                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+            } else if (timeUnit === "weeks" && time >= 10) {
+                await new Promise(async (resolve, reject) => {
+                    await message.channel.send("Would you like to suspend " + memberToSuspend.toString() + " permanently instead?");
+                    const messageFilter = (responseMessage, user) => responseMessage.content != "" && responseMessage.author === message.author;
+                    const safeGuardCollector = new Discord.MessageCollector(message.channel, messageFilter, { time: 60000 });
+                    safeGuardCollector.on("collect", async (responseMessage, user) => {
+                        if (responseMessage.author === message.author) {
+                            if (responseMessage.content === "-yes") {
+                                safeGuardCollector.stop("CONTINUE");
+                            } else if (responseMessage.content === "-no") {
+                                safeGuardCollector.stop("STOP");;
+                            } else {
+                                await message.channel.send("Please respond with a correct answer: `-yes` or `-no`.");
+                            }
+                        }
+                    });
+
+                    safeGuardCollector.on("end", async (collected, reason) => {
+                        if (reason === "CONTINUE") {
+                            resolve("SUCCESS");
+                        } else if (reason === "STOP" || reason === "time") {
+                            reject("FAILURE");
+                        }
+                    })
+                }).then(async (successMessage) => {
+                    await message.channel.send("Suspending the person.");
+                    toBeExpelled = true;
+                }).catch(async (failureMessage) => {
+                    await message.channel.send("Not suspending the person permanently.");
+                });
+
+                if (toBeExpelled) {
+                    await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " **permanently** for " + suspensionReason);
+                    time = 9999;
+                } else {
+                    await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+                }
+            }
+        } else {
+            return await message.channel.send("Please input a reason for the suspension.");
+        }
+
+        let roles = []
+        for (const currentRole of memberToSuspend.roles.values()) {
+            if (currentRole.name !== "@everyone") {
+                roles.push(currentRole.name);
+                await memberToSuspend.roles.remove(message.guild.roles.find(role => role.name === currentRole.name));
+            }
+        }
+
+        lanisBot.database.run(`INSERT INTO suspended(ID, time, roles) VALUES(${memberToSuspend.id}, ${Date.now() + parseInt(time) * timeMultiplier}, '${roles.join(",")}')`, (error, row) => {
+            if (error) {
+                throw error
+            }
+        })
+
+        await message.channel.send("Suspended.");
+        let suspendRole = toBeExpelled ? message.guild.roles.find(role => role.id === Roles.suspended.id) : message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
+        await memberToSuspend.roles.add(suspendRole)
+    })
 }
 
 module.exports.help = {

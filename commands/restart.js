@@ -2,7 +2,6 @@ const Discord = require("discord.js");
 const config = require("../dataFiles/config.json");
 
 module.exports.run = async (lanisBot, message, args) => {
-    return await message.channel.send("Command is disabled.")
     let abortRestart = false;
 
     await new Promise(async (resolve, reject) => {

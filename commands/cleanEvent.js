@@ -118,5 +118,5 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "clean"
+    name: "cleanEvent"
 }

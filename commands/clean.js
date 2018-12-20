@@ -80,7 +80,7 @@ module.exports.run = async (lanisBot, message, args) => {
     abortReactCollector.on("collect", async (reaction, user) => {
         const currentMember = await message.guild.members.get(reaction.users.last().id);
         if (reaction.emoji.name === "❌") {
-            if (!reaction.users.last().bot) {
+            if (!user.bot) {
                 if (currentMember) {
                     abortRestart = true;
                     await abortReactCollector.stop();

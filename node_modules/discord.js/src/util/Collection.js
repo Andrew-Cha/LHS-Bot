@@ -1,3 +1,5 @@
+'use strict';
+
 const Util = require('./Util');
 
 /**
@@ -349,9 +351,9 @@ class Collection extends Map {
    * @returns {Collection}
    * @example
    * collection
-   *  .tap(coll => coll.size)
+   *  .tap(coll => console.log(`${coll.size} users, including bots`))
    *  .filter(user => user.bot)
-   *  .tap(coll => coll.size)
+   *  .tap(coll => console.log(`${coll.size} users, excluding bots`))
    */
   tap(fn, thisArg) {
     if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
