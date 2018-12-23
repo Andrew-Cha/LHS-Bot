@@ -19,6 +19,14 @@
         "name": "Group Assignments Text Chat",
         "id": "443952835059777549"
     },
+    "historyDMs": {
+        "name": "History for Direct Messages",
+        "id": ""
+    },
+    "historyReacts": {
+        "name": "History for Reactions",
+        "id": "525238682559578112"
+    },
     "howToVerify": {
         "name": "How To Verify Text Chat",
         "id": "494552872650801152"

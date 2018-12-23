@@ -8,8 +8,12 @@ const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.
 const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
+    if (args[0] !== "automaticEnd" && message.member) {
     const hrlRole = message.guild.roles.find(role => role.id === Roles.headRaidLeader.id);
-    if (message.member.roles.highest.position < hrlRole.position && message.member.id !== "142250464656883713") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
+    if (message.member.roles.highest.position < hrlRole.position && message.member.id !== "1") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
+    }
+    //142250464656883713
+
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
     const week = parseInt(day / 8) + 1;
@@ -95,9 +99,17 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     activeLeaders.sort(compare);
+    let totalRuns = 0
+    let assistedRuns = 0
     for (const leader of activeLeaders) {
-        const currentLeader = await message.guild.members.fetch(leader.id);
+        const currentLeader = await message.guild.members.fetch(leader.id).catch(async e => {
+            await message.channel.send("Found a member with an invalid ID, continuing.")
+        });
+        if (!currentLeader) continue;
+
         const newReportMessage = reportMessage + "\n" + currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
+        totalRuns += parseInt(leader.runs)
+        assistedRuns += parseInt(leader.assistedRuns)
         if (newReportMessage.length > 1024) {
             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
@@ -107,12 +119,15 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     let inactiveRaidLeaders = [];
+    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
+    const rlRole = message.guild.roles.find(role => role.id === Roles.raidLeader.id);
+
     await message.guild.members.fetch().then(members => {
         for (const member of members.values()) {
             let isLeader = false;
             if (member.user.bot === false) {
                 for (role of member.roles.values()) {
-                    if (role.name === "Almost Raid Leader" || role.name === "Raid Leader") {
+                    if (role.id === arlRole.id || role.id === rlRole.id) {
                         isLeader = true;
                         break;
                     }
@@ -144,11 +159,12 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+        .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
     await lanisBot.channels.get(Channels.leadingActivityLogs.id).send(reportEmbed);
 
     leadingLogs.leaders = [];
-    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (e) {
-        if (err) return console.log(e);
+    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (error) {
+        if (error) return console.log(error);
     });
 
     await message.channel.send("Done.");

@@ -68,7 +68,7 @@ module.exports.run = async (lanisBot, message, args) => {
             break;
     }
     let reportEmbed = new Discord.MessageEmbed()
-    .setColor("3ea04a");
+        .setColor("3ea04a");
     const weekMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let reportMessage = "";
     reportEmbed.setDescription(weekMessage);
@@ -91,6 +91,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     activeLeaders.sort(compare);
+    let totalRuns = 0
+    let assistedRuns = 0
     for (const leader of activeLeaders) {
         const currentLeader = await message.guild.members.fetch(leader.id).catch(async e => {
             await message.channel.send("Found a member with an invalid ID, continuing.")
@@ -99,6 +101,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
         const leaderName = currentLeader.id === message.author.id ? currentLeader.toString() : currentLeader.displayName;
         const newReportMessage = reportMessage + "\n" + leaderName + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
+        totalRuns += parseInt(leader.runs)
+        assistedRuns += parseInt(leader.assistedRuns)
         if (newReportMessage.length > 1024) {
             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
             reportMessage = leaderName + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
@@ -109,14 +113,14 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let inactiveRaidLeaders = [];
     const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
-    const rlRole = message.guild.roles.find(role => role.name === Roles.raidLeader.id);
+    const rlRole = message.guild.roles.find(role => role.id === Roles.raidLeader.id);
 
     await message.guild.members.fetch().then(members => {
         for (const member of members.values()) {
             let isLeader = false;
             if (member.user.bot === false) {
                 for (role of member.roles.values()) {
-                    if (role.name === "Almost Raid Leader" || role.name === "Raid Leader") {
+                    if (role.id === arlRole.id || role.id === rlRole.id) {
                         isLeader = true;
                         break;
                     }
@@ -149,6 +153,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+        .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
     await message.channel.send(reportEmbed);
 }
 

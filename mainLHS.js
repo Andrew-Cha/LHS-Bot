@@ -47,7 +47,7 @@ const events = {
 lanisBot.on('raw', async event => {
     if (!events.hasOwnProperty(event.t)) return;
     const { d: data } = event;
-    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id) return;
+    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id && data.channel_id !== Channels.historyDMs.id) return;
     const user = lanisBot.users.get(data.user_id);
     const channel = lanisBot.channels.get(data.channel_id);
 
@@ -87,10 +87,46 @@ lanisBot.on('guildMemberRemove', async (member) => {
 });
 
 lanisBot.on('messageReactionAdd', async (reaction, user) => {
+    if (reaction.message.channel.type !== "text") return;
     const reactionMessage = await reaction.message.channel.messages.fetch(reaction.message.id).catch(console.error);
     const reactionChannel = reactionMessage.channel;
     const verifier = await reactionMessage.guild.members.fetch(user.id);
     if (user.bot) return;
+
+    if (reactionChannel.id === Channels.historyDMs.id) {
+        if (reaction.emoji.name === "🔑") {
+            await reactionMessage.reactions.removeAll();
+            await reactionMessage.react("❌");
+            await reactionMessage.react("🔨");
+            await reactionMessage.react("🔒");
+        } else if (reaction.emoji.name === "🔒") {
+            await reactionMessage.reactions.removeAll();
+            await reactionMessage.react("🔑");
+        } else if (reaction.emoji.name === "❌") {
+            reactionMessage.delete()
+        } else if (reaction.emoji.name === "🔨") {
+            let memberVerified = false;
+            let memberID = reaction.message.embeds[0].footer.text.split(":")[1].trim()
+            const member = await reactionMessage.guild.members.fetch(memberID).catch()
+            lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${memberID}'`, async (error, row) => {
+                if (error) {
+                    throw error
+                }
+                if (row !== undefined) memberVerified = true
+                if (!memberVerified) {
+                    lanisBot.database.run(`INSERT INTO feedbackBlacklist(ID) VALUES('${memberID}')`)
+                }
+
+                if (memberVerified) {
+                    reactionMessage.channel.send(`${user.toString()}, ${member.toString()} is already added to the feedback blacklist.`)
+                    return
+                }
+                await reactionMessage.reactions
+                await reactionMessage.reactions.removeAll()
+                await reactionMessage.react("👋");
+            })
+        }
+    }
 
     if (reactionChannel.id === Channels.verificationsEvents.id) {
         const member = await reactionMessage.guild.members.fetch(user.id);
@@ -138,6 +174,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             }
         }
     }
+
     if (reactionChannel.id === Channels.verificationsManual.id) {
         if (reaction.emoji.name === "🔑") {
             await reactionMessage.reactions.removeAll();
@@ -222,7 +259,16 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             }
             await memberVerifying.send("You have been accepted to Public Lost Halls!\nWe're pleased to have you here. Before you start, we do expect all of our user to check our rules and guidelines, found in <#482368517568462868> (Apply both in discord and in-game) and <#379504881213374475> (Which only apply in game). Not knowing these rules or not reading them will not be an excuse for further suspensions, so if you can't understand anything, please don't be afraid asking staff members or members of the community.\n\nWe also have a quick start guide, which can be found in <#482394590721212416>, regarding how to join runs properly, finding the invite link for the server, and where the Raid Leader applications are.\n\nAny doubts, don't be afraid to ask any Staff member to clarify any doubts you may have.");
 
-            lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${memberVerifying.id}', '${accountName.toUpperCase()}')`)
+            let memberVerified = false;
+            lanisBot.database.get(`SELECT * FROM verified WHERE name = '${accountName.toUpperCase()}' OR ID = '${memberVerifying.id}'`, async (error, row) => {
+                if (error) {
+                    throw error
+                }
+                if (row !== undefined) memberVerified = true
+                if (!memberVerified) {
+                    lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${memberVerifying.id}', '${accountName.toUpperCase()}')`)
+                }
+            })
         } else if (reaction.emoji.name === '1⃣' || reaction.emoji.name === '2⃣' || reaction.emoji.name === '4⃣') {
             const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
             const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
@@ -332,17 +378,66 @@ lanisBot.on("ready", async () => {
 
     lanisBot.setInterval((async () => {
         await checkAutomaticSuspensions()
-    }), 300000);
+    }), 300000)
+
+    /*
+        lanisBot.setInterval((async () => {
+            //The idea is to store the week of the year 1 - 52 and check if the current week stored is not the current week - end week and store the current week.
+            const now = new Date();
+            const januaryFirst = new Date(now.getFullYear(), 0, 1);
+            const week = Math.ceil((((now - januaryFirst) / 86400000) + januaryFirst.getDay() + 1) / 7);
+    
+            if (week !== config.lastLoggedWeek) {
+    
+            }
+        }), 1200000)
+        */
 });
 
 lanisBot.on("message", async message => {
     if (message.author.bot) return
-    if (message.channel.type === "dm") return
+    if (message.channel.type === "dm") {
+        let messageContent = message.content
+        if (messageContent.toUpperCase() === "DONE" || messageContent.toUpperCase() === "YES" || messageContent.toUpperCase() === "NO" && messageContent.toUpperCase() === "ABORT" && messageContent.toUpperCase() === "STOP") return
+        const guild = lanisBot.guilds.get("343704644712923138");
+        const historyDMs = await guild.channels.get(Channels.historyDMs.id)
+
+        let memberExpelled = false
+        console.log(message.author.id)
+        lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${message.author.id}'`, async (error, row) => {
+            if (error) {
+                throw error
+            }
+            
+            if (row !== undefined) memberExpelled = true
+
+            if (memberExpelled) {
+                message.react("⚠");
+                return
+            } 
+
+            if (messageContent.length > 1000) {
+                messageContent = messageContent.splice(0, 1000) + "..."
+            }
+
+            const embed = new Discord.MessageEmbed()
+                .setAuthor(message.author.tag, await message.author.avatarURL())
+                .setColor("3ea04a")
+                .setDescription(message.author.toString(), true)
+                .addField("Direct Message", messageContent)
+                .setFooter("User ID: " + message.author.id)
+                .setTimestamp()
+
+            message.react("✅")
+            const messageSent = await historyDMs.send(embed)
+            await messageSent.react("🔑")
+        })
+        return;
+    }
+
     if (message.content === null) return
     let prefix = config.prefix;
 
-    console.log(messageArray)
-    console.log(message.content)
     let messageArray = message.content.match(/\S+/g)
     if (messageArray === null) return
     let command = messageArray[0]
@@ -362,7 +457,6 @@ lanisBot.on("message", async message => {
     }
 
     const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
-    console.log(command)
     if (message.channel.id === Channels.verificationsAutomatic.id && command.toUpperCase() !== config.prefix + "VERIFY" && message.member.roles.highest.position < devRole.position) {
         let errorEmbed = new Discord.MessageEmbed()
             .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")

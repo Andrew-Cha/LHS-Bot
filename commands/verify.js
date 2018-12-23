@@ -371,7 +371,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 const firstSeen = $('.summary').text().split(" ");
                 if (firstSeen.includes("year") || firstSeen.includes("years")) {
                     oldAccount = true;
-                } else if (!firstSeen.includes("minutes") && !firstSeen.includes("days")) {
+                } else if (!firstSeen.includes("minutes") && !firstSeen.includes("days") && !firstSeen.includes("day")) {
                     errorMessages.push("Your creation date is hidden, please unprivate it.")
                 } else {
                     reportMessages.push("The account has a hidden creation date or is less than a year old.");
@@ -386,7 +386,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                 const lastLocation = $('.timeago').text();
                 if (lastLocation) {
-                    errorMessages.push("Your location is not set to hidden, please hide it.");
+                    errorMessages.push("Your last seen location is not set to hidden, please hide it.");
                 }
 
                 fameCount = $('tr').filter(function () {
@@ -468,6 +468,8 @@ module.exports.run = async (lanisBot, message, args) => {
                     let errorMessage = $('h3').text();
                     if (errorMessage === "The graveyard of " + inGameName + " is hidden.") {
                         deaths = "hidden"
+                    } else if (errorMessage === "No data available yet." || errorMessage === "Data for this account has not been migrated. Some dead characters will not be available.") {
+                        deaths = "error"
                     } else {
                         deaths = $('td').last().text()
                     }
@@ -553,6 +555,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     .setColor("#940000")
                     .setDescription(message.member.toString() + " trying to verify as: " + inGameName)
                     .addField("Problems: ", reportMessage)
+                    .setTimestamp()
 
                 const verificationsManual = lanisBot.channels.get(Channels.verificationsManual.id)
                 const altReportMessage = await verificationsManual.send(reportEmbed);

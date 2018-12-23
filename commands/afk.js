@@ -20,21 +20,6 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     if (!isLeader) return await message.channel.send("You have to be a Raid Leader to start an AFK check.");
 
-    let hour = new Date().getUTCHours();
-    let minutes = new Date().getUTCMinutes();
-    if (minutes < 10) {
-        minutes = "0" + minutes;
-    }
-    let timeType = "PM";
-    if (hour < 12) {
-        timeType = "AM";
-    } else if (hour >= 12) {
-        timeType = "PM";
-        if (hour !== 12) {
-            hour = hour - 12;
-        }
-    }
-
     let aborted = false;
     const botCommands = lanisBot.channels.get(message.channel.id);
     let raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusEventAnnouncements.id);
@@ -301,7 +286,7 @@ module.exports.run = async (lanisBot, message, args) => {
     if (raidingChannel.name.toUpperCase().includes("JOIN")) {
         return await message.channel.send(message.member.toString() + ", it seems there is an active AFK check in that channel as it has the word 'Join' in its title.")
     }
-    
+
     let locationMessage = "";
 
     for (i = 2; i < args.length; i++) {
@@ -480,6 +465,14 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (keysMessaged < maxKeys) {
                                         await currentMember.send("The location is: " + locationMessage);
                                         keysMessaged += 1;
+
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with key, confirmed it.\nThe location was sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("3ea04a")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         if (firstKeyMessaged) {
                                             const oldText = informationPanel.fields[0].value;
                                             informationPanel.fields[0] = { name: "Keys:", value: oldText + "\n" + currentMember.toString(), inline: false };
@@ -491,16 +484,52 @@ module.exports.run = async (lanisBot, message, args) => {
                                         if (!firstKeyMessaged) firstKeyMessaged = true;
                                     } else {
                                         await currentMember.send("Sorry, enough key holders have already been sent the location.");
+                                        await reaction.users.remove(currentMember.id)
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Overflow Reaction", `${currentMember.toString()} reacted with key, confirmed it, but the limit for keys was hit.\nThe location was not sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("cf0202")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
                                 }).catch(async (e) => {
                                     console.log(e);
                                     await currentMember.send("Not sending the location.");
+                                    await reaction.users.remove(currentMember.id)
+                                    let reactionInformationEmbed = new Discord.MessageEmbed()
+                                        .addField("Time Out", `${currentMember.toString()} reacted with key, but their request timed out.`)
+                                        .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                        .setFooter(`User ID: ${currentMember.id}`)
+                                        .setColor("cf0202")
+                                        .setTimestamp()
+                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
+                            } else {
+                                await currentMember.send("Sorry, we already have enough keys.")
+                                await reaction.users.remove(currentMember.id)
+                                let reactionInformationEmbed = new Discord.MessageEmbed()
+                                    .addField("Overflow Reaction", `${currentMember.toString()} reacted with key while there were enough keys already.`)
+                                    .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                    .setFooter(`User ID: ${currentMember.id}`)
+                                    .setColor("cf0202")
+                                    .setTimestamp()
+                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
+                        } else {
+                            await currentMember.send("Sorry, you have to be in the voice channel to get the key location.")
+                            await reaction.users.remove(currentMember.id)
+                            let reactionInformationEmbed = new Discord.MessageEmbed()
+                                .addField("Invalid Reaction", `${currentMember.toString()} reacted with key while they were not in a voice channel.`)
+                                .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                .setFooter(`User ID: ${currentMember.id}`)
+                                .setColor("cf0202")
+                                .setTimestamp()
+                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
                     }
                 }
@@ -540,16 +569,38 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 1) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are the **main** vial.");
                                         vialsMessaged += 1;
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with main vial, confirmed it.\nThe Location was sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("3ea04a")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                         await arlChatInformationPanelMessage.edit(informationPanel);
                                     } else {
                                         await currentMember.send("The location has already been sent to the main vial, if you want to become a backup vial please react again.");
+                                        await reaction.users.remove(currentMember.id)
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Overflow Reaction", `${currentMember.toString()} reacted with vial, they were supposed to be a main vial, although someone else confirmed main vial first.\nThe location was not sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
                                 }).catch(async (failureMessage) => {
                                     await currentMember.send("Not sending the location.");
+                                    await reaction.users.remove(currentMember.id)
+                                    let reactionInformationEmbed = new Discord.MessageEmbed()
+                                        .addField("Timed Out Reaction", `${currentMember.toString()} reacted with vial, they were supposed to be a main vial, although their reaction timed out.\nThe location was not sent to them.`)
+                                        .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                        .setFooter(`User ID: ${currentMember.id}`)
+                                        .setColor("cf0202")
+                                        .setTimestamp()
+                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -583,6 +634,13 @@ module.exports.run = async (lanisBot, message, args) => {
                                     if (vialsMessaged < 3) {
                                         await currentMember.send("The location is: " + locationMessage + ", you are a **backup** vial.");
                                         vialsMessaged += 1;
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with backup vial, they were supposed to be a backup vial.\nThe location was sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("cf0202")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const oldVials = informationPanel.fields[1]
                                         informationPanel.fields[1] = { name: "Vials:", value: oldVials.value + "\n" + currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
@@ -595,10 +653,37 @@ module.exports.run = async (lanisBot, message, args) => {
                                 }).catch(async (e) => {
                                     console.log(e)
                                     await currentMember.send("Not sending the location.");
+                                    let reactionInformationEmbed = new Discord.MessageEmbed()
+                                        .addField("Timed Out Reaction", `${currentMember.toString()} reacted with vial, they were supposed to be a backup vial, although their reaction timed out.\nThe location was not sent to them.`)
+                                        .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                        .setFooter(`User ID: ${currentMember.id}`)
+                                        .setColor("cf0202")
+                                        .setTimestamp()
+                                    await lanisBot.channels.gext(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
+                            } else {
+                                await currentMember.send("Sorry, we already have enough vials.")
+                                await reaction.users.remove(currentMember.id)
+                                let reactionInformationEmbed = new Discord.MessageEmbed()
+                                    .addField("Overflow Reaction", `${currentMember.toString()} reacted with vial while there were enough vials already.`)
+                                    .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                    .setFooter(`User ID: ${currentMember.id}`)
+                                    .setColor("cf0202")
+                                    .setTimestamp()
+                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
+                        } else {
+                            await currentMember.send("Sorry, you have to be in the voice channel to get the key location.")
+                            await reaction.users.remove(currentMember.id)
+                            let reactionInformationEmbed = new Discord.MessageEmbed()
+                                .addField("Invalid Reaction", `${currentMember.toString()} reacted with vial while they were not in a voice channel.`)
+                                .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                .setFooter(`User ID: ${currentMember.id}`)
+                                .setColor("cf0202")
+                                .setTimestamp()
+                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
                     }
                 }
@@ -623,6 +708,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let timeTotal = afkCheckCollector.options.time;
     const updateTimeLeft = setInterval(() => {
+        if (timeTotal < 0) { clearInterval(updateTimeLeft) }
         timeTotal -= 5000;
         const minutesLeft = Math.floor(timeTotal / 60000);
         const secondsLeft = Math.floor((timeTotal - minutesLeft * 60000) / 1000);
@@ -682,7 +768,8 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     afkCheckCollector.on("end", async (collected, reason) => {
-        informationPanel.setFooter("AFK check stopped by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
+        informationPanel.setFooter("AFK check stopped by " + message.member.displayName);
+        informationPanel.setTimestamp()
         await informationPanelMessage.edit(informationPanel);
         await arlChatInformationPanelMessage.edit(informationPanel);
         await raidingChannel.setName(oldName, "Stopping AFK Check for Raiding Channel #" + wantedChannel)
@@ -733,52 +820,52 @@ module.exports.run = async (lanisBot, message, args) => {
             }
         }
 
-        await editedEmbed.setFooter("Started by " + message.member.displayName + " at " + hour + ":" + minutes + timeType + " UTC");
+        editedEmbed.setTimestamp()
+        editedEmbed.setFooter("Started by " + message.member.displayName);
         await afkCheckMessage.edit(editedEmbed);
         makePostAFKCheck(borderColor, raidStatusAnnouncements, raidingChannel);
     });
+
+    async function makePostAFKCheck(borderColor) {
+        let queueChannels = [];
+        for (let i = 0; i < Object.keys(Channels.queues.id).length; i++) {
+            const channelID = Channels.queues.id[i];
+            const queueChannel = raidStatusAnnouncements.guild.channels.get(channelID);
+            queueChannels.push(queueChannel)
+        }
+
+        const androidBugFixerEmbed = new Discord.MessageEmbed()
+            .setColor(borderColor)
+            .addField("Post-AFK Check Moving in for " + raidType + " in **Raiding " + wantedChannel + "**", "If you got disconnected due to the android bug or because you forgot to react go to the **Lounge** channel first and *then* react below with:\n:eyes: ");
+        let androidBugFixerMessage = await raidStatusAnnouncements.send(androidBugFixerEmbed);
+        let androidBugFixerFilter = (reaction, user) => (reaction.emoji.name === "👀")
+        const androidBugFixerCollector = new Discord.ReactionCollector(androidBugFixerMessage, androidBugFixerFilter, { time: 60000 });
+        androidBugFixerCollector.on("collect", async (reaction, user) => {
+            let personInQueue = false;
+            for (queueChannel of queueChannels) {
+                if (queueChannel !== undefined) {
+                    if (queueChannel.members.has(user.id) === true) {
+                        personInQueue = true;
+                    }
+                }
+            }
+
+            if (personInQueue) await raidStatusAnnouncements.guild.members.fetch(user.id).then(async (member) => {
+                await member.setVoiceChannel(raidingChannel);
+            });
+        });
+
+        await androidBugFixerMessage.react("👀");
+        androidBugFixerCollector.on("end", async (collected, reason) => {
+            await androidBugFixerMessage.delete();
+        });
+
+    }
 }
 
 
 module.exports.help = {
     name: "afk"
-}
-
-async function makePostAFKCheck(borderColor, channel, intoChannel) {
-    let queueChannels = [];
-    for (let i = 0; i < Object.keys(Channels.queues.id).length; i++) {
-        const channelID = Channels.queues.id[i];
-        const queueChannel = channel.guild.channels.get(channelID);
-        queueChannels.push(queueChannel)
-    }
-
-    const androidBugFixerEmbed = new Discord.MessageEmbed()
-        .setColor(borderColor)
-        .addField("Post-AFK Check Moving in", "If you got disconnected due to the android bug or because you forgot to react go to the **Lounge** channel and react below with:\n:eyes: ");
-    //let androidBugFixerMessage = await raidStatusAnnouncements.send(androidBugFixerEmbed);
-    let androidBugFixerMessage = await channel.send(androidBugFixerEmbed);
-    let androidBugFixerFilter = (reaction, user) => (reaction.emoji.name === "👀")
-    const androidBugFixerCollector = new Discord.ReactionCollector(androidBugFixerMessage, androidBugFixerFilter, { time: 60000 });
-    androidBugFixerCollector.on("collect", async (reaction, user) => {
-        let personInQueue = false;
-        for (queueChannel of queueChannels) {
-            if (queueChannel !== undefined) {
-                if (queueChannel.members.has(user.id) === true) {
-                    personInQueue = true;
-                }
-            }
-        }
-
-        if (personInQueue) await channel.guild.members.fetch(user.id).then(async (member) => {
-            await member.setVoiceChannel(intoChannel);
-        });
-    });
-
-    await androidBugFixerMessage.react("👀");
-    androidBugFixerCollector.on("end", async (collected, reason) => {
-        await androidBugFixerMessage.delete();
-    });
-
 }
 
 function sleep(ms) {
