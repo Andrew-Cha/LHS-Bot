@@ -46,5 +46,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "faqReset"
+    name: "faqReset",
+    category: "Server Management",
+    example: "`-faqReset`",
+    explanation: "Meant to be used to reset the message in the FAQ channel."
 }

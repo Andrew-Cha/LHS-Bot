@@ -78,7 +78,10 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "expelled"
+    name: "expelled",
+    category: "Server Management",
+    example: "`-expelled list` | `-expelled [remove / add] Name`",
+    explanation: "Used for expelling people and to prevent them from verifying in the future."
 }
 
 

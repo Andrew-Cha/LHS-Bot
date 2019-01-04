@@ -111,5 +111,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "safeGuard"
+    name: "safeGuard",
+    category: "Raiding",
+    example: "`-safeGuard [optin / optout / add / remove / list] [AFK / Clean / SplitVoid / Suspend]`",
+    explanation: "An extra safeguard that asks for an extra confirmation before using some commands. "
 }

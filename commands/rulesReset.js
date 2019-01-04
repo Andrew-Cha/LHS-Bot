@@ -25,5 +25,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "rulesReset"
+    name: "rulesReset",
+    category: "Server Management",
+    example: "`-rulesReset`",
+    explanation: "Used to reset the embed in the rules channel."
 }

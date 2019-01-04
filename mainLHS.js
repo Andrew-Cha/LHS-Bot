@@ -1,13 +1,12 @@
-const Discord = require(`discord.js`);
+const Discord = require(`discord.js`)
+const fileSystem = require(`fs`);
 const sqlite3 = require(`sqlite3`).verbose()
 
-const Channels = require("./dataFiles/channels.json");
+const config = require("./dataFiles/config.json");
+const Channels = require("./dataFiles/channels.json")
 const Roles = require("./dataFiles/roles.json")
 
-const config = require("./dataFiles/config.json");
 const lanisBot = new Discord.Client();
-
-const fileSystem = require(`fs`);
 
 lanisBot.commands = new Discord.Collection();
 lanisBot.database = new sqlite3.Database(`./dataFiles/database`, error => {
@@ -17,6 +16,7 @@ lanisBot.database = new sqlite3.Database(`./dataFiles/database`, error => {
     console.log('Connected to the in-memory SQlite3 database.')
 })
 lanisBot.options.fetchAllMembers = true
+lanisBot.activeVerificationCount = 0
 lanisBot.setMaxListeners(100);
 
 let antiflood = new Set();
@@ -25,17 +25,18 @@ let antifloodTime = 1;  // in seconds
 fileSystem.readdir("./commands", (e, files) => {
     if (e) console.log(e);
 
-    let file = files.filter(f => f.split(".").pop() === "js");
+    //JavaSript files only
+    let filteredFiles = files.filter(f => f.split(".").pop() === "js"); 
 
-    if (file.length <= 0) {
-        console.log("File not found or zero length (empty)");
+    if (filteredFiles.length <= 0) {
+        console.log("Folder not found or zero length (empty)");
         return;
     }
 
-    file.forEach((f, i) => {
-        let props = require(`./commands/${f}`);
+    filteredFiles.forEach((f, i) => {
+        let file = require(`./commands/${f}`);
         console.log(`${f} command loaded.`);
-        lanisBot.commands.set(props.help.name.toUpperCase(), props);
+        lanisBot.commands.set(file.help.name.toUpperCase(), file);
     });
 });
 
@@ -94,11 +95,17 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     if (user.bot) return;
 
     if (reactionChannel.id === Channels.historyDMs.id) {
-        if (reaction.emoji.name === "🔑") {
+        if (reaction.emoji.name === "🔑" || reaction.emoji.name === "↩") {
             await reactionMessage.reactions.removeAll();
+            await reactionMessage.react("✅");
             await reactionMessage.react("❌");
             await reactionMessage.react("🔨");
             await reactionMessage.react("🔒");
+        } else if (reaction.emoji.name === "✅") {
+            await reactionMessage.reactions.removeAll()
+            await reactionMessage.react("📧")
+            await reactionMessage.react("👀")
+            await reactionMessage.react("↩")
         } else if (reaction.emoji.name === "🔒") {
             await reactionMessage.reactions.removeAll();
             await reactionMessage.react("🔑");
@@ -125,6 +132,113 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                 await reactionMessage.reactions.removeAll()
                 await reactionMessage.react("👋");
             })
+        } else if (reaction.emoji.name === "👀") {
+            await reactionMessage.reactions.removeAll()
+            reactionMessage.react("👍")
+            if (reactionMessage.pinned) {
+                reactionMessage.unpin()
+            }
+        } else if (reaction.emoji.name === "📧") {
+            let memberID = reaction.message.embeds[0].footer.text.split(":")[1].trim()
+            let memberFound = true
+            const member = await reactionMessage.guild.members.fetch(memberID).catch(e => {
+                memberFound = false
+            })
+            if (memberFound) {
+                const responseStatusEmbed = new Discord.MessageEmbed()
+                    .setColor("#4286f4")
+                    .setDescription(`Response for <@${memberID}> by <@${user.id}>`)
+                    .addField("Response Status: ", "No Input Yet")
+                    .setFooter("Time Left: 5 minutes 0 seconds.")
+
+                const responseStatusMessage = await reactionChannel.send(responseStatusEmbed)
+
+                let responseMessage = "No Input"
+                let waitingForConfirmation = false
+
+                const filter = message => {
+                    if (waitingForConfirmation) return false
+                    if (message.author.id !== user.id) return false
+                    return true
+                }
+                const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
+
+                const responseCollector = new Discord.MessageCollector(reactionChannel, filter, { time: 300000 });
+
+                responseCollector.on("collect", async message => {
+                    if (!waitingForConfirmation) {
+                        if (message.content.length === 0) {
+                            await reactionChannel.send("The message has to include text content.")
+                        } else if (message.content.length <= 1000) {
+                            await new Promise(async (resolve, reject) => {
+                                waitingForConfirmation = true
+
+                                await reactionChannel.send(`Are you sure this is what you want to respond with to <@${memberID}>?:\n${message.content}`)
+
+                                const confirmationCollector = await reactionChannel.createMessageCollector(confirmationFilter, { time: 60000 });
+                                confirmationCollector.on("collect", async (confirmationMessage, user) => {
+                                    if (confirmationMessage.content.toUpperCase() === "-YES") {
+                                        confirmationCollector.stop("CONTINUE");
+                                    } else if (confirmationMessage.content.toUpperCase() === "-NO") {
+                                        confirmationCollector.stop("STOP");
+                                    } else if (confirmationMessage.content.toUpperCase() === "-STOP") {
+                                        confirmationCollector.stop("STOP")
+                                    } else {
+                                        await reactionChannel.send("Please respond with a correct answer: `-yes`, `-no` or `-stop`.");
+                                    }
+                                });
+
+                                confirmationCollector.on("end", async (collected, reason) => {
+                                    if (reason === "CONTINUE") {
+                                        resolve("SUCCESS");
+                                    } else if (reason === "STOP" || reason === "time") {
+                                        reject("FAILURE");
+                                    }
+                                })
+                            }).then(async => {
+                                responseMessage = message.content
+                                responseStatusEmbed.fields[0] = { name: "Response Status:", value: responseMessage }
+                                responseCollector.stop("responded")
+                            }).catch(async => {
+                                reactionChannel.send("Not sending the current message.")
+                                waitingForConfirmation = false
+                            });
+                        } else {
+                            await reactionChannel.send("Sorry, the message has to be shorter or equal to 1000 characters, please make it shorter.")
+                        }
+                    }
+                })
+
+
+                let timeTotal = responseCollector.options.time;
+                const updateResponseStatusMessage = setInterval((async => {
+                    if (timeTotal < 0) { clearInterval(updateResponseStatusMessage) }
+                    timeTotal -= 10000;
+                    const minutesLeft = Math.floor(timeTotal / 60000);
+                    const secondsLeft = Math.floor((timeTotal - minutesLeft * 60000) / 1000);
+                    responseStatusEmbed.setFooter(`Time Left: ${minutesLeft} minutes ${secondsLeft} seconds.`)
+                    responseStatusMessage.edit(responseStatusEmbed)
+                }), 10000)
+
+                responseCollector.on("end", async (messages, reason) => {
+                    clearInterval(updateResponseStatusMessage)
+                    if (reason === "time") {
+                        await reactionChannel.send(`<@${user.id}>, the response message for <@${memberID}> is no longer being formed. This is what you had as your last input:\n${confirmationMessage}`)
+                    } else {
+                        responseStatusEmbed.setFooter("Message Sent")
+                        responseStatusEmbed.setTimestamp()
+                        responseStatusMessage.edit(responseStatusEmbed)
+                        member.send(responseMessage)
+                        await reactionMessage.reactions.removeAll()
+                        await reactionMessage.react("📫")
+                        if (reactionMessage.pinned) {
+                            reactionMessage.unpin()
+                        }
+                    }
+                })
+            } else {
+                reactionChannel.send(`Can't find <@${memberID}> in the server, thus not continuing.`)
+            }
         }
     }
 
@@ -176,7 +290,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     }
 
     if (reactionChannel.id === Channels.verificationsManual.id) {
-        if (reaction.emoji.name === "🔑") {
+        if (reaction.emoji.name === "🔑" || reaction.emoji.name === "↩") {
             await reactionMessage.reactions.removeAll();
             await reactionMessage.react("✅");
             await reactionMessage.react("❌");
@@ -192,11 +306,6 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             await reactionMessage.react('4⃣'); //four
             await reactionMessage.react('5⃣'); //five
             await reactionMessage.react("↩"); //back arrow
-        } else if (reaction.emoji.name === "↩") {
-            await reactionMessage.reactions.removeAll();
-            await reactionMessage.react("✅");
-            await reactionMessage.react("❌");
-            await reactionMessage.react("🔒");
         } else if (reaction.emoji.name === "✅") {
             const memberVerifyingTag = reactionMessage.embeds[0].description.split(' ')[0];
             const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
@@ -377,47 +486,61 @@ lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`)
 
     lanisBot.setInterval((async () => {
+        console.log("Timer started")
         await checkAutomaticSuspensions()
     }), 300000)
 
-    /*
-        lanisBot.setInterval((async () => {
-            //The idea is to store the week of the year 1 - 52 and check if the current week stored is not the current week - end week and store the current week.
-            const now = new Date();
-            const januaryFirst = new Date(now.getFullYear(), 0, 1);
-            const week = Math.ceil((((now - januaryFirst) / 86400000) + januaryFirst.getDay() + 1) / 7);
-    
-            if (week !== config.lastLoggedWeek) {
-    
-            }
-        }), 1200000)
-        */
+    lanisBot.setInterval((async () => {
+        //The idea is to store the week of the year 1 - 52 and check if the current week stored is not the current week - end week and store the current week.
+        const now = new Date();
+        const januaryFirst = new Date(now.getFullYear(), 0, 1);
+        const week = Math.ceil((((now - januaryFirst) / 86400000) + januaryFirst.getDay() + 1) / 7);
+
+        console.log(`Performing week check, current is ${week} and the stored week is ${config.lastLoggedWeek}`)
+        if (week !== config.lastLoggedWeek) {
+            let commandFile = lanisBot.commands.get("ENDWEEK");
+            const message = await lanisBot.channels.get("432995686678790144").send("Ending the week automatically.")
+            const args = ["automaticEnd"]
+            if (commandFile) commandFile.run(lanisBot, message, args);
+
+            config.lastLoggedWeek = week
+            fileSystem.writeFile("./dataFiles/config.json", JSON.stringify(config, null, 1), async error => {
+                if (error) {
+                    throw error
+                }
+            })
+        }
+    }), 1200000)
 });
 
 lanisBot.on("message", async message => {
     if (message.author.bot) return
     if (message.channel.type === "dm") {
         let messageContent = message.content
-        if (messageContent.toUpperCase() === "DONE" || messageContent.toUpperCase() === "YES" || messageContent.toUpperCase() === "NO" && messageContent.toUpperCase() === "ABORT" && messageContent.toUpperCase() === "STOP") return
+        if (messageContent.toUpperCase() === "DONE" || messageContent.toUpperCase() === "YES" || messageContent.toUpperCase() === "NO" || messageContent.toUpperCase() === "ABORT" || messageContent.toUpperCase() === "STOP") return
         const guild = lanisBot.guilds.get("343704644712923138");
         const historyDMs = await guild.channels.get(Channels.historyDMs.id)
 
         let memberExpelled = false
-        console.log(message.author.id)
         lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${message.author.id}'`, async (error, row) => {
             if (error) {
                 throw error
             }
-            
+
             if (row !== undefined) memberExpelled = true
 
             if (memberExpelled) {
                 message.react("⚠");
                 return
-            } 
+            }
+
+            if (messageContent.length === 0) {
+                message.react("⚠");
+                return
+            }
 
             if (messageContent.length > 1000) {
-                messageContent = messageContent.splice(0, 1000) + "..."
+                messageContent = message.content.slice(0, 1000) + "..."
             }
 
             const embed = new Discord.MessageEmbed()
@@ -428,9 +551,21 @@ lanisBot.on("message", async message => {
                 .setFooter("User ID: " + message.author.id)
                 .setTimestamp()
 
-            message.react("✅")
+            message.react("📧")
             const messageSent = await historyDMs.send(embed)
             await messageSent.react("🔑")
+            await messageSent.pin()
+            const systemMesssages = await historyDMs.messages.fetch({ after: messageSent.id }).catch(e => { console.log(e) });
+            for (let message of systemMesssages.values()) {
+                if (message.system) {
+                    await message.delete().catch(e => {
+                        console.log(e);
+                    })
+                }
+            }
+            const reportMessage = await message.channel.send("Message sent to modmail, if this was an accident, don't worry.")
+            await sleep(10000)
+            await reportMessage.delete()
         })
         return;
     }

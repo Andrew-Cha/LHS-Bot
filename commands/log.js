@@ -17,22 +17,6 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     if (!isLeader) return await message.channel.send("You have to be a Raid Leader to log your runs.");
 
-    const month = new Date().getUTCMonth() + 1;
-    const day = new Date().getUTCDate();
-    let hour = new Date().getUTCHours();
-    let minutes = new Date().getUTCMinutes();
-    if (minutes < 10) {
-        minutes = "0" + minutes;
-    }
-    let timeType = "PM";
-    if (hour < 12) {
-        timeType = "AM";
-    } else if (hour >= 12) {
-        timeType = "PM";
-        if (hour !== 12) {
-            hour = hour - 12;
-        }
-    }
     const leader = message.member;
     const type = args[0];
     if (type === undefined) return await message.channel.send("Please input a raid type.");
@@ -149,7 +133,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     let logEmbed = new Discord.MessageEmbed()
         .setColor(borderColor)
-        .addField("**" + raidType + "** run", "At: `" + month + "/" + day + " " + hour + ":" + minutes + " " + timeType + " UTC`\nBy: " + leader.toString())
+        .addField("**" + raidType + "** run", "By: " + leader.toString())
+        .setTimestamp()
     if (customMessage) {
         logEmbed.addField("Additions: ", customMessage)
     }
@@ -162,5 +147,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "log"
+    name: "log",
+    category: "Raiding",
+    example: "`-log cult` | `-log void`",
+    explanation: "Used to log Lost Halls runs for raid leaders."
 }

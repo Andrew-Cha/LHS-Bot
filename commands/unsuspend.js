@@ -108,5 +108,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "unsuspend"
+    name: "unsuspend",
+    category: "Server Management",
+    example: "`-unsuspend [User Mention] [Reason]`",
+    explanation: "Unsuspends a user, if they are suspended."
 }

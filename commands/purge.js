@@ -14,6 +14,9 @@ module.exports.run = async (lanisBot, message, args) => {
 }
  
 module.exports.help = {
-    name: "purge"
+    name: "purge",
+    category: "Server Management",
+    example: "`-purge X`",
+    explanation: "Purges a specified amount of messages above yours when used."
 }
  

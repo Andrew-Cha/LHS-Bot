@@ -16,5 +16,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "dice"
+    name: "dice",
+    category: "Miscellaneous",
+    example: "`-dice`",
+    explanation: "A command from early days of the bot, rolls a 20 sided dice and returns a number 1-20."
 }

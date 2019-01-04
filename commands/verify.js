@@ -13,149 +13,149 @@ module.exports.run = async (lanisBot, message, args) => {
         .setColor("#cf0202");
 
     if (message.member === null) {
-        await rejectCommand(`You are offline on Discord, please change your status to online.`,
-            `<@${message.author.id}> tried to verify while having an offline status, bot can't fetch their Discord Account.`)
+        await rejectCommand(`<@${message.author.id}>, you are offline on Discord, please change your status to online.`,
+            `<@${message.author.id}> tried to verify while having an offline status, the bot couldn't fetch their Discord Account.`)
         return
     }
 
     const authorRoles = message.member.roles
 
     if (authorRoles.find(role => role.id === Roles.verifiedRaider.id)) {
-        await rejectCommand(`You are already a Verified Raider.`,
+        await rejectCommand(`${message.member.toString()}, you are already a Verified Raider.`,
             `A Verified Raider ${message.member.toString()} (${message.author.username}) tried to verify.`)
         return
     }
 
     let inGameName = args[0];
     if (inGameName === undefined) {
-        await rejectCommand(`Input a name to verify, please.`,
+        await rejectCommand(`${message.member.toString()}, input a name to verify, please.`,
             `User ${message.member.toString()} (${message.author.username}) tried to verify with no name input.`)
         return
     }
 
     if (inGameName.length > 10) {
-        await rejectCommand(`Input a valid name to verify, please.`,
-            `User ${message.member.toString()} (${message.author.username}) tried to verify with a name that is longer than 10 characters.`)
+        await rejectCommand(`${message.member.toString()}, input a valid name to verify, please.`,
+            `User ${message.member.toString()} (${message.author.username}) tried to verify with a name that is longer than 10 characters (${inGameName})`)
         return
     }
 
-    let messageCollector;
-    let veriCode;
-    let updateTimeLeft;
-    let veriCodeEmbed;
-    let veriCodeMessage;
-    let activeVerificationMessage
-    let isAlt = false;
-    let DMChannel = await message.author.createDM();
+    if (inGameName.toUpperCase() === "YOUR_ROTMG_NAME_HERE") {
+        await rejectCommand(`${message.member.toString()}, input your actual in game name, not an example placeholder.`,
+            `User ${message.member.toString()} (${message.author.username}) tried to verify with a placeholder name.`)
+        return;
+    }
+
+    let activeVerificationStatusMessage
+    let DMChannel = await message.author.createDM()
+    let DMMessageCollector
+    let maxVerificationsAllowedAtOnce = 3
+    let maxVerificationTimeAllowed = 5 //in minutes
+    let memberIsExpelled = false
+    let memberIsPending = false
+    let memberIsVerified = false
+    let isAlt = false
     let timesAttemptedToVerify = 0;
-    let memberAlreadyVerifying = false;
-    let memberExpelled = false;
+    let updateTimeLeft
+    let veriCode
+    let veriCodeEmbed
+    let veriCodeMessage
+
     lanisBot.database.get(`SELECT * FROM expelled WHERE name = '${inGameName.toUpperCase()}'`, async (error, row) => {
         if (error) {
             throw error
         }
-        if (row !== undefined) memberExpelled = true
 
+        if (row !== undefined) memberIsExpelled = true
 
-        if (memberExpelled) {
-            await rejectCommand(`Sorry, this member is expelled, contact a staff member (Security and higher) to appeal.`,
+        if (memberIsExpelled) {
+            await rejectCommand(`${message.member.toString()}, this member is expelled, contact a staff member (Security and higher) to appeal.`,
                 `User ${message.member.toString()} (${message.author.username}) tried to verify with the in game username "${inGameName}", which is expelled.`)
             return
         }
 
-        if (memberExpelled) return;
-
-        let memberVerified = false;
         lanisBot.database.get(`SELECT * FROM verified WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
             if (error) {
                 throw error
             }
-            if (row !== undefined) memberVerified = true
 
-            if (inGameName.toUpperCase() === "YOUR_ROTMG_NAME_HERE") {
-                await rejectCommand(`Input your actual in game name, not an example placeholder.`,
-                    `User ${message.member.toString()} (${message.author.username}) tried to verify with a placeholder name.`)
-                return;
-            }
+            if (row !== undefined) memberIsVerified = true
 
-            if (memberVerified) {
-                await rejectCommand(`Sorry, someone has already applied with the nickname of ${inGameName}`,
+            if (memberIsVerified) {
+                await rejectCommand(`${message.member.toString()}, someone has already applied with the nickname of ${inGameName} or this account was already verified. Please contact a staff member if you think this is a mistake.`,
                     `User ${message.member.toString()} (${message.author.username}) tried to verify as an already verified person named "${inGameName}"`)
                 return
             }
 
-            await new Promise(async (resolve, reject) => {
-                const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
-                messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 900000 });
-                let successfulVerificationStartEmbed = new Discord.MessageEmbed()
-                    .addField("Started Verification", "User " + message.member.toString() + " (" + message.author.username + ") started a verification process with the name '" + inGameName + "'")
-                    .setFooter("User ID: " + message.member.id)
-                    .setColor("3ea04a");
-                await errorChannel.send(successfulVerificationStartEmbed);
+            lanisBot.database.get(`SELECT * FROM pending WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
 
-                const generator = require('generate-password');
+                if (row !== undefined) memberIsPending = true;
 
-                veriCode = generator.generate({
-                    length: 10,
-                    numbers: true
-                });
-
-                veriCode = "LHS_" + veriCode;
-
-                veriCodeEmbed = new Discord.MessageEmbed()
-                    .setColor('#337b0a')
-                    .addField("Add this code to your RealmEye profile description (make sure that this is the only text in a line of the description) and respond with `done` after that is done. Respond with `stop` or `abort` if you want to stop this.", "```css\n" + veriCode + "\n```\nAlso make sure these conditions are met before verifying:\n1) Your profile is public\n2) **Only** the location is set to hidden.")
-                    .setFooter("Time left: 15 minutes 0 seconds");
-                let disabledDM = false;
-
-                lanisBot.database.get(`SELECT * FROM pending WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
-
-                    if (row !== undefined) memberAlreadyVerifying = true;
-                    if (!memberAlreadyVerifying) {
-                        lanisBot.database.run(`INSERT INTO pending(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
+                if (!memberIsPending) {
+                    if (lanisBot.activeVerificationCount >= maxVerificationsAllowedAtOnce) {
+                        await rejectCommand(`${message.member.toString()}, there are already a maximum amount of verifications allowed at the moment (${maxVerificationsAllowedAtOnce}), please try again in around ${maxVerificationTimeAllowed} minutes.`,
+                            `User ${message.member.toString()} (${message.author.username}) tried to verify with the in game name of  "${inGameName}", while there were already ${maxVerificationsAllowedAtOnce} verifications active.`)
+                        return
                     } else {
-                        await message.delete().catch(e => {
-                            console.log(e);
-                        });
-                        await messageCollector.stop();
-                        errorEmbed.addField("Invalid Action", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify when they already have a verification pending.");
-                        await errorChannel.send(errorEmbed);
-                        return await DMChannel.send("There is already a verification pending.");
+                        lanisBot.database.run(`INSERT INTO pending(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
                     }
+                } else {
+                    await rejectCommand(`${message.member.toString()}, there is already a verification pending. If you haven't recently applied, contact a staff member.`,
+                        `User ${message.member.toString()} (${message.author.username}) tried to verify with the in game name of  "${inGameName}", while they already have a verification pending.`)
+                    return
+                }
+
+
+
+                await new Promise(async (resolve, reject) => {
+                    const confirmationFilter = confirmationMessage => confirmationMessage.content !== "" && confirmationMessage.author.bot === false
+                    DMMessageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: maxVerificationTimeAllowed * 60000 })
+                    let successfulVerificationStartEmbed = new Discord.MessageEmbed()
+                        .addField("Started Verification", "User " + message.member.toString() + " (" + message.author.username + ") started a verification process with the name '" + inGameName + "'")
+                        .setFooter("User ID: " + message.member.id)
+                        .setColor("3ea04a");
+                    await errorChannel.send(successfulVerificationStartEmbed);
+
+                    const generator = require('generate-password');
+
+                    veriCode = generator.generate({
+                        length: 10,
+                        numbers: true
+                    });
+
+                    veriCode = "LHS_" + veriCode;
+
+                    veriCodeEmbed = new Discord.MessageEmbed()
+                        .setColor('#337b0a')
+                        .setDescription(message.member.toString() + " verifying as: " + inGameName)
+                        .addField("Add this code to one of the description lines of your RealmEye profile.", "```css\n" + veriCode + "\n```\nTo attempt to verify type `done`\nTo stop this type `abort` or `stop`\n\nAlso make sure these conditions are met before verifying:\n1) Your profile is public\n2) **Only** the location is set to hidden.\n\n[A video tutorial if you are having troubles](https://www.youtube.com/watch?v=eCwM8u7b_jM&feature=youtu.be)")
+                        .setFooter(`Time left: ${maxVerificationTimeAllowed} minutes 0 seconds`);
+                    let disabledDM = false;
 
                     veriCodeMessage = await DMChannel.send(veriCodeEmbed).catch(async (e) => {
-                        errorEmbed.addField("Invalid Action", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify with their DMs turned off.");
-                        await errorChannel.send(errorEmbed);
-                        const errorMessage = await messageChannel.send(message.author.toString() + ", you have your DMs turned off, please turn them on.");;
-                        await sleep(10000);
-                        await errorMessage.delete().catch(e => {
-                            console.log(e);
-                        })
-
-                        await message.delete().catch(e => {
-                            console.log(e);
-                        })
+                        await rejectCommand(`${message.member.toString()}, you have your DMs turned off, please turn them on in Settings -> Privacy and Safety -> "Allow direct messages from server members" and then click Yes`,
+                            `User ${message.member.toString()} (${message.author.username}) tried to verify with the in game name of  "${inGameName}", while they their DMs turned off.`)
                         disabledDM = true;
                     });
 
                     if (disabledDM) {
                         lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
-                        return;
+                        return
                     }
 
+                    lanisBot.activeVerificationCount += 1
                     let activeVerificationEmbed = new Discord.MessageEmbed()
                         .setColor("3ea04a")
                         .setDescription(message.member.toString() + " trying to verify as: " + inGameName)
                         .addField("Attempts", "0")
-                        .setFooter("Time left: 15 minutes 0 seconds.");
+                        .setFooter(`Time left: ${maxVerificationTimeAllowed} minutes 0 seconds.`);
 
-                    activeVerificationMessage = await lanisBot.channels.get(Channels.verificationActive.id).send(activeVerificationEmbed);
+                    activeVerificationStatusMessage = await lanisBot.channels.get(Channels.verificationActive.id).send(activeVerificationEmbed);
 
-                    let timeTotal = messageCollector.options.time;
+                    let timeTotal = DMMessageCollector.options.time;
                     updateTimeLeft = setInterval(() => {
                         if (timeTotal <= 0) {
                             clearInterval(updateTimeLeft)
-                            messageCollector.stop("time")
+                            DMMessageCollector.stop("time")
                         }
                         timeTotal -= 5000;
                         const minutesLeft = Math.floor(timeTotal / 60000);
@@ -163,13 +163,13 @@ module.exports.run = async (lanisBot, message, args) => {
                         veriCodeEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds.");
                         veriCodeMessage.edit(veriCodeEmbed);
                         activeVerificationEmbed.setFooter("Time left: " + minutesLeft + " minutes " + secondsLeft + " seconds.");
-                        activeVerificationMessage.edit(activeVerificationEmbed);
+                        activeVerificationStatusMessage.edit(activeVerificationEmbed);
 
                     }, 5000);
 
                     let currentlyCheckingRequirements = false;
 
-                    messageCollector.on("collect", async (responseMessage, user) => {
+                    DMMessageCollector.on("collect", async (responseMessage, user) => {
                         if (!/[^a-zA-Z]/.test(responseMessage.content)) {
                             if (responseMessage.content.toUpperCase() === "DONE") {
                                 if (!currentlyCheckingRequirements) {
@@ -198,14 +198,14 @@ module.exports.run = async (lanisBot, message, args) => {
                                     currentlyCheckingRequirements = false;
                                     timesAttemptedToVerify += 1;
                                     activeVerificationEmbed.fields[0] = { name: "Attempts", value: timesAttemptedToVerify, inline: false };
-                                    activeVerificationMessage.edit(activeVerificationEmbed)
+                                    activeVerificationStatusMessage.edit(activeVerificationEmbed)
                                 } else {
                                     await DMChannel.send("The bot is currently is reading data off of RealmEye, please wait.");
                                 }
                             } else if (responseMessage.content.toUpperCase() === "ABORT" || responseMessage.content.toUpperCase() === "STOP") {
                                 errorEmbed.addField("Verification Stopped", "User " + message.member.toString() + " (" + message.author.username + ") stopped the verification by saying '" + responseMessage.content + "'");
                                 await errorChannel.send(errorEmbed);
-                                messageCollector.stop("time");
+                                DMMessageCollector.stop("time");
                             } else {
                                 let invalidVerificationAttemptEmbed = new Discord.MessageEmbed()
                                     .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") tried to tell the bot '" + responseMessage.content + "' instead of done in any capitalization.")
@@ -224,7 +224,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     });
 
-                    messageCollector.on("end", async (collected, reason) => {
+                    DMMessageCollector.on("end", async (collected, reason) => {
                         if (reason === "CONTINUE") {
                             resolve("SUCCESS")
                         } else if (reason === "STOP") {
@@ -234,80 +234,82 @@ module.exports.run = async (lanisBot, message, args) => {
                             reject("FAILURE");
                         }
                     })
-                })
-            }).then(async () => {
-                await activeVerificationMessage.delete().catch(e => {
-                    console.log(e);
-                })
+                }).then(async () => {
+                    lanisBot.activeVerificationCount -= 1
+                    await activeVerificationStatusMessage.delete().catch(e => {
+                        console.log(e);
+                    })
 
-                clearInterval(updateTimeLeft);
-                await messageCollector.stop();
-                let noPerms = false;
-                const raiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
-                await message.member.setNickname(inGameName, "Accepted into the server via Automatic Verification.").catch(async e => {
-                    noPerms = true;
-                    await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
-                    return await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
-                });
-                await message.member.roles.add(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
-                    noPerms = true;
-                    await errorChannel.send("User " + message.member.toString + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
-                    return await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
-                });
+                    clearInterval(updateTimeLeft);
+                    await DMMessageCollector.stop();
+                    let noPerms = false;
+                    const raiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
+                    await message.member.setNickname(inGameName, "Accepted into the server via Automatic Verification.").catch(async e => {
+                        noPerms = true;
+                        await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
+                        return await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
+                    });
+                    await message.member.roles.add(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
+                        noPerms = true;
+                        await errorChannel.send("User " + message.member.toString + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
+                        return await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
+                    });
 
-                lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
+                    lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
 
-                await message.delete().catch(e => {
-                    console.log(e);
-                })
+                    await message.delete().catch(e => {
+                        console.log(e);
+                    })
 
-                if (noPerms) return;
-                let successfulVerificationEmbed = new Discord.MessageEmbed()
-                    .setFooter("User ID: " + message.member.id)
-                    .setColor("3ea04a");
-
-                successfulVerificationEmbed.addField("Successful Verification ", "User " + message.member.toString() + " (" + message.author.username + ") got successfully verified.");
-                await errorChannel.send(successfulVerificationEmbed);
-                await veriCodeEmbed.setFooter("The Verification process is completed.");
-                await veriCodeMessage.edit(veriCodeEmbed);
-                await DMChannel.send("Verification is successful, welcome to Public Lost Halls!\nWe're pleased to have you here. Before you start, we do expect all of our user to check our rules and guidelines, found in <#482368517568462868> (Apply both in discord and in-game) and <#379504881213374475> (Which only apply in game). Not knowing these rules or not reading them will not be an excuse for further suspensions, so if you can't understand anything, please don't be afraid asking staff members or members of the community.\n\nWe also have a quick start guide, which can be found in <#482394590721212416>, regarding how to join runs properly, finding the invite link for the server, and where the Raid Leader applications are.\n\nAny doubts, don't be afraid to ask any Staff member to clarify any doubts you may have.");
-                let successfulVerificationLogEmbed = new Discord.MessageEmbed()
-                    .setFooter("User ID: " + message.member.id)
-                    .setColor("3ea04a")
-                    .addField("Successful Verification", "The bot has verified a member " + message.author.toString() + " with the in game name of '" + inGameName + "'\n[Player Profile](https://www.realmeye.com/player/" + inGameName + ")");
-                await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
-                if (!memberVerified) {
-                    lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
-                }
-            }).catch(async (e) => {
-                await activeVerificationMessage.delete().catch(e => {
-                    console.log(e);
-                })
-                await messageCollector.stop();
-
-                lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
-
-                let verificationDoneEmbed = new Discord.MessageEmbed()
-                    .setFooter("User ID: " + message.member.id);
-                if (isAlt) {
-
-                    verificationDoneEmbed.addField("Suspected Alt Found", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but were suspected to be an alt.")
+                    if (noPerms) return;
+                    let successfulVerificationEmbed = new Discord.MessageEmbed()
+                        .setFooter("User ID: " + message.member.id)
                         .setColor("3ea04a");
-                    await DMChannel.send("There was a problem verifying your account. Please wait for a manual verification to be done by the staff. This is will take 2-3 hours usually, 48 hours if the world is about to end or some emergency is present. Don't message staff about it, as the verification will be looked at eventually, thanks :)");
-                } else {
-                    verificationDoneEmbed.addField("Verification Stopped", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but their verification was stopped.")
-                        .setColor("#cf0202");
-                    await DMChannel.send("The Verification process is now stopped.");
-                }
-                clearInterval(updateTimeLeft);
-                await veriCodeEmbed.setFooter("The Verification process is stopped.");
-                await veriCodeMessage.edit(veriCodeEmbed);
-                await errorChannel.send(verificationDoneEmbed);
-                await message.delete().catch(error => {
-                    console.log(e)
+
+                    successfulVerificationEmbed.addField("Successful Verification ", "User " + message.member.toString() + " (" + message.author.username + ") got successfully verified.");
+                    await errorChannel.send(successfulVerificationEmbed);
+                    await veriCodeEmbed.setFooter("The Verification process is completed.");
+                    await veriCodeMessage.edit(veriCodeEmbed);
+                    await DMChannel.send("Verification is successful, welcome to Public Lost Halls!\nWe're pleased to have you here. Before you start, we do expect all of our user to check our rules and guidelines, found in <#482368517568462868> (Apply both in discord and in-game) and <#379504881213374475> (Which only apply in game). Not knowing these rules or not reading them will not be an excuse for further suspensions, so if you can't understand anything, please don't be afraid asking staff members or members of the community.\n\nWe also have a quick start guide, which can be found in <#482394590721212416>, regarding how to join runs properly, finding the invite link for the server, and where the Raid Leader applications are.\n\nAny doubts, don't be afraid to ask any Staff member to clarify any doubts you may have.");
+                    let successfulVerificationLogEmbed = new Discord.MessageEmbed()
+                        .setFooter("User ID: " + message.member.id)
+                        .setColor("3ea04a")
+                        .addField("Successful Verification", "The bot has verified a member " + message.author.toString() + " with the in game name of '" + inGameName + "'\n[Player Profile](https://www.realmeye.com/player/" + inGameName + ")");
+                    await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
+                    if (!memberIsVerified) {
+                        lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
+                    }
+                }).catch(async (e) => {
+                    lanisBot.activeVerificationCount -= 1
+                    await activeVerificationStatusMessage.delete().catch(e => {
+                        console.log(e);
+                    })
+                    await DMMessageCollector.stop();
+
+                    lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
+
+                    let verificationDoneEmbed = new Discord.MessageEmbed()
+                        .setFooter("User ID: " + message.member.id);
+                    if (isAlt) {
+
+                        verificationDoneEmbed.addField("Suspected Alt Found", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but were suspected to be an alt.")
+                            .setColor("3ea04a");
+                        await DMChannel.send("There was a problem verifying your account. Please wait for a manual verification to be done by the staff. This is will take 2-3 hours usually, 48 hours if the world is about to end or some emergency is present. Don't message staff about it, as the verification will be looked at eventually, thanks :)");
+                    } else {
+                        verificationDoneEmbed.addField("Verification Stopped", "User " + message.member.toString() + " (" + message.author.username + ") tried to verify but their verification was stopped.")
+                            .setColor("#cf0202");
+                        await DMChannel.send("The Verification process is now stopped.");
+                    }
+                    clearInterval(updateTimeLeft);
+                    await veriCodeEmbed.setFooter("The Verification process is stopped.");
+                    await veriCodeMessage.edit(veriCodeEmbed);
+                    await errorChannel.send(verificationDoneEmbed);
+                    await message.delete().catch(error => {
+                        console.log(e)
+                    });
+                    return;
                 });
-                return;
-            });
+            })
         })
     })
 
@@ -570,9 +572,9 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 }
 
-                messageCollector.stop("STOP");
+                DMMessageCollector.stop("STOP");
             } else {
-                messageCollector.stop("CONTINUE");
+                DMMessageCollector.stop("CONTINUE");
             }
         }).catch(async e => {
             await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to verify and there was a problem sending a request to their RealmEye page.");
@@ -600,7 +602,10 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "verify"
+    name: "verify",
+    category: "Server Management",
+    example: "`-verify [RotMG Name]`",
+    explanation: "Starts the verification process for a user."
 }
 
 

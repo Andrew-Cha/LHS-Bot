@@ -99,6 +99,13 @@ module.exports.run = async (lanisBot, message, args) => {
                 borderColor = "#3ee3f2" //light blue
                 break;
 
+            case "ICETOMB":
+                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceTomb.dungeon)
+                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceTomb.key)
+                raidType = "**Ice Tomb**"
+                borderColor = "#3ee3f2"
+                break;
+
             case "LAIROFDRACONIS":
                 raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.dungeon);
                 raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.key);
@@ -407,8 +414,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     const filter = (reaction, user) => {
         if (user.bot) return false;
-        if (reaction.emoji.name === "❌") return true;
-        if (reactEmojis.find(emoji => emoji.id === reaction.emoji.id === true)) return true;
+        return true
     }
 
     const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
@@ -570,7 +576,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await currentMember.send("The location is: " + locationMessage + ", you are the **main** vial.");
                                         vialsMessaged += 1;
                                         let reactionInformationEmbed = new Discord.MessageEmbed()
-                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with main vial, confirmed it.\nThe Location was sent to them.`)
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with main vial, confirmed it.\nThe location was sent to them.`)
                                             .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("3ea04a")
@@ -585,6 +591,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         let reactionInformationEmbed = new Discord.MessageEmbed()
                                             .addField("Overflow Reaction", `${currentMember.toString()} reacted with vial, they were supposed to be a main vial, although someone else confirmed main vial first.\nThe location was not sent to them.`)
                                             .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setColor("cf0202")
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setTimestamp()
                                         await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
@@ -635,10 +642,10 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await currentMember.send("The location is: " + locationMessage + ", you are a **backup** vial.");
                                         vialsMessaged += 1;
                                         let reactionInformationEmbed = new Discord.MessageEmbed()
-                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with backup vial, they were supposed to be a backup vial.\nThe location was sent to them.`)
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with backup vial, confirmed it.\nThe location was sent to them.`)
                                             .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
                                             .setFooter(`User ID: ${currentMember.id}`)
-                                            .setColor("cf0202")
+                                            .setColor("3ea04a")
                                             .setTimestamp()
                                         await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const oldVials = informationPanel.fields[1]
@@ -675,7 +682,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                 await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
                         } else {
-                            await currentMember.send("Sorry, you have to be in the voice channel to get the key location.")
+                            await currentMember.send("Sorry, you have to be in the voice channel to get the vial location.")
                             await reaction.users.remove(currentMember.id)
                             let reactionInformationEmbed = new Discord.MessageEmbed()
                                 .addField("Invalid Reaction", `${currentMember.toString()} reacted with vial while they were not in a voice channel.`)
@@ -688,9 +695,13 @@ module.exports.run = async (lanisBot, message, args) => {
                     }
                 }
             } else {
-                if (!peopleReacted.includes(currentMember.id)) {
-                    totalPeople++;
-                    peopleReacted.push(currentMember.id);
+                if (reactEmojis.find(emoji => emoji.id === reaction.emoji.id) && reaction.emoji.id) {
+                    if (!peopleReacted.includes(currentMember.id)) {
+                        totalPeople++;
+                        peopleReacted.push(currentMember.id);
+                    }
+                } else {
+                    await reaction.users.remove(currentMember.id)
                 }
             }
         }
@@ -865,7 +876,10 @@ module.exports.run = async (lanisBot, message, args) => {
 
 
 module.exports.help = {
-    name: "afk"
+    name: "AFK",
+    category: "Raiding",
+    example: "`-afk 1 void USS Right Bazaar` | `-afk 3 puppetmasterstheatre EUW Left`",
+    explanation: "Starts an AFK check for a specified raid type in a specified raiding channel.\nVoid and Cult AFK checks will use the #Raiding subsection and the rest use the #Events subsection."
 }
 
 function sleep(ms) {

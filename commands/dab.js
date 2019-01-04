@@ -11,5 +11,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "dab"
+    name: "dab",
+    category: "Miscellaneous",
+    example: "`-dab`",
+    explanation: "Meant for sinners who have disobeyed the law."
 }

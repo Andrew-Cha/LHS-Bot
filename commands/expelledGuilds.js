@@ -75,7 +75,10 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "expelledGuilds"
+    name: "expelledGuilds",
+    category: "Server Management",
+    example: "`-expelledGuilds list` | `-expelledGuilds [remove / add] Name`",
+    explanation: "Used for expelling guilds and to prevent any members from those guilds from verifying in the future."
 }
 
 

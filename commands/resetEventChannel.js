@@ -54,5 +54,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "resetEventChannel"
+    name: "resetEventChannel",
+    category: "Raiding",
+    example: "`-resetEventChannel 1`",
+    explanation: "Resets an event raiding channel under the #Events category to its base permission state, so an AFK check can be started."
 }

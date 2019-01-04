@@ -71,5 +71,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "purgeMessages"
+    name: "purgeChannel",
+    category: "Server Management",
+    example: "`-purgeChannel [Name / Channel Tag] [Phrase To Delete] [How many messages to check, counting from the newest page]`",
+    explanation: "Meant to be used for removing a specified phrase from a specified channel."
 }

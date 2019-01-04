@@ -10,9 +10,8 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     if (!world) return await message.channel.send("Please input a world, good ones are: 3, 4, 7, 10, 12.");
-    if (isNaN(world)) return await message.channel.send("Please input a number for the world.");
-    if (location === "") return await message.channel.send("Please input a location for the train.");
-    if (world > 13 || world < 1) return await message.channel.send("No such world exists.");
+    if (isNaN(world)) return await message.channel.send("Please input a number for the world, use anything that is no 1 through 12 for no world image.");
+    if (location === "") return await message.channel.send("Please input a location for the world.");
     let worldDescripion = "It seems that this world isn't special.."
 
     switch (Number(world)) {
@@ -37,28 +36,38 @@ module.exports.run = async (lanisBot, message, args) => {
             break;
 
         default:
-            console.log("No description");
+            worldDescripion = "No Description for this world."
             break;
     }
 
-    const imagePath = "./files/images/worlds/world" + world + ".png";
-    const title = "**World #" + world + "";
+    let imagePath;
+    let title;
+
     let worldEmbed = new Discord.MessageEmbed()
         .setColor("#42f477")
-        .addField("Information", worldDescripion)
-        .setDescription(title + " • " + location + " • Started by: " + message.member.displayName + "**")
-        .attachFiles(imagePath)
-        .setImage("attachment://world" + world + ".png");
 
-    const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
-    const messages = await raidStatusAnnouncements.messages.fetch();
 
-    for (let message of messages.values()) await message.delete();
+    if (world < 13 && world > 0) {
+        title = "**World #" + world + "";
+        imagePath = "./files/images/worlds/world" + world + ".png";
+        worldEmbed.addField("Information", worldDescripion)
+            .setImage("attachment://world" + world + ".png")
+            .attachFiles(imagePath)
+    } else {
+        imagePath = "./files/images/oryx.png"
+        title = "**Realm Clearing"
+        worldEmbed.setImage("attachment://oryx.png")
+            .attachFiles(imagePath)
+    }
 
-    await raidStatusAnnouncements.send("<@&501979785140895744>");
-    await raidStatusAnnouncements.send(worldEmbed);
+    worldEmbed.setDescription(title + " • " + location + " • Started by: " + message.member.displayName + "**")
+    const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusEventAnnouncements.id);
+    await raidStatusAnnouncements.send("@here", worldEmbed);
 }
 
 module.exports.help = {
-    name: "world2"
+    name: "world",
+    category: "Raiding",
+    example: "`-world [1-12 for a train map, anything other than that for a Realm Clearing prompt] [Location]`",
+    explanation: "The bot sends an announcement in the #Events section for either a Realm Clearing with or without a map or a train."
 }

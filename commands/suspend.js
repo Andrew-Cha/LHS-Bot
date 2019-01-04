@@ -176,5 +176,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "suspend"
+    name: "suspend",
+    category: "Server Management",
+    example: "`-suspend [User Mention] [Numeric Length] [Type of length, m for minutes, h for hours, d for days, w for weeks] [Reason]`",
+    explanation: "The suspension command, anything above or equal to 10 weeks will offer a perma suspension instead."
 }

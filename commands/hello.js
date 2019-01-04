@@ -13,6 +13,9 @@ module.exports.run = async (lanisBot, message, args) => {
 }
  
 module.exports.help = {
-    name: "hello"
+    name: "hello",
+    category: "Bot",
+    example: "`-hello`",
+    explanation: "Tests the basic functionality of the bot, a remnant from the old days of the bot."
 }
  

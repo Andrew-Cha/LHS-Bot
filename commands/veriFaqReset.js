@@ -34,5 +34,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "veriFaqReset"
+    name: "veriFaqReset",
+    category: "Server Management",
+    example: "`-veriFaqReset`",
+    explanation: "Resets the FAQ for Verifiers."
 }

@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 
 const channels = require("../dataFiles/channels.json");
-const fs = require('fs');
 const path = require('path');
 const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
@@ -118,5 +117,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "clean"
+    name: "clean",
+    category: "Raiding",
+    example: "`-clean 1`",
+    explanation: `Moves all the people in a raiding channel to <#${channels.queues.id[0]}>`
 }

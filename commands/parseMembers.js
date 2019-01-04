@@ -147,7 +147,10 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "parseMembers"
+    name: "parseMembers",
+    category: "Raiding",
+    example: "`-parseMembers 1` + [Image Attachment]",
+    explanation: "A command that crosschecks people in a cropped image of a /who list and the specified raiding channel under the #Raiding category in an attempt to find alts."
 }
 
 function sleep(ms) {

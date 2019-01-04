@@ -5,6 +5,9 @@ module.exports.run = async (lanisBot, message, args) => {
 }
  
 module.exports.help = {
-    name: "vial"
+    name: "vial",
+    category: "Raiding",
+    example: "`-vial`",
+    explanation: "Used to log vials."
 }
  

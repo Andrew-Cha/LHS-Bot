@@ -31,18 +31,18 @@ module.exports.run = async (lanisBot, message, args) => {
                             throw error
                         }
                     })
-                    await message.channel.send(`<@${playerID}> is now feedbackBlacklist.`)
+                    await message.channel.send(`<@${playerID}> is now blacklisted from adding feedback.`)
                 } else {
-                    return await message.channel.send(`<@${playerID}> is already blacklisted.`);
+                    return await message.channel.send(`<@${playerID}> is already blacklisted from adding feedback.`);
                 }
                 break;
 
             case "REMOVE":
                 if (memberExpelled) {
                     lanisBot.database.run(`DELETE FROM feedbackBlacklist WHERE ID = '${playerID}'`)
-                    await message.channel.send(`<@${playerID}> is now unblacklisted.`);
+                    await message.channel.send(`<@${playerID}> is now unblacklisted and can add feedback.`);
                 } else {
-                    return await message.channel.send(`<@${playerID}> is not blacklisted.`);
+                    return await message.channel.send(`<@${playerID}> is not blacklisted from adding feedback.`);
                 }
                 break;
 
@@ -52,8 +52,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     let expelledPeople = rows.map(row => row.ID)
 
                     for (const person of expelledPeople) {
-                        const member = await message.guild.members.fetch(person).catch()
-                        const newReportMessage = reportMessage + `<@${member.toString()}>`
+                        const newReportMessage = reportMessage + `<@${person}>`
                         if (newReportMessage.length > 1900) {
                             reportMessage = reportMessage + "\n";
                             await message.channel.send(reportMessage);
@@ -74,5 +73,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "feedbackBlacklist"
+    name: "feedbackBlacklist",
+    category: "Server Management",
+    example: "`-feedbackBlacklist list` | `-feedbackBlacklist [remove / add] Name`",
+    explanation: "Used to add people to the feedback blacklist, which prevents them from sending further feedback through the mod mail."
 }

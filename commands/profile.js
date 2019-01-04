@@ -29,5 +29,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "profile"
+    name: "profile",
+    category: "Server Management",
+    example: "`-profile @UserMention`",
+    explanation: "Lists the basic details of a user's discord account, very much WIP."
 }

@@ -40,6 +40,9 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "restart"
+    name: "restart",
+    category: "Bot",
+    example: "`-restart`",
+    explanation: "To be used when the bot is totally broken, logs it in and out of Discord."
 }
  

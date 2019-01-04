@@ -48,5 +48,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "resetChannel"
+    name: "resetChannel",
+    category: "Raiding",
+    example: "`-resetChannel 1`",
+    explanation: "Resets a raiding channel under the #Raiding category to its base permission state, so an AFK check can be started."
 }

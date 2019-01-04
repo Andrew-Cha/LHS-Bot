@@ -165,5 +165,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "setup"
+    name: "setup",
+    category: "Bot",
+    example: "`-setup [roles / emojis / channels]`",
+    explanation: "Displays all the roles, emojis or channels the bot has in memory."
 }

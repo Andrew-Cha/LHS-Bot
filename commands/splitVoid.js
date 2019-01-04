@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const Emojis = require("../dataFiles/emojis.json")
 const channels = require("../dataFiles/channels.json");
 const fs = require('fs');
 const path = require('path');
@@ -83,12 +84,12 @@ module.exports.run = async (lanisBot, message, args) => {
     }
   }
 
-  const reactEmojis = [lanisBot.emojis.find(emoji => emoji.name === "LHvoid"),
-  lanisBot.emojis.find(emoji => emoji.name === "marble"),
-  lanisBot.emojis.find(emoji => emoji.name === "LHpaladin"),
-  lanisBot.emojis.find(emoji => emoji.name === "LHwarrior"),
-  lanisBot.emojis.find(emoji => emoji.name === "knight"),
-  lanisBot.emojis.find(emoji => emoji.name === "LHpriest"),
+  const reactEmojis = [lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity),
+  lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal),
+  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
+  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
+  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight),
+  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest),
     "❌"
   ];
 
@@ -98,12 +99,12 @@ module.exports.run = async (lanisBot, message, args) => {
   const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments.id).send(voidCheckEmbed);
 
   const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHvoid") ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "marble") ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpaladin") ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHwarrior") ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "knight") ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.name === "LHpriest")) && !user.bot;
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity) ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal) ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin) ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior) ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight) ||
+    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest)) && !user.bot;
 
   const collector = new Discord.ReactionCollector(voidCheckMessage, filter, { time: 60000 });
   collector.on("collect", async (reaction, user) => {
@@ -136,12 +137,12 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let peopleActive = [];
     let duplicateReactors = [];
-    const voidEntityEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHvoid");
-    const marbleEmoji = lanisBot.emojis.find(emoji => emoji.name === "marble")
-    const paladinEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHpaladin");
-    const warriorEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHwarrior");
-    const knightEmoji = lanisBot.emojis.find(emoji => emoji.name === "knight");
-    const priestEmoji = lanisBot.emojis.find(emoji => emoji.name === "LHpriest");
+    const voidEntityEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
+    const marbleEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal)
+    const paladinEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin);
+    const warriorEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior);
+    const knightEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight);
+    const priestEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest);
 
     const voidEntityReacts = (collected.get(voidEntityEmoji.id) ? collected.get(voidEntityEmoji.id).users : null);
     const marbleReacts = (collected.get(marbleEmoji.id) ? collected.get(marbleEmoji.id).users : null);
@@ -262,46 +263,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-  name: "splitVoid"
+  name: "splitVoid",
+  category: "Raiding",
+  example: "`-splitVoid [Raiding Channel Number] [2 / 3 / 4 or Small / Medium / Large]`",
+  explanation: "Starts a void split in group assignments."
 }
-
-Object.assign(Discord.Collection.prototype, {
-  partition(fn, thisArg) {
-    if (typeof thisArg !== 'undefined') fn = fn.bind(thisArg);
-    const results = [new Discord.Collection(), new Discord.Collection()];
-    for (const [key, val] of this) {
-      if (fn(val, key, this)) {
-        results[0].set(key, val);
-      } else {
-        results[1].set(key, val);
-      }
-    }
-    return results;
-  }
-})
-
-/* DONE
-Grabs all the people that reacted to useful classes (paladin, warrior, knight, priest)
-*/
-
-/* DONE2
-remove all the people from warrior, paladin, knight, priest in that order from ANY other groups to avoid duplicates or troll reacts. Spit out the names of people who reacted twice in this whole check to useful classes.
-*/
-
-/* DONE
-and sets a max group count. If more than 2 useful class groups have only 1 or less members, then throw that error that it can not form any groups.
-*/
-
-/*DONE
-Split useful classes evenly among X amount of groups
-*/
-
-/* DONE
-Split all the other people (non-usefull classes) into all of those x groups
-*/
-
-/* DONE
-Print out the groups in the format
-Group X:
-Person1 is a :emoji: (for example marble seal)
-*/

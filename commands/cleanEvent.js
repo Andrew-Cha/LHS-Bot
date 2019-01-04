@@ -118,5 +118,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "cleanEvent"
+    name: "cleanEvent",
+    category: "Raiding",
+    example: "`-cleanEvent 1`",
+    explanation: `Moves all the people in an event raiding channel to <#${channels.queues.id[0]}>`
 }

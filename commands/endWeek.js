@@ -8,10 +8,9 @@ const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.
 const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    if (args[0] !== "automaticEnd" && message.member) {
-    const hrlRole = message.guild.roles.find(role => role.id === Roles.headRaidLeader.id);
-    if (message.member.roles.highest.position < hrlRole.position && message.member.id !== "1") return await message.channel.send("You can not end the week as a member with a role lower than Raid Leader Council.");
-    }
+    if (args[0] !== "automaticEnd" && message.author.bot === false) {
+        return message.channel.send("Only the bot can end the week automatically.")
+    } 
     //142250464656883713
 
     let month = new Date().getUTCMonth() + 1;
@@ -172,5 +171,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
 
 module.exports.help = {
-    name: "endWeek"
+    name: "endWeek",
+    category: "Raiding",
+    example: "The bot uses this one!",
+    explanation: "Ends the week and logs all the runs that were done during it."
 }

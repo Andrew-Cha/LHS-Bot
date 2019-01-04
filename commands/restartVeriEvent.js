@@ -27,5 +27,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "restartVeriEvent"
+    name: "restartVeriEvent",
+    category: "Server Management",
+    example: "`-restartVeriEvent`",
+    explanation: "Meant to be used to reset the message embed in the event verification channel."
 }

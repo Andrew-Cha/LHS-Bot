@@ -158,5 +158,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "currentWeek"
+    name: "currentWeek",
+    category: "Raiding",
+    example: "`-currentWeek`",
+    explanation: "Displays all the runs from the current week, includes people who haven't done any but are raid leaders too."
 }

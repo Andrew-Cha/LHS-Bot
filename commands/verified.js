@@ -38,5 +38,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "verified"
+    name: "verified",
+    category: "Server Management",
+    example: "`-verified remove Name`",
+    explanation: "Used to remove people from the verified list if they ever avoided a suspension."
 }

@@ -25,5 +25,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "setPresence"
+    name: "setPresence",
+    category: "Bot",
+    example: "`-setPresence [Playing / Watching / Streaming / Listening] [What it does with that activity]`",
+    explanation: "Used to set what the bot plays in the sidebar."
 }

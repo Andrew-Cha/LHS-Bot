@@ -40,5 +40,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "duplicateMembers"
+    name: "duplicateMembers",
+    category: "Server Management",
+    example: "`-duplicateMembers`",
+    explanation: "Attempts to find all people in a discord who seem to be in the server with more than 1 account."
 }

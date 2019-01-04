@@ -38,5 +38,8 @@ module.exports.run = async (lanisBot, message, args) => {
 }
 
 module.exports.help = {
-    name: "pending"
+    name: "pending",
+    category: "Server Management",
+    example: "`-pending list` | `-pending remove Name`",
+    explanation: "A command used for removing people from the pending list, which the person usually in only while they have a verification to be checked."
 }

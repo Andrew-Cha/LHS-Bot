@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
  
 module.exports.run = async (lanisBot, message, args) => {
-    let date = new Date()
     const embed = new Discord.MessageEmbed()
     .setTitle("This is your title, it can hold 256 characters")
     .setAuthor("Author Name", "https://i.imgur.com/lm8s41J.png")
@@ -24,6 +23,9 @@ module.exports.run = async (lanisBot, message, args) => {
 }
  
 module.exports.help = {
-    name: "embedConstructor"
+    name: "embedConstructor",
+    category: "Server Management",
+    example: "Work In Progress | `-embedConstructor`",
+    explanation: "Meant to be used as an embed constructor in the future to send stylized messages in specified channels in the future."
 }
  
