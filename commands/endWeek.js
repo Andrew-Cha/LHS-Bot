@@ -2,20 +2,15 @@ const Discord = require("discord.js");
 
 const Channels = require("../dataFiles/channels.json");
 const Roles = require("../dataFiles/roles.json")
-const fs = require('fs');
-const path = require('path');
-const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.json");
-const leadingLogs = require(leadingLogsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
     if (args[0] !== "automaticEnd" && message.author.bot === false) {
         return message.channel.send("Only the bot can end the week automatically.")
     } 
     //142250464656883713
-
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
-    const week = parseInt(day / 8) + 1;
+    const week = Math.floor(day / 8) + 1;
     let weekSuffix = "";
     switch (week) {
         case 1:
@@ -74,97 +69,95 @@ module.exports.run = async (lanisBot, message, args) => {
             month = "Unknown Month";
             break;
     }
+
     let reportEmbed = new Discord.MessageEmbed()
         .setColor("3ea04a");
     const weekMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let reportMessage = "";
     reportEmbed.setDescription(weekMessage);
     let activeLeaders = [];
-    for (let i = 0; i < leadingLogs.leaders.length; i++) {
-        const currentLeader = await message.guild.members.fetch(leadingLogs.leaders[i].id).catch(async e => {
-            await message.channel.send("Found a member with an invalid ID, continuing.")
-        });
-        if (currentLeader) activeLeaders.push(leadingLogs.leaders[i]);
-    }
 
-    function compare(a, b) {
-        if (a.runs < b.runs) {
-            return 1;
+    lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
+        rows.forEach(member => {
+            activeLeaders.push(member)
+        })
+
+        function compare(a, b) {
+            return (b.currentCultsLed + b.currentVoidsLed) - (a.currentCultsLed + a.currentVoidsLed)
         }
-        if (a.runs > b.runs) {
-            return -1;
+
+        activeLeaders.sort(compare);
+        let totalRuns = 0
+        let assistedRuns = 0
+        let leaderPlace = 1
+        for (const leader of activeLeaders) {
+            const currentLeader = await message.guild.members.fetch(leader.ID).catch(async e => {
+                await message.channel.send("Found a member with an invalid ID, continuing.")
+            });
+            if (!currentLeader) continue;
+
+            const leaderName = currentLeader.id === message.author.id ? currentLeader.toString() : currentLeader.displayName;
+            const newReportMessage = reportMessage + "\n**[#" + leaderPlace + "]** " + leaderName + "\n Cults Led - " + leader.currentCultsLed + " | Voids Led - " + leader.currentVoidsLed + " | Assisted Runs - " + leader.currentAssists + "\n";
+            totalRuns += leader.currentCultsLed
+            totalRuns += leader.currentVoidsLed
+            assistedRuns += leader.currentAssists
+            if (newReportMessage.length > 1024) {
+                reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+                reportMessage = "**[#" + leaderPlace + "]** " + leaderName + "\nCults Led - " + leader.currentCultsLed + " | Voids Led - " + leader.currentVoidsLed + " | Assisted Runs - " + leader.currentAssists + "\n";
+            } else {
+                reportMessage = newReportMessage;
+            }
+            leaderPlace += 1
         }
-        return 0;
-    }
 
-    activeLeaders.sort(compare);
-    let totalRuns = 0
-    let assistedRuns = 0
-    for (const leader of activeLeaders) {
-        const currentLeader = await message.guild.members.fetch(leader.id).catch(async e => {
-            await message.channel.send("Found a member with an invalid ID, continuing.")
-        });
-        if (!currentLeader) continue;
+        leaderPlace += 1
 
-        const newReportMessage = reportMessage + "\n" + currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
-        totalRuns += parseInt(leader.runs)
-        assistedRuns += parseInt(leader.assistedRuns)
-        if (newReportMessage.length > 1024) {
-            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
-            reportMessage = currentLeader.toString() + " Raids Completed: `" + leader.runs + "`, Assisted Runs: `" + leader.assistedRuns + "`";
-        } else {
-            reportMessage = newReportMessage;
-        }
-    }
+        const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
+        const rlRole = message.guild.roles.find(role => role.id === Roles.raidLeader.id);
 
-    let inactiveRaidLeaders = [];
-    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
-    const rlRole = message.guild.roles.find(role => role.id === Roles.raidLeader.id);
-
-    await message.guild.members.fetch().then(members => {
-        for (const member of members.values()) {
-            let isLeader = false;
-            if (member.user.bot === false) {
-                for (role of member.roles.values()) {
-                    if (role.id === arlRole.id || role.id === rlRole.id) {
-                        isLeader = true;
-                        break;
-                    }
-                }
-                if (isLeader) {
-                    let leaderAdded = false;
-                    for (let i = 0; i < leadingLogs.leaders.length; i++) {
-                        if (leadingLogs.leaders[i].id === member.id) {
-                            leaderAdded = true;
-                            break;
-                        }
-                    }
-                    if (leaderAdded === false) {
-                        inactiveRaidLeaders.push(member);
-                    }
-                }
+        let raidLeaders = []
+        const guildMembers = await message.guild.members.fetch()
+        for (const member of guildMembers.values()) {
+            if (member.user.bot === false && member.roles.find(role => role.id === arlRole.id || role.id === rlRole.id)) {
+                raidLeaders.push(member)
             }
         }
-    });
 
-    for (const leader of inactiveRaidLeaders) {
-        const newReportMessage = reportMessage + "\n" + leader.toString() + " hasn't completed or assisted a single run this week.";
-        if (newReportMessage.length > 1024) {
+        let membersChecked = 0
+        await new Promise(async (resolve, reject) => {
+            raidLeaders.forEach(member => {
+                lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
+                    membersChecked += 1
+                    if (row.currentCultsLed + row.currentVoidsLed + row.currentAssists === 0) {
+                        const leader = message.guild.members.get(member.id)
+                        const leaderName = member.id === message.author.id ? leader.toString() : leader.displayName;
+                        const newReportMessage = reportMessage + "\n" + leaderName + " hasn't completed or assisted a single run this week.";
+
+                        if (newReportMessage.length > 1024) {
+                            reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+                            reportMessage = leaderName + " hasn't completed or assisted a single run this week.";
+                        } else {
+                            reportMessage = newReportMessage;
+                        }
+                    }
+
+                    if (membersChecked === raidLeaders.length) {
+                        resolve("SUCCESS")
+                    }
+                })
+            })
+        }).then(async () => {
             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
-            reportMessage = leader.toString() + " hasn't completed or assisted a single run this week.";
-        } else {
-            reportMessage = newReportMessage;
-        }
-    }
+                .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
+            await lanisBot.channels.get(Channels.leadingActivityLogs.id).send(reportEmbed);
+        }).catch(console.error)
+    })
 
-    reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
-        .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
-    await lanisBot.channels.get(Channels.leadingActivityLogs.id).send(reportEmbed);
-
-    leadingLogs.leaders = [];
-    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (error) {
-        if (error) return console.log(error);
-    });
+    lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
+        rows.forEach(member => {
+            lanisBot.database.run(`UPDATE stats SET currentCultsLed = 0, currentVoidsLed = 0, currentAssists = 0 WHERE ID = ${member.ID};`)
+        })
+    })
 
     await message.channel.send("Done.");
 }

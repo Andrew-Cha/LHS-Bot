@@ -12,7 +12,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
     if (playerID === null && action.toUpperCase() !== "LIST") return message.channel.send("Please input a user to blacklist or to remove.");
     if (playerID !== undefined) {
-        if (playerID.length !== 18) return message.channel.send("Please input a correct User ID or mention.")
+        if (playerID.length < 17) return message.channel.send("Please input a correct User ID or mention.")
     }
 
     let memberExpelled = false

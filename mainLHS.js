@@ -26,7 +26,7 @@ fileSystem.readdir("./commands", (e, files) => {
     if (e) console.log(e);
 
     //JavaSript files only
-    let filteredFiles = files.filter(f => f.split(".").pop() === "js"); 
+    let filteredFiles = files.filter(f => f.split(".").pop() === "js");
 
     if (filteredFiles.length <= 0) {
         console.log("Folder not found or zero length (empty)");
@@ -40,56 +40,125 @@ fileSystem.readdir("./commands", (e, files) => {
     });
 });
 
-const events = {
-    MESSAGE_REACTION_ADD: 'messageReactionAdd',
-    MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
-};
+lanisBot.on("error", console.error);
 
-lanisBot.on('raw', async event => {
-    if (!events.hasOwnProperty(event.t)) return;
-    const { d: data } = event;
-    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id && data.channel_id !== Channels.historyDMs.id) return;
-    const user = lanisBot.users.get(data.user_id);
-    const channel = lanisBot.channels.get(data.channel_id);
+lanisBot.on("message", async message => {
+    if (message.author.bot) return
+    if (message.content === null) return
+    let prefix = config.prefix;
 
-    if (channel.messages.has(data.message_id)) return;
+    let messageArray = message.content.match(/\S+/g)
+    if (messageArray === null) return
+    let command = messageArray[0]
+    let args = messageArray.slice(1)
 
-    const message = await channel.messages.fetch(data.message_id);
-    const emojiKey = (data.emoji.id) ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
-    const reaction = message.reactions.get(emojiKey);
-    lanisBot.emit(events[event.t], reaction, user);
-});
-
-lanisBot.on('guildMemberRemove', async (member) => {
-    const memberRoles = member.roles;
-    let isSuspended = false;
-    let isRaider = false;
-
-    for (const role of memberRoles.values()) {
-        if (role.id === Roles.suspendedButVerified.id || role.id === Roles.suspended.id) {
-            isSuspended = true;
-        } else if (role.id === Roles.verifiedRaider.id) {
-            if (!isSuspended) {
-                isRaider = true;
-            }
-        }
+    if (command.slice(prefix.length).toUpperCase() === "STATS" && message.channel.id !== Channels.verificationsAutomatic) {
+        if (command.indexOf(config.prefix) !== 0) return
+        let commandFile = lanisBot.commands.get("STATS");
+        if (commandFile) commandFile.run(lanisBot, message, args);
+        return;
+    } else if (command.slice(prefix.length).toUpperCase() === "LEADERBOARD" && message.channel.id !== Channels.verificationsAutomatic) {
+        if (command.indexOf(config.prefix) !== 0) return
+        let commandFile = lanisBot.commands.get("LEADERBOARD");
+        if (commandFile) commandFile.run(lanisBot, message, args);
+        return;
     }
 
-    if (!isSuspended && isRaider) {
-        lanisBot.database.get(`SELECT * FROM verified WHERE ID = '${member.id}'`, async (error, row) => {
+    if (message.channel.type === "dm") {
+        let messageContent = message.content
+        if (messageContent.toUpperCase() === "DONE" || messageContent.toUpperCase() === "YES" || messageContent.toUpperCase() === "NO" || messageContent.toUpperCase() === "ABORT" || messageContent.toUpperCase() === "STOP") return
+        const guild = lanisBot.guilds.get("343704644712923138");
+        const historyDMs = await guild.channels.get(Channels.historyDMs.id)
+
+        let memberExpelled = false
+        lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${message.author.id}'`, async (error, row) => {
             if (error) {
                 throw error
             }
-            if (row !== undefined) {
-                lanisBot.database.run(`DELETE FROM verified WHERE ID = '${member.id}'`)
+
+            if (row !== undefined) memberExpelled = true
+
+            if (memberExpelled) {
+                message.react("⚠");
+                return
             }
+
+            if (messageContent.length === 0) {
+                message.react("⚠");
+                return
+            }
+
+            if (messageContent.length > 1000) {
+                messageContent = message.content.slice(0, 1000) + "..."
+            }
+
+            const embed = new Discord.MessageEmbed()
+                .setAuthor(message.author.tag, await message.author.avatarURL())
+                .setColor("3ea04a")
+                .setDescription(message.author.toString(), true)
+                .addField("Direct Message", messageContent)
+                .setFooter("User ID: " + message.author.id)
+                .setTimestamp()
+
+            message.react("📧")
+            const messageSent = await historyDMs.send(embed)
+            await messageSent.react("🔑")
+
+            const reportMessage = await message.channel.send("Message sent to modmail, if this was an accident, don't worry.")
+            await sleep(10000)
+            await reportMessage.delete()
         })
+        return;
     }
+
+    let permittedChannels = []
+    for (const index in Channels.botCommands.id) {
+        permittedChannels.push(Channels.botCommands.id[index])
+    }
+    permittedChannels.push(Channels.verificationsAutomatic.id)
+
+    if (!permittedChannels.includes(message.channel.id) && command.toUpperCase() !== config.prefix + "PURGE" && command.toUpperCase() !== config.prefix + "VERIFY") return
+
+    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id) {
+        message.delete();
+        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
+    }
+
+    const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
+    if (message.channel.id === Channels.verificationsAutomatic.id && command.toUpperCase() !== config.prefix + "VERIFY" && message.member.roles.highest.position < devRole.position) {
+        let errorEmbed = new Discord.MessageEmbed()
+            .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
+            .setFooter("User ID: " + message.member.id)
+            .setColor("#cf0202");
+        await lanisBot.channels.get(Channels.verificationAttempts.id).send(errorEmbed);
+
+        let errorMessage;
+        if (message.content.toUpperCase() === "DONE" || message.content.toUpperCase() === "STOP" || message.content.toUpperCase() === "ABORT") {
+            errorMessage = await message.channel.send("Send this input to the conversation you have with the bot, not here.");
+        } else {
+            errorMessage = await message.channel.send("Please input the verification command correctly.");
+        }
+        await sleep(10000);
+        await errorMessage.delete()
+        return await message.delete();
+    }
+
+    if (command.indexOf(config.prefix) !== 0) return
+    let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());
+    if (commandFile) commandFile.run(lanisBot, message, args);
+
+    antiflood.add(message.author.id);
+
+    setTimeout(() => {
+        antiflood.delete(message.author.id)
+    }, antifloodTime * 1000)
 });
 
 lanisBot.on('messageReactionAdd', async (reaction, user) => {
+    if (reaction === undefined) return;
     if (reaction.message.channel.type !== "text") return;
     const reactionMessage = await reaction.message.channel.messages.fetch(reaction.message.id).catch(console.error);
+    if (reactionMessage === undefined) return;
     const reactionChannel = reactionMessage.channel;
     const verifier = await reactionMessage.guild.members.fetch(user.id);
     if (user.bot) return;
@@ -135,9 +204,6 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         } else if (reaction.emoji.name === "👀") {
             await reactionMessage.reactions.removeAll()
             reactionMessage.react("👍")
-            if (reactionMessage.pinned) {
-                reactionMessage.unpin()
-            }
         } else if (reaction.emoji.name === "📧") {
             let memberID = reaction.message.embeds[0].footer.text.split(":")[1].trim()
             let memberFound = true
@@ -231,9 +297,6 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                         member.send(responseMessage)
                         await reactionMessage.reactions.removeAll()
                         await reactionMessage.react("📫")
-                        if (reactionMessage.pinned) {
-                            reactionMessage.unpin()
-                        }
                     }
                 })
             } else {
@@ -248,7 +311,6 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
         let addedToAntiFlood = false; //needed to we can check if we should send the message the first time they react.
 
         if (!antiflood.has(member.id)) {
-            console.log("Added " + member.displayName + " to antiflood cuz spam react");
             antiflood.add(member.id);
             addedToAntiFlood = true;
 
@@ -442,9 +504,6 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                 if (error) {
                     throw error
                 }
-                if (row !== undefined) {
-                    return await reactionMessage.channel.send(playerToExpel + " is already expelled, " + verifier.toString());
-                }
 
                 if (memberVerifying !== undefined) {
                     lanisBot.database.get(`SELECT * FROM pending WHERE ID = '${memberVerifying.id}'`, async (error, row) => {
@@ -482,11 +541,73 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     }
 })
 
+lanisBot.on('messageUpdate', async (oldMessage, newMessage) => {
+    if (newMessage.channel.id === Channels.verificationsAutomatic.id) {
+        const devRole = newMessage.guild.roles.find(role => role.id === Roles.security.id);
+        if (newMessage.member.roles.highest.position < devRole.position) {
+            newMessage.delete()
+        }
+    }
+})
+
+lanisBot.on('guildMemberAdd', async member => {
+    lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, (error, row) => {
+        if (row !== undefined) return;
+        lanisBot.database.run(`INSERT INTO stats(ID, lostHallsKeysPopped, otherKeysPopped, cultsDone, voidsDone, otherDungeonsDone, cultsLed, voidsLed, assists, currentCultsLed, currentVoidsLed, currentAssists, vialsStored, vialsUsed, commendations, commendedBy) VALUES(${member.id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '')`)
+    })
+})
+
+lanisBot.on('guildMemberRemove', async member => {
+    const memberRoles = member.roles;
+    let isSuspended = false;
+    let isRaider = false;
+
+    for (const role of memberRoles.values()) {
+        if (role.id === Roles.suspendedButVerified.id || role.id === Roles.suspended.id) {
+            isSuspended = true;
+        } else if (role.id === Roles.verifiedRaider.id) {
+            if (!isSuspended) {
+                isRaider = true;
+            }
+        }
+    }
+
+    if (!isSuspended && isRaider) {
+        lanisBot.database.get(`SELECT * FROM verified WHERE ID = '${member.id}'`, async (error, row) => {
+            if (error) {
+                throw error
+            }
+            if (row !== undefined) {
+                lanisBot.database.run(`DELETE FROM verified WHERE ID = '${member.id}'`)
+            }
+        })
+    }
+});
+
+const events = {
+    MESSAGE_REACTION_ADD: 'messageReactionAdd',
+    MESSAGE_REACTION_REMOVE: 'messageReactionRemove',
+};
+
+lanisBot.on('raw', async event => {
+    if (!events.hasOwnProperty(event.t)) return;
+    const { d: data } = event;
+    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id && data.channel_id !== Channels.historyDMs.id) return;
+    const user = lanisBot.users.get(data.user_id);
+    const channel = lanisBot.channels.get(data.channel_id);
+
+    if (channel.messages.has(data.message_id)) return;
+
+    const message = await channel.messages.fetch(data.message_id);
+    const emojiKey = (data.emoji.id) ? `${data.emoji.name}:${data.emoji.id}` : data.emoji.name;
+    const reaction = message.reactions.get(emojiKey);
+    lanisBot.emit(events[event.t], reaction, user);
+});
+
 lanisBot.on("ready", async () => {
     console.log(`${lanisBot.user.username} is online!`)
 
     lanisBot.setInterval((async () => {
-        console.log("Timer started")
         await checkAutomaticSuspensions()
     }), 300000)
 
@@ -496,7 +617,6 @@ lanisBot.on("ready", async () => {
         const januaryFirst = new Date(now.getFullYear(), 0, 1);
         const week = Math.ceil((((now - januaryFirst) / 86400000) + januaryFirst.getDay() + 1) / 7);
 
-        console.log(`Performing week check, current is ${week} and the stored week is ${config.lastLoggedWeek}`)
         if (week !== config.lastLoggedWeek) {
             let commandFile = lanisBot.commands.get("ENDWEEK");
             const message = await lanisBot.channels.get("432995686678790144").send("Ending the week automatically.")
@@ -513,115 +633,7 @@ lanisBot.on("ready", async () => {
     }), 1200000)
 });
 
-lanisBot.on("message", async message => {
-    if (message.author.bot) return
-    if (message.channel.type === "dm") {
-        let messageContent = message.content
-        if (messageContent.toUpperCase() === "DONE" || messageContent.toUpperCase() === "YES" || messageContent.toUpperCase() === "NO" || messageContent.toUpperCase() === "ABORT" || messageContent.toUpperCase() === "STOP") return
-        const guild = lanisBot.guilds.get("343704644712923138");
-        const historyDMs = await guild.channels.get(Channels.historyDMs.id)
 
-        let memberExpelled = false
-        lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${message.author.id}'`, async (error, row) => {
-            if (error) {
-                throw error
-            }
-
-            if (row !== undefined) memberExpelled = true
-
-            if (memberExpelled) {
-                message.react("⚠");
-                return
-            }
-
-            if (messageContent.length === 0) {
-                message.react("⚠");
-                return
-            }
-
-            if (messageContent.length > 1000) {
-                messageContent = message.content.slice(0, 1000) + "..."
-            }
-
-            const embed = new Discord.MessageEmbed()
-                .setAuthor(message.author.tag, await message.author.avatarURL())
-                .setColor("3ea04a")
-                .setDescription(message.author.toString(), true)
-                .addField("Direct Message", messageContent)
-                .setFooter("User ID: " + message.author.id)
-                .setTimestamp()
-
-            message.react("📧")
-            const messageSent = await historyDMs.send(embed)
-            await messageSent.react("🔑")
-            await messageSent.pin()
-            const systemMesssages = await historyDMs.messages.fetch({ after: messageSent.id }).catch(e => { console.log(e) });
-            for (let message of systemMesssages.values()) {
-                if (message.system) {
-                    await message.delete().catch(e => {
-                        console.log(e);
-                    })
-                }
-            }
-            const reportMessage = await message.channel.send("Message sent to modmail, if this was an accident, don't worry.")
-            await sleep(10000)
-            await reportMessage.delete()
-        })
-        return;
-    }
-
-    if (message.content === null) return
-    let prefix = config.prefix;
-
-    let messageArray = message.content.match(/\S+/g)
-    if (messageArray === null) return
-    let command = messageArray[0]
-    let args = messageArray.slice(1)
-
-    let permittedChannels = []
-    for (const index in Channels.botCommands.id) {
-        permittedChannels.push(Channels.botCommands.id[index])
-    }
-    permittedChannels.push(Channels.verificationsAutomatic.id)
-
-    if (!permittedChannels.includes(message.channel.id) && command.toUpperCase() !== config.prefix + "PURGE" && command.toUpperCase() !== config.prefix + "VERIFY") return
-
-    if (antiflood.has(message.author.id) && message.content !== "-yes" && message.content !== "-no" && message.channel.id !== Channels.verificationsAutomatic.id) {
-        message.delete();
-        return message.reply(`You must wait ${antifloodTime} seconds before sending another command.`);
-    }
-
-    const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
-    if (message.channel.id === Channels.verificationsAutomatic.id && command.toUpperCase() !== config.prefix + "VERIFY" && message.member.roles.highest.position < devRole.position) {
-        let errorEmbed = new Discord.MessageEmbed()
-            .addField("Invalid Input", "User " + message.member.toString() + " (" + message.author.username + ") sent an invalid message in <#471711348095713281> : '" + message.content + "'")
-            .setFooter("User ID: " + message.member.id)
-            .setColor("#cf0202");
-        await lanisBot.channels.get(Channels.verificationAttempts.id).send(errorEmbed);
-
-        let errorMessage;
-        if (message.content.toUpperCase() === "DONE" || message.content.toUpperCase() === "STOP" || message.content.toUpperCase() === "ABORT") {
-            errorMessage = await message.channel.send("Send this input to the conversation you have with the bot, not here.");
-        } else {
-            errorMessage = await message.channel.send("Please input the verification command correctly.");
-        }
-        await sleep(10000);
-        await errorMessage.delete()
-        return await message.delete();
-    }
-
-    if (command.indexOf(config.prefix) !== 0) return
-    let commandFile = lanisBot.commands.get(command.slice(prefix.length).toUpperCase());
-    if (commandFile) commandFile.run(lanisBot, message, args);
-
-    antiflood.add(message.author.id);
-
-    setTimeout(() => {
-        antiflood.delete(message.author.id)
-    }, antifloodTime * 1000)
-});
-
-lanisBot.on("error", console.error);
 
 lanisBot.login(config.token);
 

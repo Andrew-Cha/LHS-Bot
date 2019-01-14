@@ -472,6 +472,12 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await currentMember.send("The location is: " + locationMessage);
                                         keysMessaged += 1;
 
+                                        if (wantedType.toUpperCase() === "CULT" || wantedType.toUpperCase() === "VOID") {
+                                            lanisBot.database.run(`UPDATE stats SET lostHallsKeysPopped = lostHallsKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
+                                        } else {
+                                            lanisBot.database.run(`UPDATE stats SET otherKeysPopped = otherKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
+                                        }
+
                                         let reactionInformationEmbed = new Discord.MessageEmbed()
                                             .addField("Successful Reaction", `${currentMember.toString()} reacted with key, confirmed it.\nThe location was sent to them.`)
                                             .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
@@ -666,7 +672,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         .setFooter(`User ID: ${currentMember.id}`)
                                         .setColor("cf0202")
                                         .setTimestamp()
-                                    await lanisBot.channels.gext(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -835,6 +841,25 @@ module.exports.run = async (lanisBot, message, args) => {
         editedEmbed.setFooter("Started by " + message.member.displayName);
         await afkCheckMessage.edit(editedEmbed);
         makePostAFKCheck(borderColor, raidStatusAnnouncements, raidingChannel);
+
+        const randomTimeout = Math.floor(Math.random() * 500000)
+        console.log(randomTimeout)
+        setTimeout(() => {
+            let members = raidingChannel.members
+
+            members.each(member => {
+                if (!member.deaf) {
+                    console.log("Adding run credit to " + member.displayName)
+                    if (wantedType.toUpperCase() === "CULT") {
+                        lanisBot.database.run(`UPDATE stats SET cultsDone = cultsDone + 1 WHERE ID = '${member.id}';`)
+                    } else if (wantedType.toUpperCase() === "VOID") {
+                        lanisBot.database.run(`UPDATE stats SET voidsDone = voidsDone + 1 WHERE ID = '${member.id}';`)
+                    } else {
+                        lanisBot.database.run(`UPDATE stats SET otherDungeonsDone = otherDungeonsDone + 1 WHERE ID = '${member.id}';`)
+                    }
+                }
+            })
+        }, randomTimeout)
     });
 
     async function makePostAFKCheck(borderColor) {

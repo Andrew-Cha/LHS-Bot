@@ -57,7 +57,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
 module.exports.help = {
     name: "manualVerify",
-    category: "Server Managment",
+    category: "Server Management",
     example: "`-manualVerify [User Mention] [Their IGN]`",
     explanation: "Manually verifies a person by skipping the whole verification process."
 }

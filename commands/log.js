@@ -1,10 +1,5 @@
 const Discord = require("discord.js");
-
-const channels = require("../dataFiles/channels.json");
-const fs = require('fs');
-const path = require('path');
-const leadingLogsFile = path.normalize(__dirname + "../../dataFiles/leadingLogs.json");
-const leadingLogs = require(leadingLogsFile);
+const Channels = require("../dataFiles/channels.json");
 
 module.exports.run = async (lanisBot, message, args) => {
     const authorRoles = message.member.roles.values();
@@ -20,6 +15,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const leader = message.member;
     const type = args[0];
     if (type === undefined) return await message.channel.send("Please input a raid type.");
+    
     let raidType = "";
     let borderColor;
     if (type.toUpperCase() === "CULT") {
@@ -32,34 +28,33 @@ module.exports.run = async (lanisBot, message, args) => {
         return await message.channel.send("Incorrect raid type, input one of these types: `Cult` or `Void`.")
     }
 
-    let customMessage = "";
+    args.splice(0, 1)
+    let customMessage = args.join(" ")
 
-    for (i = 1; i < args.length; i++) {
-        customMessage = customMessage + args[i] + " ";
+    if (type.toUpperCase() === "CULT") {
+        lanisBot.database.run(`UPDATE stats SET cultsLed = cultsLed + 1 WHERE ID = '${message.author.id}'`)
+        lanisBot.database.run(`UPDATE stats SET currentCultsLed = currentCultsLed + 1 WHERE ID = '${message.author.id}'`, () => {
+            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
+                if (row.currentCultsLed + row.currentVoidsLed === 1) {
+                    await message.channel.send(`${message.member.toString()}, this is your first run of the week, keep it up!`)
+                } else {
+                    await message.channel.send(`${message.member.toString()} you now have ${row.currentCultsLed} cults led and ${row.currentVoidsLed} voids led.`)
+                }
+            })
+        })
+    } else if (type.toUpperCase() === "VOID") {
+        lanisBot.database.run(`UPDATE stats SET voidsLed = voidsLed + 1 WHERE ID = '${message.author.id}'`)
+        lanisBot.database.run(`UPDATE stats SET currentVoidsLed = currentVoidsLed + 1 WHERE ID = '${message.author.id}'`, () => {
+            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
+                if (row.currentCultsLed + row.currentVoidsLed === 1) {
+                    await message.channel.send(`${message.member.toString()}, this is your first run of the week, keep it up!`)
+                } else {
+                    await message.channel.send(`${message.member.toString()} you now have ${row.currentCultsLed} cults led and ${row.currentVoidsLed} voids led.`)
+                }
+            })
+        })
     }
 
-    let index;
-    let leaderAdded = false;
-    for (let i = 0; i < leadingLogs.leaders.length; i++) {
-        if (leadingLogs.leaders[i].id === message.author.id) {
-            leaderAdded = true;
-            index = i;
-            break;
-        }
-    }
-
-    if (leaderAdded === false) {
-        leadingLogs.leaders[leadingLogs.leaders.length] = {
-            "id": message.author.id,
-            "runs": "1",
-            "assistedRuns": "0"
-        }
-        await message.channel.send(message.member.toString() + " this is your first run of the week, keep it up!");
-    } else {
-        const runsDone = parseInt(leadingLogs.leaders[index].runs)
-        leadingLogs.leaders[index].runs = parseInt(runsDone) + 1;
-        await message.channel.send(message.member.toString() + " you already have " + (runsDone + 1) + " runs done this week, including this one.");
-    }
 
     if (customMessage) {
         const assistantLeadersMentions = message.mentions.members.values();
@@ -72,6 +67,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
             }
         }
+
         if (assistantLeaders !== "") {
             await new Promise(async (resolve, reject) => {
 
@@ -97,40 +93,29 @@ module.exports.run = async (lanisBot, message, args) => {
                         reject("FAILURE");
                     }
                 })
-            }).then(async (successMessage) => {
+            }).then(async () => {
                 const assistantLeadersMentions = message.mentions.members.values();
                 await message.channel.send("Adding one secondary run to the mentioned peoples' logs.");
                 for (const leader of assistantLeadersMentions) {
                     if (leader.user.bot === false) {
-                        let index;
-                        let leaderAdded = false;
-                        for (let i = 0; i < leadingLogs.leaders.length; i++) {
-                            if (leadingLogs.leaders[i].id === leader.id) {
-                                leaderAdded = true;
-                                index = i;
-                                break;
-                            }
-                        }
-
-                        if (leaderAdded === true) {
-                            const assistedRunsCount = parseInt(leadingLogs.leaders[index].assistedRuns);
-                            leadingLogs.leaders[index].assistedRuns = (parseInt(assistedRunsCount) + 1);
-                            await message.channel.send(leader.toString() + " you already have " + (assistedRunsCount + 1) + " assisted runs this week.")
-                        } else if (leaderAdded === false) {
-                            leadingLogs.leaders[leadingLogs.leaders.length] = {
-                                "id": "" + leader.id,
-                                "runs": "0",
-                                "assistedRuns": "1"
-                            }
-                            await message.channel.send(leader.toString() + " this is your first run of the week, keep it up!");
-                        }
+                        lanisBot.database.run(`UPDATE stats SET assists = assists + 1 WHERE ID = '${leader.user.id}'`)
+                        lanisBot.database.run(`UPDATE stats SET currentAssists = currentAssists + 1 WHERE ID = '${leader.user.id}'`, () => {
+                            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${leader.user.id}`, async (error, row) => {
+                                if (row.currentAssists === 1) {
+                                    await message.channel.send(`${leader.toString()}, this is your first assist of the week, keep it up!`)
+                                } else {
+                                    await message.channel.send(`${leader.toString()} you now have ${row.assists} this week.`)
+                                }
+                            })
+                        })
                     }
                 }
-            }).catch(async (failureMessage) => {
+            }).catch(async () => {
                 await message.channel.send("Not adding secondary run credit to the mentioned people.");
             });
         }
     }
+
     let logEmbed = new Discord.MessageEmbed()
         .setColor(borderColor)
         .addField("**" + raidType + "** run", "By: " + leader.toString())
@@ -138,17 +123,13 @@ module.exports.run = async (lanisBot, message, args) => {
     if (customMessage) {
         logEmbed.addField("Additions: ", customMessage)
     }
-    await lanisBot.channels.get(channels.leadingLogs.id).send(logEmbed);
 
-    fs.writeFile(leadingLogsFile, JSON.stringify(leadingLogs), function (error) {
-        if (error) return console.log(e);
-    });
-
+    await lanisBot.channels.get(Channels.leadingLogs.id).send(logEmbed);
 }
 
 module.exports.help = {
     name: "log",
     category: "Raiding",
     example: "`-log cult` | `-log void`",
-    explanation: "Used to log Lost Halls runs for raid leaders."
+    explanation: "Used to log Lost Halls runs for raid leaders, any mentions will give an assist to the mentioned people."
 }

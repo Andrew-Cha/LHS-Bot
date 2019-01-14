@@ -33,6 +33,12 @@ module.exports.run = async (lanisBot, message, args) => {
         return
     }
 
+    if (inGameName.includes("<") || inGameName.includes(">")) {
+        await rejectCommand(`${message.member.toString()}, input your name properly without the "< >", please.`,
+        `User ${message.member.toString()} (${message.author.username}) tried to verify with the brackets included (${inGameName}).`)
+    return
+    }
+
     if (inGameName.length > 10) {
         await rejectCommand(`${message.member.toString()}, input a valid name to verify, please.`,
             `User ${message.member.toString()} (${message.author.username}) tried to verify with a name that is longer than 10 characters (${inGameName})`)
@@ -349,7 +355,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
 
                 if (!codeFound) {
-                    //errorMessages.push("Cannot find the generated VeriCode in the description of the specified member.");
+                    errorMessages.push("Cannot find the generated VeriCode in the description of the specified member.");
                 }
 
                 const characterCount = $('.active').text().replace(/[^0-9]/g, '');
@@ -482,7 +488,6 @@ module.exports.run = async (lanisBot, message, args) => {
                 errorMessages.push("Timed out while trying to read your graveyard history, please try again.")
             });
 
-            console.log(deaths)
             if (deaths === "hidden") {
                 errorMessages.push("Your graveyard is hidden, please unprivate it.")
             } else if (deaths < 100) {

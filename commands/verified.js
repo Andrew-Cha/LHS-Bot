@@ -5,17 +5,26 @@ module.exports.run = async (lanisBot, message, args) => {
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
     if (action === undefined) return await message.channel.send("The only action is `remove`.")
-    const playerName = args[1]
-    if (playerName === undefined) return message.channel.send("Please input a user to remove from the verified list.");
-    if (playerName) {
-        if (playerName.length > 10) return message.channel.send("Nicknames can't be longer than 10 characters long.");
+
+    let unmodifiedInput = args[1]
+    let input = args[1]
+    if (input === undefined) return message.channel.send("Please input a user.")
+    //Try to grab numbers only
+    let inputReplaced = input.replace(/[^0-9]/g, '')
+    if (inputReplaced === "") {
+        if (input.length > 10) return message.channel.send("Usernames can't be longer than 10 characters.")
+        input = input.toUpperCase()
+    } else {
+        if (inputReplaced.length < 17) return await message.channel.send("Input a user mention or their ID.")
+        input = inputReplaced
     }
 
-    let memberVerified = false
-    const playerNameUppercased = playerName !== undefined ? playerName.toUpperCase() : ""
+    if (input === undefined || input === null) return message.channel.send("Please input a user to remove from the pending list.");
+
     const actionUpperCase = action.toUpperCase();
 
-    lanisBot.database.get(`SELECT * FROM verified WHERE name = '${playerNameUppercased}'`, async (error, row) => {
+    let memberVerified = false
+    lanisBot.database.get(`SELECT * FROM verified WHERE name = '${input}' OR ID = '${input}'`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -24,10 +33,10 @@ module.exports.run = async (lanisBot, message, args) => {
         switch (actionUpperCase) {
             case "REMOVE":
                 if (memberVerified) {
-                    lanisBot.database.run(`DELETE FROM verified WHERE name = '${playerNameUppercased}'`)
-                    await message.channel.send(`${playerName} removed from the verified list.`);
+                    lanisBot.database.run(`DELETE FROM verified WHERE name = '${input}' OR ID = '${input}'`)
+                    await message.channel.send(`<@${row.ID}> (${row.name}) removed from the verified list.`);
                 } else {
-                    return await message.channel.send(`${playerName} is not verified.`);
+                    return await message.channel.send(`${unmodifiedInput} is not verified.`);
                 }
                 break;
 
