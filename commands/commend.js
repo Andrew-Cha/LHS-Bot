@@ -49,11 +49,16 @@ module.exports.run = async (lanisBot, message, args) => {
                 return message.channel.send("You have already commended " + member.toString())
             }
         } else {
-            newCommendations = [`${member.id}`]
+            newCommendations = [`${message.author.id}`]
         }
 
         lanisBot.database.run(`UPDATE stats SET commendedBy = '${newCommendations.join(",")}', commendations = commendations + 1 WHERE ID = '${member.id}'`)
         await message.channel.send("Commended " + member.toString() + ", they now have " + newCommendations.length + " commendations.")
+
+        if (newCommendations.length >= 3) {
+            const rusherRole = message.guild.roles.find(role => role.name === "Official Rusher")
+            await member.roles.add(rusherRole)
+        }
     })
 }
 

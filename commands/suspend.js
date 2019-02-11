@@ -55,7 +55,7 @@ module.exports.run = async (lanisBot, message, args) => {
         if (error) {
             throw error
         }
-        
+
         if (row !== undefined) return message.channel.send("Member already suspended.")
 
         let index;

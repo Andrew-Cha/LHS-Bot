@@ -104,7 +104,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                 if (row.currentAssists === 1) {
                                     await message.channel.send(`${leader.toString()}, this is your first assist of the week, keep it up!`)
                                 } else {
-                                    await message.channel.send(`${leader.toString()} you now have ${row.assists} this week.`)
+                                    await message.channel.send(`${leader.toString()} you now have ${row.currentAssists} this week.`)
                                 }
                             })
                         })

@@ -56,7 +56,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         if (newReportMessage.length > 1996) {
                             reportMessage = reportMessage + "\n```";
                             await message.channel.send(reportMessage);
-                            reportMessage = "```\n" + person;
+                            reportMessage = "```\n" + person + "; ";
                         } else {
                             reportMessage = newReportMessage;
                             if (membersScrolled === expelledPeople.length) {

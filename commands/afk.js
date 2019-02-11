@@ -10,15 +10,8 @@ const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGua
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
 module.exports.run = async (lanisBot, message, args) => {
-    const authorRoles = message.member.roles.values();
-    let isLeader = false;
-    for (role of authorRoles) {
-        if (role.id === Roles.raidLeader.id || role.id === Roles.almostRaidLeader.id) {
-            isLeader = true;
-            break;
-        }
-    }
-    if (!isLeader) return await message.channel.send("You have to be a Raid Leader to start an AFK check.");
+    const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
+    if (message.member.roles.highest.position < arlRole.position) return await message.channel.send("Your role position is not high enough to start an AFK check.");
 
     let aborted = false;
     const botCommands = lanisBot.channels.get(message.channel.id);
@@ -28,6 +21,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal);
     const vialEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial);
     let maxKeys = 4;
+    let maxRushers = 2;
     let borderColor;
     let raidEmote;
     let raidKey;
@@ -352,6 +346,7 @@ module.exports.run = async (lanisBot, message, args) => {
         .catch(e => {
             noPermissions = true
         });
+
     const verifiedRaiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id);
     await raidingChannel.updateOverwrite(
         verifiedRaiderRole, {
@@ -362,6 +357,7 @@ module.exports.run = async (lanisBot, message, args) => {
         console.log(e);
         noPermissions = true;
     });
+
     await raidingChannel.setUserLimit(0, "Starting Raid for Raiding Channel #" + wantedChannel)
         .catch(e => {
             noPermissions = true
@@ -373,24 +369,24 @@ module.exports.run = async (lanisBot, message, args) => {
     const warningMessage = ("@here " + raidType + " started by " + message.member.toString() + " for Raiding Channel #" + wantedChannel);
     const warning = await raidStatusAnnouncements.send(warningMessage);
     //const warning = await botCommands.send(warningMessage);
-
     const reactEmojis = [
         raidEmote,
+        raidKey,
         lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
         lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
         lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight),
         lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest),
-        raidKey,
+        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker),
         "❌"
     ];
 
     let afkCheckEmbed = new Discord.MessageEmbed()
         .setColor(borderColor);
     if (wantedType.toUpperCase() === "VOID") {
-        const voidEmbedMessage = "To join, **connect to the raiding channel by clicking its name** and react to " + raidEmote.toString() + "\nIf you have a key or vial, react to " + reactEmojis[5].toString() + " or " + vialEmote.toString() + "\nTo indicate your class or gear choices, react to " + reactEmojis[1].toString() + " " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + " " + marbleSealEmote.toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[6];
+        const voidEmbedMessage = "To join, **connect to the raiding channel by clicking its name** and react to " + raidEmote.toString() + "\nIf you have a key or vial, react to " + raidKey.toString() + " or " + vialEmote.toString() + "\nTo indicate your class or gear choices, react to " + marbleSealEmote.toString() + " " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + " " + reactEmojis[5].toString() + " " + reactEmojis[6].toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[7];
         afkCheckEmbed.addField("**Void** AFK Check" + raidEmote.toString(), voidEmbedMessage, false);
     } else {
-        const cultEmbedMessage = "To join, **connect the raiding channel by clicking its name** and, react to " + raidEmote.toString() + "\nIf you have a key, react to " + reactEmojis[5].toString() + "\nTo indicate your class choice, react to " + reactEmojis[1].toString() + " " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[6];
+        const cultEmbedMessage = "To join, **connect the raiding channel by clicking its name** and, react to " + raidEmote.toString() + "\nIf you have a key, react to " + raidKey.toString() + "\nTo indicate your class choice, react to " + reactEmojis[2].toString() + " " + reactEmojis[3].toString() + " " + reactEmojis[4].toString() + " " + reactEmojis[5].toString() + " " + reactEmojis[6].toString() + "\nTo end the AFK check as a leader, react to " + reactEmojis[7];
         afkCheckEmbed.addField(raidType + " AFK Check", cultEmbedMessage, false);
     }
     afkCheckEmbed.setFooter("Time left: 6 minutes 0 seconds; Total people: 0.")
@@ -404,7 +400,8 @@ module.exports.run = async (lanisBot, message, args) => {
         .addField("Keys:", "None")
         .setFooter("AFK check is in progress.");
 
-    if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None");
+    if (wantedType.toUpperCase() === "VOID") informationPanel.addField("Vials:", "None")
+    informationPanel.addField("Rushers:", "None")
     if (locationMessage !== "") { informationPanel.addField("Location:", locationMessage) }
     const informationPanelMessage = await botCommands.send(informationPanel);
     const arlChatInformationPanelMessage = await lanisBot.channels.get(Channels.arlChat.id).send(informationPanel);
@@ -420,9 +417,18 @@ module.exports.run = async (lanisBot, message, args) => {
     const confirmationFilter = (confirmationMessage) => confirmationMessage.content !== "" && confirmationMessage.author.bot === false;
 
     let peopleMessaged = [];
+    let rushersMessaged = 0;
     let vialsMessaged = 0;
     let keysMessaged = 0;
     let firstKeyMessaged = false;
+    let firstRusherMessaged = false;
+    let rusherFieldIndex;
+
+    if (wantedType.toUpperCase() === "VOID") {
+        rusherFieldIndex = 2
+    } else {
+        rusherFieldIndex = 1
+    }
 
     const afkCheckCollector = new Discord.ReactionCollector(afkCheckMessage, filter, { time: 360000 });
     afkCheckCollector.on("collect", async (reaction, user) => {
@@ -698,6 +704,119 @@ module.exports.run = async (lanisBot, message, args) => {
                                 .setTimestamp()
                             await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
+                    }
+                }
+            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker)) {
+                if (peopleMessaged.includes(currentMember.id) === false) {
+                    if (currentMember.roles.find(role => role.name === "Official Rusher")) {
+                        if (raidingChannel.members.has(currentMember.id) === true) {
+                            if (rushersMessaged < maxRushers) {
+                                await new Promise(async (resolve, reject) => {
+                                    peopleMessaged.push(currentMember.id);
+                                    await currentMember.send("Are you sure you will rush and want to be sent the location? Not rushing will result in a suspension.\nRespond either with: `yes` or `no`.").catch(async e => {
+                                        await message.channel.send("User " + currentMember.toString() + " tried to get location as rusher key but their DMs are turned off.");
+                                    });
+                                    const messageCollector = await DMChannel.createMessageCollector(confirmationFilter, { time: 60000 });
+                                    messageCollector.on("collect", async (responseMessage, user) => {
+                                        if (!/[^a-zA-Z]/.test(responseMessage.content)) {
+                                            if (responseMessage.content.toUpperCase() === "YES") {
+                                                messageCollector.stop("CONTINUE");
+                                            } else if (responseMessage.content.toUpperCase() === "NO") {
+                                                messageCollector.stop("STOP");;
+                                            } else {
+                                                await currentMember.send("Please respond with a correct answer: `yes` or `no`.");
+                                            }
+                                        } else {
+                                            await currentMember.send("Please respond with a correct answer: `yes` or `no`.");
+                                        }
+                                    });
+
+                                    messageCollector.on("end", async (collected, reason) => {
+                                        if (reason === "CONTINUE") {
+                                            resolve("SUCCESS");
+                                        } else if (reason === "STOP" || reason === "time") {
+                                            reject("FAILURE");
+                                        }
+                                    })
+                                }).then(async (successMessage) => {
+                                    if (rushersMessaged < maxRushers) {
+                                        await currentMember.send("The location is: " + locationMessage);
+                                        rushersMessaged += 1
+
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Successful Reaction", `${currentMember.toString()} reacted with planewalker, confirmed it.\nThe location was sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("3ea04a")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        if (firstRusherMessaged) {
+                                            const oldText = informationPanel.fields[rusherFieldIndex].value;
+                                            informationPanel.fields[rusherFieldIndex] = { name: "Rushers:", value: oldText + "\n" + currentMember.toString(), inline: false };
+                                        } else {
+                                            informationPanel.fields[rusherFieldIndex] = { name: "Rushers:", value: currentMember.toString(), inline: false };
+                                            firstRusherMessaged = true
+                                        }
+                                        await informationPanelMessage.edit(informationPanel);
+                                        await arlChatInformationPanelMessage.edit(informationPanel);
+                                    } else {
+                                        await currentMember.send("Sorry, enough rushers have already been sent the location.");
+                                        await reaction.users.remove(currentMember.id)
+                                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                                            .addField("Overflow Reaction", `${currentMember.toString()} reacted with planewalker, confirmed it, but the limit for rushers was hit.\nThe location was not sent to them.`)
+                                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                            .setFooter(`User ID: ${currentMember.id}`)
+                                            .setColor("cf0202")
+                                            .setTimestamp()
+                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        const index = peopleMessaged.indexOf(currentMember.id);
+                                        peopleMessaged.splice(index, 1);
+                                    }
+                                }).catch(async (e) => {
+                                    await currentMember.send("Not sending the location.");
+                                    await reaction.users.remove(currentMember.id)
+                                    let reactionInformationEmbed = new Discord.MessageEmbed()
+                                        .addField("Time Out", `${currentMember.toString()} reacted with planewalker, but their request timed out.`)
+                                        .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                        .setFooter(`User ID: ${currentMember.id}`)
+                                        .setColor("cf0202")
+                                        .setTimestamp()
+                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    const index = peopleMessaged.indexOf(currentMember.id);
+                                    peopleMessaged.splice(index, 1);
+                                });
+                            } else {
+                                await currentMember.send("Sorry, we already have enough rushers.")
+                                await reaction.users.remove(currentMember.id)
+                                let reactionInformationEmbed = new Discord.MessageEmbed()
+                                    .addField("Overflow Reaction", `${currentMember.toString()} reacted with planewalker while there were enough rushers already.`)
+                                    .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                    .setFooter(`User ID: ${currentMember.id}`)
+                                    .setColor("cf0202")
+                                    .setTimestamp()
+                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                            }
+                        } else {
+                            await currentMember.send("Sorry, you have to be in the voice channel to get the rusher location.")
+                            await reaction.users.remove(currentMember.id)
+                            let reactionInformationEmbed = new Discord.MessageEmbed()
+                                .addField("Invalid Reaction", `${currentMember.toString()} reacted with planewalker while they were not in a voice channel.`)
+                                .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                .setFooter(`User ID: ${currentMember.id}`)
+                                .setColor("cf0202")
+                                .setTimestamp()
+                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                        }
+                    } else {
+                        await currentMember.send("Sorry, you have to be an official rusher to get rusher location.")
+                        await reaction.users.remove(currentMember.id)
+                        let reactionInformationEmbed = new Discord.MessageEmbed()
+                            .addField("Invalid Reaction", `${currentMember.toString()} reacted with planewalker while they were not an official rusher, but in the voice channel.`)
+                            .addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                            .setFooter(`User ID: ${currentMember.id}`)
+                            .setColor("cf0202")
+                            .setTimestamp()
+                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                     }
                 }
             } else {

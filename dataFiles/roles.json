@@ -4,11 +4,11 @@
         "id": "343709010832261121"
     },
     "almostRaidLeader": {
-        "name":"Almost Raid Leader",
+        "name": "Almost Raid Leader",
         "id": "384029438188453898"
     },
     "developer": {
-        "name":"Developer",
+        "name": "Developer",
         "id": "433070114112274432"
     },
     "events": {
@@ -16,8 +16,22 @@
         "id": "506379889541251082"
     },
     "headRaidLeader": {
-        "name":"Head Raid Leader",
+        "name": "Head Raid Leader",
         "id": "382652069682610177"
+    },
+    "keyPopper": {
+        "temporary": {
+            "name": "Temporary Key Popper",
+            "id": "542590584729239564"
+        },
+        "verified": {
+            "name": "Verified Key Popper",
+            "id": "542590722466119682"
+        },
+        "veteran": {
+            "name": "Vetaran Key Popper",
+            "id": "542590927328247809"
+        }
     },
     "security": {
         "name":"Security",

@@ -499,6 +499,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0];
             const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1];
             const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID).catch(e => { console.log(e) });
+
             const playerToExpel = reactionMessage.embeds[0].description.split(': ')[1];
             lanisBot.database.get(`SELECT * FROM expelled WHERE name = '${playerToExpel.toUpperCase()}'`, async (error, row) => {
                 if (error) {
@@ -514,6 +515,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                             lanisBot.database.run(`DELETE FROM pending WHERE ID = '${memberVerifying.id}'`)
                         }
                     })
+                } else if (reaction.emoji.name === '3⃣') {
+                    return reactionMessage.channel.send(`<@${user.id}>, <@${memberVerifyingID}> has left the server, reject them using :five:`)
                 }
 
                 let failedVerificationLogEmbed = new Discord.MessageEmbed()
@@ -524,7 +527,7 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
                     failedVerificationLogEmbed.addField("Application Removed", "Player " + playerToExpel + "(" + memberVerifying.toString() + ") was told to reapply by " + verifier.toString() + " due to having too many pages privated.");
                     await memberVerifying.send("Please unprivate **everything** on realmeye except your last seen location and apply again.");
                 } else if (reaction.emoji.name === '5⃣') {
-                    failedVerificationLogEmbed.addField("Application Removed", "Player " + playerToExpel + "(<@" + memberVerifyingID + ">) had their application removed by " + verifier.toString() + ".");
+                    failedVerificationLogEmbed.addField("Application Removed", "Player " + playerToExpel + "(<@" + memberVerifyingID.toString() + ">) had their application removed by " + verifier.toString() + ".");
                 }
 
                 await lanisBot.channels.get(Channels.verificationsLog.id).send(failedVerificationLogEmbed);
@@ -554,6 +557,22 @@ lanisBot.on('guildMemberAdd', async member => {
     lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, (error, row) => {
         if (row !== undefined) return;
         lanisBot.database.run(`INSERT INTO stats(ID, lostHallsKeysPopped, otherKeysPopped, cultsDone, voidsDone, otherDungeonsDone, cultsLed, voidsLed, assists, currentCultsLed, currentVoidsLed, currentAssists, vialsStored, vialsUsed, commendations, commendedBy) VALUES(${member.id}, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '')`)
+    })
+
+    lanisBot.database.get(`SELECT * FROM suspended WHERE ID = '${member.id}'`, (error, row) => {
+        const guild = lanisBot.guilds.get("343704644712923138");
+        if (row !== undefined) {
+            if (row.time !== undefined) {
+                let toBeExpelled = false
+
+                if (row.time >= 60000000000) {
+                    toBeExpelled = true
+                }
+
+                let suspendRole = toBeExpelled ? guild.roles.find(role => role.id === Roles.suspended.id) : guild.roles.find(role => role.id === Roles.suspendedButVerified.id);
+                member.roles.add(suspendRole)
+            }
+        }
     })
 })
 
@@ -630,7 +649,7 @@ lanisBot.on("ready", async () => {
                 }
             })
         }
-    }), 1200000)
+    }), 6000)
 });
 
 
@@ -671,8 +690,12 @@ async function checkAutomaticSuspensions() {
                         await member.roles.add(roles)
                     }
 
-                    const suspendedRole = guild.roles.find(role => role.id === Roles.suspendedButVerified.id)
+                    const suspendedButVerifiedRole = guild.roles.find(role => role.id === Roles.suspendedButVerified.id)
                     if (member.roles.find(role => role.id === Roles.suspendedButVerified.id)) {
+                        await member.roles.remove(suspendedButVerifiedRole);
+                    }
+                    const suspendedRole = guild.roles.find(role => role.id === Roles.suspended.id)
+                    if (member.roles.find(role => role.id === Roles.suspended.id)) {
                         await member.roles.remove(suspendedRole);
                     }
 

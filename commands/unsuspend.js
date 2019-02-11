@@ -14,7 +14,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const regexMatches = memberMention.match(/<@!?(1|\d{17,19})>/)
     const memberID = regexMatches[1];
     if (!memberID) return await message.channel.send("Specify which member you want to suspend.");
-    const memberToUnsuspend = message.guild.members.get(memberID);
+    const memberToUnsuspend = await message.guild.members.fetch(memberID);
     if (!memberToUnsuspend) return await message.channel.send("Please specify the member correctly. Either @ the member or write their ID.");
 
     let index;
@@ -75,6 +75,15 @@ module.exports.run = async (lanisBot, message, args) => {
                     await memberToUnsuspend.roles.remove(role)
                 }
             };
+
+            const suspendedButVerifiedRole = message.guild.roles.find(role => role.id === Roles.suspendedButVerified.id)
+            if (memberToUnsuspend.roles.find(role => role.id === Roles.suspendedButVerified.id)) {
+                await memberToUnsuspend.roles.remove(suspendedButVerifiedRole);
+            }
+            const suspendedRole = message.guild.roles.find(role => role.id === Roles.suspended.id)
+            if (memberToUnsuspend.roles.find(role => role.id === Roles.suspended.id)) {
+                await memberToUnsuspend.roles.remove(suspendedRole);
+            }
 
             const roleNames = row.roles.split(",")
             const roles = []

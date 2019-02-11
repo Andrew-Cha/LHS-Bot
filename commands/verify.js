@@ -35,8 +35,8 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (inGameName.includes("<") || inGameName.includes(">")) {
         await rejectCommand(`${message.member.toString()}, input your name properly without the "< >", please.`,
-        `User ${message.member.toString()} (${message.author.username}) tried to verify with the brackets included (${inGameName}).`)
-    return
+            `User ${message.member.toString()} (${message.author.username}) tried to verify with the brackets included (${inGameName}).`)
+        return
     }
 
     if (inGameName.length > 10) {
@@ -253,12 +253,12 @@ module.exports.run = async (lanisBot, message, args) => {
                     await message.member.setNickname(inGameName, "Accepted into the server via Automatic Verification.").catch(async e => {
                         noPerms = true;
                         await errorChannel.send("User " + message.member.toString() + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
-                        return await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
+                        await DMChannel.send("The bot doesn't have permissions to set your nickname, thus removing your pending application.");
                     });
                     await message.member.roles.add(raiderRole, "Accepted into the server via Automatic Verification.").catch(async e => {
                         noPerms = true;
                         await errorChannel.send("User " + message.member.toString + " (" + message.author.username + ") tried to succesfully verify but the bot didn't have permissions to verify them.");
-                        return await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
+                        await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
                     });
 
                     lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
@@ -291,8 +291,6 @@ module.exports.run = async (lanisBot, message, args) => {
                         console.log(e);
                     })
                     await DMMessageCollector.stop();
-
-                    lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
 
                     let verificationDoneEmbed = new Discord.MessageEmbed()
                         .setFooter("User ID: " + message.member.id);

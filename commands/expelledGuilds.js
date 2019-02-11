@@ -34,7 +34,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             case "REMOVE":
                 if (guildExpelled) {
-                    lanisBot.database.run(`DELETE FROM expelledGuilds WHERE name = '${playerNameUppercased}'`)
+                    lanisBot.database.run(`DELETE FROM expelledGuilds WHERE name = '${guildName}'`)
                     await message.channel.send(`${guildName} is now unexpelled.`);
                 } else {
                     return await message.channel.send(`${guildName} is not expelled.`);
@@ -53,7 +53,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         if (newReportMessage.length > 1996) {
                             reportMessage = reportMessage + "\n```";
                             await message.channel.send(reportMessage);
-                            reportMessage = "```\n" + guild;
+                            reportMessage = "```\n" + guild + "; ";
                         } else {
                             reportMessage = newReportMessage;
                             if (guildsScrolled === expelledGuilds.length) {
