@@ -500,6 +500,49 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await informationPanelMessage.edit(informationPanel);
                                         await arlChatInformationPanelMessage.edit(informationPanel);
                                         if (!firstKeyMessaged) firstKeyMessaged = true;
+
+                                        lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${user.id}'`, async (error, row) => {
+                                            if (row != undefined) {
+                                                let totalKeysPopped = row.lostHallsKeysPopped + row.otherKeysPopped
+
+                                                const temporaryKeyPopper = message.guild.roles.get(Roles.keyPopper.temporary.id)
+                                                const verifiedKeyPopper = message.guild.roles.get(Roles.keyPopper.verified.id)
+                                                const veteranKeyPopper = message.guild.roles.get(Roles.keyPopper.veteran.id)
+
+                                                let roleGrantedEmbed = new Discord.MessageEmbed()
+
+                                                if (totalKeysPopped >= 50) {
+                                                    if (currentMember.roles.find(role => role.id === Roles.keyPopper.veteran.id) !== undefined) {
+                                                        return
+                                                    }
+                                                    currentMember.roles.remove(verifiedKeyPopper)
+                                                    currentMember.roles.add(veteranKeyPopper)
+                                                    currentMember.send("You have popped 50 or more keys for us, you have been granted the Veteran Key Popper role.")
+                                                    roleGrantedEmbed.addField("Role Given", `${currentMember.toString()} received the Veteran Key Popper role at ${totalKeysPopped} runs.`)
+                                                } else if (totalKeysPopped >= 15) {
+                                                    if (currentMember.roles.find(role => role.id === Roles.keyPopper.verified.id) !== undefined) {
+                                                        return
+                                                    }
+                                                    currentMember.roles.remove(temporaryKeyPopper)
+                                                    currentMember.roles.add(verifiedKeyPopper)
+                                                    currentMember.send("You have popped 15 or more keys for us, you have been granted the Verified Key Popper role.")
+                                                    roleGrantedEmbed.addField("Role Given", `${currentMember.toString()} received the Verified Key Popper role at ${totalKeysPopped} runs.`)
+                                                } else {
+                                                    currentMember.roles.add(temporaryKeyPopper)
+                                                    currentMember.send("You have been given the temporary key popper role, please check out <#542591888331374625>")
+                                                    roleGrantedEmbed.addField("Role Given", `${currentMember.toString()} received the Temporary Key Popper role at ${totalKeysPopped} runs.`)
+                                                    setTimeout(() => {
+                                                        currentMember.roles.remove(temporaryKeyPopper)
+                                                    }, 900000)
+                                                }
+
+                                                roleGrantedEmbed.addField("Information", `${raidType} run in Raiding Channel #${wantedChannel}`)
+                                                    .setFooter(`User ID: ${currentMember.id}`)
+                                                    .setColor("3ea04a")
+                                                    .setTimestamp()
+                                                await lanisBot.channels.get(Channels.historyReacts.id).send(roleGrantedEmbed);
+                                            }
+                                        })
                                     } else {
                                         await currentMember.send("Sorry, enough key holders have already been sent the location.");
                                         await reaction.users.remove(currentMember.id)
