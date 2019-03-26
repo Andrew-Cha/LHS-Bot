@@ -149,7 +149,9 @@ module.exports.run = async (lanisBot, message, args) => {
         }).then(async () => {
             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
                 .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
-            await lanisBot.channels.get(Channels.leadingActivityLogs.id).send(reportEmbed);
+                const guild = lanisBot.guilds.get(`343704644712923138`)
+                const channel = guild.channels.get(Channels.leadingActivityLogs.id)
+                await channel.send(reportEmbed)
         }).catch(console.error)
     })
 

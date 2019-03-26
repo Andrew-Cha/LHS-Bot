@@ -1011,7 +1011,6 @@ module.exports.run = async (lanisBot, message, args) => {
 
             members.each(member => {
                 if (!member.deaf) {
-                    console.log("Adding run credit to " + member.displayName)
                     if (wantedType.toUpperCase() === "CULT") {
                         lanisBot.database.run(`UPDATE stats SET cultsDone = cultsDone + 1 WHERE ID = '${member.id}';`)
                     } else if (wantedType.toUpperCase() === "VOID") {
@@ -1034,7 +1033,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         const androidBugFixerEmbed = new Discord.MessageEmbed()
             .setColor(borderColor)
-            .addField("Post-AFK Check Moving in for " + raidType + " in **Raiding " + wantedChannel + "**", "If you got disconnected due to the android bug or because you forgot to react go to the **Lounge** channel first and *then* react below with:\n:eyes: ");
+            .addField("Post-AFK Check Moving in for " + raidType + " in **Raiding " + wantedChannel + "**", "If you got disconnected due to the android bug or because you forgot to react, go to the **Lounge** channel first and *then* react below with:\n:eyes: ");
         let androidBugFixerMessage = await raidStatusAnnouncements.send(androidBugFixerEmbed);
         let androidBugFixerFilter = (reaction, user) => (reaction.emoji.name === "👀")
         const androidBugFixerCollector = new Discord.ReactionCollector(androidBugFixerMessage, androidBugFixerFilter, { time: 60000 });
