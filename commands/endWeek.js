@@ -75,8 +75,10 @@ module.exports.run = async (lanisBot, message, args) => {
     const weekMessage = "**" + week + weekSuffix + " week of " + month + "**\n";
     let reportMessage = "";
     reportEmbed.setDescription(weekMessage);
-    let activeLeaders = [];
 
+    const templateEmbed = reportEmbed
+
+    let activeLeaders = [];
     lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
         rows.forEach(member => {
             activeLeaders.push(member)
@@ -90,6 +92,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let totalRuns = 0
         let assistedRuns = 0
         let leaderPlace = 1
+        let embedCount = 0
         for (const leader of activeLeaders) {
             const currentLeader = await message.guild.members.fetch(leader.ID).catch(async e => {
                 await message.channel.send("Found a member with an invalid ID, continuing.")
@@ -103,6 +106,12 @@ module.exports.run = async (lanisBot, message, args) => {
             assistedRuns += leader.currentAssists
             if (newReportMessage.length > 1024) {
                 reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+                embedCount += 1
+                if (embedCount >= 5) {
+                    channel.send(reportEmbed)
+                    embedCount = 0
+                    reportEmbed = templateEmbed
+                }
                 reportMessage = "**[#" + leaderPlace + "]** " + leaderName + "\nCults Led - " + leader.currentCultsLed + " | Voids Led - " + leader.currentVoidsLed + " | Assisted Runs - " + leader.currentAssists + "\n";
             } else {
                 reportMessage = newReportMessage;
@@ -134,7 +143,13 @@ module.exports.run = async (lanisBot, message, args) => {
                         const newReportMessage = reportMessage + "\n" + leaderName + " hasn't completed or assisted a single run this week.";
 
                         if (newReportMessage.length > 1024) {
+                            embedCount += 1
                             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
+                            if (embedCount >= 5) {
+                                channel.send(reportEmbed)
+                                embedCount = 0
+                                reportEmbed = templateEmbed
+                            }
                             reportMessage = leaderName + " hasn't completed or assisted a single run this week.";
                         } else {
                             reportMessage = newReportMessage;

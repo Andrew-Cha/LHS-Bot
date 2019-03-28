@@ -56,5 +56,9 @@
     "verifier": {
         "name":"Verifier",
         "id": "451576648828059658"
+    },
+    "veteranRaider": {
+        "name": "Veteran Raider",
+        "id": "556927944933507072"
     }
 }

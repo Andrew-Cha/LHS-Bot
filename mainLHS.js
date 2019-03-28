@@ -13,6 +13,46 @@ lanisBot.database = new sqlite3.Database(`./dataFiles/database`, error => {
     if (error) {
         throw error
     }
+
+    lanisBot.database.getAsync = function (sql) {
+        const that = this
+        return new Promise(function (resolve, reject) {
+            that.get(sql, (error, row) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve(row)
+                }
+            })
+        })
+    }
+
+    lanisBot.database.runAsync = function (sql) {
+        const that = this
+        return new Promise(function (resolve, reject) {
+            that.run(sql, (error) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve()
+                }
+            })
+        })
+    }
+
+    lanisBot.database.allAsync = function (sql) {
+        const that = this
+        return new Promise(function (resolve, reject) {
+            that.all(sql, (error, rows) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve(rows)
+                }
+            })
+        })
+    }
+
     console.log('Connected to the in-memory SQlite3 database.')
 })
 lanisBot.options.fetchAllMembers = true
@@ -157,10 +197,12 @@ lanisBot.on("message", async message => {
 lanisBot.on('messageReactionAdd', async (reaction, user) => {
     if (reaction === undefined) return;
     if (reaction.message.channel.type !== "text") return;
+
     const reactionMessage = await reaction.message.channel.messages.fetch(reaction.message.id).catch(console.error);
     if (reactionMessage === undefined) return;
+
     const reactionChannel = reactionMessage.channel;
-    const verifier = await reactionMessage.guild.members.fetch(user.id);
+
     if (user.bot) return;
 
     if (reactionChannel.id === Channels.historyDMs.id) {
@@ -352,6 +394,8 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     }
 
     if (reactionChannel.id === Channels.verificationsManual.id) {
+        const verifier = await reactionMessage.guild.members.fetch(user.id);
+
         if (reaction.emoji.name === "🔑" || reaction.emoji.name === "↩") {
             await reactionMessage.reactions.removeAll();
             await reactionMessage.react("✅");
@@ -542,6 +586,38 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
             })
         }
     }
+
+    if (reactionChannel.id === Channels.verificationsManualVeteran.id) {
+        reactionChannel.send(`Reaction handler to be added.`)
+    }
+
+    if (reactionChannel.id === Channels.verificationsVeteran.id) {
+        const veteranRaiderRole = reactionMessage.guild.roles.get(Roles.veteranRaider.id)
+        const reactionMember = await reactionMessage.guild.members.fetch(user.id)
+
+        if (reaction.emoji.name === `✅`) {
+            const pendingRow = await lanisBot.database.getAsync(`SELECT * FROM pending WHERE ID = '${user.id}'`)
+            if (pendingRow) {
+                const errorMessage = await reactionChannel.send(`There can only be 1 verification active at a time.`)
+                await sleep(10000)
+                await errorMessage.delete()
+                return
+            }
+
+            //Verify, send to VeriVeteranPending
+        } else if (reaction.emoji.name === `❌`) {
+            if (reactionMember.roles.find(role => role.id === veteranRaiderRole.id)) {
+                reactionMember.roles.remove(veteranRaiderRole)
+                const successMessage = await reactionChannel.send(`<@${user.id}>, removed your Veteran Raider role.`)
+                await sleep(10000)
+                await successMessage.delete()
+            } else {
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, you do not have the Veteran Raider Role.`)
+                await sleep(10000)
+                await errorMessage.delete()
+            }
+        }
+    }
 })
 
 lanisBot.on('messageUpdate', async (oldMessage, newMessage) => {
@@ -611,7 +687,7 @@ const events = {
 lanisBot.on('raw', async event => {
     if (!events.hasOwnProperty(event.t)) return;
     const { d: data } = event;
-    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id && data.channel_id !== Channels.historyDMs.id) return;
+    if (data.channel_id !== Channels.verificationsManual.id && data.channel_id !== Channels.verificationsEvents.id && data.channel_id !== Channels.historyDMs.id && data.channel_id !== Channels.verificationsVeteran.id && data.channel_id !== Channels.verificationsManualVeteran.id) return;
     const user = lanisBot.users.get(data.user_id);
     const channel = lanisBot.channels.get(data.channel_id);
 
@@ -651,8 +727,6 @@ lanisBot.on("ready", async () => {
         }
     }), 6000)
 });
-
-
 
 lanisBot.login(config.token);
 

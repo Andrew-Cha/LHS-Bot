@@ -224,7 +224,6 @@ module.exports.run = async (lanisBot, message, args) => {
                 raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
                 raidType = "**Cult**";
                 borderColor = "#cf0202"; //Red
-                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
                 maxKeys = 1;
                 break;
 
@@ -233,7 +232,6 @@ module.exports.run = async (lanisBot, message, args) => {
                 raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
                 raidType = "**Void**";
                 borderColor = "#24048b"; //Purple
-                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
                 maxKeys = 1;
                 break;
 
@@ -250,8 +248,16 @@ module.exports.run = async (lanisBot, message, args) => {
         const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
         if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
             channelNumber = wantedChannel - 1;
-            raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
-            oldName = "raiding-" + wantedChannel;
+            if (message.channel.id === Channels.botCommands.id[4]) {
+                raidingChannel = lanisBot.channels.get(Channels.veteranRaidingChannels.id[channelNumber])
+                raidStatusAnnouncements = lanisBot.channels.get(Channels.veteranRaidStatusAnnouncements.id);
+                oldName = "Veteran Raiding " + wantedChannel;
+            } else {
+                raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
+                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
+                oldName = "raiding-" + wantedChannel;
+            }
+
             if (raidingChannel === undefined) {
                 const error = "No such raiding channel found to set up for raiding.";
                 await message.channel.send(error);

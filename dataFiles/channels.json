@@ -13,7 +13,8 @@
             "432995686678790144",
             "451596266502356994",
             "506892722830049292",
-            "464829705728819220"
+            "464829705728819220",
+            "556932682316120109"
         ]
     },
     "eventRaidingChannels": {
@@ -108,6 +109,25 @@
     "verificationsManual": {
         "name": "Verifications Pending Text Chat",
         "id": "471711541465579521"
+    }, 
+    "verificationsManualVeteran": {
+        "name": "Verifications Veteran Pending Text Chat",
+        "id": "556936182974644262"
+    },
+    "verificationsVeteran": {
+        "name": "Veteran Verification Text Channel",
+        "id": "556930342083362823"
+    },
+    "veteranRaidingChannels": {
+        "name": "Veteran Raiding Voice Channels",
+        "id": [
+            "556932886402433045",
+            "556934608105766933"
+        ]
+    },
+    "veteranRaidStatusAnnouncements": {
+        "name": "Veteran Raiding Status Announcements Text Chat",
+        "id": "556931967497666570"
     },
     "vialLogs": {
         "name": "Vial Logs Text Channel",
