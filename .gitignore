@@ -2,5 +2,8 @@
 node_modules/
 jspm_packages/
 
+# Data Files
+data/database
+
 # Other
 test.js
