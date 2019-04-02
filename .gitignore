@@ -1,2 +1,6 @@
-test.js
+# Dependency directories
 node_modules/
+jspm_packages/
+
+# Other
+test.js
