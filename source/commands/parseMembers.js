@@ -1,10 +1,10 @@
 const Discord = require("discord.js");
 const Vision = require('@google-cloud/vision');
 const fs = require('fs');
-const channels = require("../dataFiles/channels.json");
+const channels = require("../../data/channels.json");
 const Jimp = require("jimp");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const visionClient = new Vision.ImageAnnotatorClient({
         keyFilename: './dataFiles/visionConfig.json'
     });
@@ -19,7 +19,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber]);
+        raidingChannel = client.channels.get(channels.raidingChannels.id[channelNumber]);
     } else {
         const error = "No such raiding channel found to set up for raiding.";
         await message.channel.send(error);

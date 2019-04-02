@@ -1,13 +1,13 @@
 const Discord = require("discord.js");
 const path = require('path');
 
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
     if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not unsuspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
@@ -63,7 +63,7 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     }
 
-    lanisBot.database.get(`SELECT * FROM suspended WHERE ID = ${memberID}`, async (error, row) => {
+    client.database.get(`SELECT * FROM suspended WHERE ID = ${memberID}`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -96,7 +96,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 await memberToUnsuspend.roles.add(roles)
             }
 
-            lanisBot.database.run(`DELETE FROM suspended WHERE ID = ${row.ID}`)
+            client.database.run(`DELETE FROM suspended WHERE ID = ${row.ID}`)
 
             await message.channel.send("Unsuspended.");
 
@@ -106,9 +106,9 @@ module.exports.run = async (lanisBot, message, args) => {
             }
 
             if (suspensionReason != "") {
-                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended by: " + message.member.toString() + " for: " + suspensionReason);
+                await client.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended by: " + message.member.toString() + " for: " + suspensionReason);
             } else {
-                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended by: " + message.member.toString() + ".")
+                await client.channels.get(Channels.suspendLog.id).send(memberToUnsuspend.toString() + " you have been unsuspended by: " + message.member.toString() + ".")
             }
         } else {
             return await message.channel.send("Member not suspended.");

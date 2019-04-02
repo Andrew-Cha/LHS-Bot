@@ -1,25 +1,25 @@
 const Discord = require("discord.js");
 
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json");
-const Emojis = require("../dataFiles/emojis.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json");
+const Emojis = require("../../data/emojis.json")
 
 
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
     if (message.member.roles.highest.position < arlRole.position) return await message.channel.send("Your role position is not high enough to start an AFK check.");
 
     let aborted = false;
-    const botCommands = lanisBot.channels.get(message.channel.id);
-    let raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusEventAnnouncements.id);
+    const botCommands = client.channels.get(message.channel.id);
+    let raidStatusAnnouncements = client.channels.get(Channels.raidStatusEventAnnouncements.id);
     const wantedChannel = args[0];
     const wantedType = args[1];
-    const marbleSealEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal);
-    const vialEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial);
+    const marbleSealEmote = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal);
+    const vialEmote = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial);
     let maxKeys = 4;
     let maxRushers = 2;
     let borderColor;
@@ -38,198 +38,198 @@ module.exports.run = async (lanisBot, message, args) => {
 
         switch (wantedTypeToUppercase) {
             case "ABYSSOFDEMONS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.abyssOfDemons.key);
                 raidType = "**Abyss of Demons**"
                 borderColor = "#c40b1b" //demon red
                 break;
 
             case "CANDYLAND":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.candyLand.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.candyLand.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.candyLand.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.candyLand.key);
                 raidType = "**Candy Land**"
                 borderColor = "##f453ea" //pink
                 break;
 
             case "CNIDARIANREEF":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.cnidarianReef.key);
                 raidType = "**Cnidarian Reef**"
                 borderColor = "#62aed1" //light blue
                 break;
 
             case "CRAWLINGDEPTHS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.crawlingDepths.key);
                 raidType = "**Crawling Depths**"
                 borderColor = "#632f09" //brown
                 break;
 
             case "DAVYJONESLOCKER":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.davyJonesLocker.key);
                 raidType = "**Davy Jone's Locker**"
                 borderColor = "#1c188e" //dark blue
                 break;
 
             case "DEADWATERDOCKS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.deadwaterDocks.key);
                 raidType = "**Deadwater Docks**"
                 borderColor = "#9b9692" //gray
                 break;
 
             case "HAUNTEDCEMETERY":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.hauntedCemetary.key);
                 raidType = "**Haunted Cemetary**"
                 borderColor = "#238c55" //dark green
                 break;
 
             case "ICECAVE":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceCave.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceCave.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.iceCave.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.iceCave.key);
                 raidType = "**Ice Cave**"
                 borderColor = "#3ee3f2" //light blue
                 break;
 
             case "ICETOMB":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceTomb.dungeon)
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.iceTomb.key)
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.iceTomb.dungeon)
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.iceTomb.key)
                 raidType = "**Ice Tomb**"
                 borderColor = "#3ee3f2"
                 break;
 
             case "LAIROFDRACONIS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.lairOfDraconis.key);
                 raidType = "**Lair of Draconis**"
                 borderColor = "#efec2f" //soft yellow
                 break;
 
             case "LAIROFSHAITAN":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.lairOfShaitan.key);
                 raidType = "**Lair of Shaitan**"
                 borderColor = "#c60b1e" //red warm
                 break;
 
             case "MADLAB":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.madLab.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.madLab.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.madLab.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.madLab.key);
                 raidType = "**Mad Lab**"
                 borderColor = "#4d0687" //purple
                 break;
 
             case "MANOROFIMMORTALS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.manorOfImmortals.key);
                 raidType = "**Manor of Immortals**"
                 borderColor = "#4d0687" //purple 
                 break;
 
             case "MOUNTAINTEMPLE":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.mountainTemple.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.mountainTemple.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.mountainTemple.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.mountainTemple.key);
                 raidType = "**Mountain Temple**"
                 borderColor = "#683503" //brown
                 break;
 
             case "NEST":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.nest.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.nest.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.nest.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.nest.key);
                 raidType = "**The Nest**"
                 borderColor = "#d38f19" //mix of orange and yellow
                 break;
 
             case "OCEANTRENCH":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.oceanTrench.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.oceanTrench.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.oceanTrench.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.oceanTrench.key);
                 raidType = "**Ocean Trench**"
                 borderColor = "#0c91a0" //muddy blue
                 break;
 
             case "PARASITECHAMBERS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.parasiteChambers.key);
                 raidType = "**Parasite Chambers**"
                 borderColor = "#bc1640" //red more towards black
                 break;
 
             case "PUPPETMASTERSENCORE":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.puppetMastersEncore.key);
                 raidType = "**Puppet Master's Encore**"
                 borderColor = "#292f4c" //dark blue more like dark
                 break;
 
             case "PUPPETMASTERSTHEATRE":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.puppetMastersTheatre.key);
                 raidType = "**Puppet Master's Theatre**"
                 borderColor = "#5b3521" //brown
                 break;
 
             case "SECLUDEDTHICKET":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.secludedThicket.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.secludedThicket.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.secludedThicket.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.secludedThicket.key);
                 raidType = "**Secluded Thicket**"
                 borderColor = "#337a3b" //green
                 break;
 
             case "SHATTERS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.shatters.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.shatters.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.shatters.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.shatters.key);
                 raidType = "**Shatters**"
                 borderColor = "#110a0c" //black
                 break;
 
             case "SNAKEPIT":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.snakePit.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.snakePit.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.snakePit.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.snakePit.key);
                 raidType = "**Snake Pit**"
                 borderColor = "#337a3b" //green
                 break;
 
             case "TOMBOFTHEANCIENTS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.tombOfTheAncients.key);
                 raidType = "**Tomb of the Ancients**"
                 borderColor = "#e1e81b" //yellow
                 break;
 
             case "TOXICSEWERS":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.toxicSewers.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.toxicSewers.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.toxicSewers.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.toxicSewers.key);
                 raidType = "**Toxic Sewers**"
                 borderColor = "#393756" //purple blue ish
                 break;
 
             case "UNDEADLAIR":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.undeadLair.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.undeadLair.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.undeadLair.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.undeadLair.key);
                 raidType = "**Undead Lair**"
                 borderColor = "#55555b" //gray
                 break;
 
             case "WOODLANDLABYRINTH":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.dungeon);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.dungeon);
+                raidKey = client.emojis.find(emoji => emoji.id === Emojis.woodlandLabyrinth.key);
                 raidType = "**Woodland Labyrinth**"
                 borderColor = "#6b6546" //muddy
                 break;
 
             case "CULT":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.cultist);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.cultist);
+                raidKey = client.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
                 raidType = "**Cult**";
                 borderColor = "#cf0202"; //Red
                 maxKeys = 1;
                 break;
 
             case "VOID":
-                raidEmote = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
-                raidKey = lanisBot.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
+                raidEmote = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
+                raidKey = client.emojis.find(emoji => emoji.id = Emojis.lostHalls.key);
                 raidType = "**Void**";
                 borderColor = "#24048b"; //Purple
                 maxKeys = 1;
@@ -249,12 +249,12 @@ module.exports.run = async (lanisBot, message, args) => {
         if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
             channelNumber = wantedChannel - 1;
             if (message.channel.id === Channels.botCommands.id[4]) {
-                raidingChannel = lanisBot.channels.get(Channels.veteranRaidingChannels.id[channelNumber])
-                raidStatusAnnouncements = lanisBot.channels.get(Channels.veteranRaidStatusAnnouncements.id);
+                raidingChannel = client.channels.get(Channels.veteranRaidingChannels.id[channelNumber])
+                raidStatusAnnouncements = client.channels.get(Channels.veteranRaidStatusAnnouncements.id);
                 oldName = "Veteran Raiding " + wantedChannel;
             } else {
-                raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
-                raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusAnnouncements.id);
+                raidingChannel = client.channels.get(Channels.raidingChannels.id[channelNumber]);
+                raidStatusAnnouncements = client.channels.get(Channels.raidStatusAnnouncements.id);
                 oldName = "raiding-" + wantedChannel;
             }
 
@@ -277,7 +277,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 oldName = "Random Dungeons " + wantedChannel;
             }
             channelNumber = wantedChannel - 1;
-            raidingChannel = lanisBot.channels.get(Channels.eventRaidingChannels.id[channelNumber]);
+            raidingChannel = client.channels.get(Channels.eventRaidingChannels.id[channelNumber]);
             if (raidingChannel === undefined) {
                 const error = "No such raiding channel found to set up for raiding.";
                 await message.channel.send(error);
@@ -378,11 +378,11 @@ module.exports.run = async (lanisBot, message, args) => {
     const reactEmojis = [
         raidEmote,
         raidKey,
-        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
-        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
-        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight),
-        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest),
-        lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker),
+        client.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
+        client.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
+        client.emojis.find(emoji => emoji.id === Emojis.classes.knight),
+        client.emojis.find(emoji => emoji.id === Emojis.classes.priest),
+        client.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker),
         "❌"
     ];
 
@@ -410,7 +410,7 @@ module.exports.run = async (lanisBot, message, args) => {
     informationPanel.addField("Rushers:", "None")
     if (locationMessage !== "") { informationPanel.addField("Location:", locationMessage) }
     const informationPanelMessage = await botCommands.send(informationPanel);
-    const arlChatInformationPanelMessage = await lanisBot.channels.get(Channels.arlChat.id).send(informationPanel);
+    const arlChatInformationPanelMessage = await client.channels.get(Channels.arlChat.id).send(informationPanel);
     let totalPeople = 0;
     let peopleReacted = [];
 
@@ -447,7 +447,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 if (currentMember && currentMember.hasPermission("MOVE_MEMBERS")) {
                     await afkCheckCollector.stop();
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === raidKey.id)) {
+            } else if (reaction.emoji === client.emojis.find(emoji => emoji.id === raidKey.id)) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true) {
@@ -485,9 +485,9 @@ module.exports.run = async (lanisBot, message, args) => {
                                         keysMessaged += 1;
 
                                         if (wantedType.toUpperCase() === "CULT" || wantedType.toUpperCase() === "VOID") {
-                                            lanisBot.database.run(`UPDATE stats SET lostHallsKeysPopped = lostHallsKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
+                                            client.database.run(`UPDATE stats SET lostHallsKeysPopped = lostHallsKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
                                         } else {
-                                            lanisBot.database.run(`UPDATE stats SET otherKeysPopped = otherKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
+                                            client.database.run(`UPDATE stats SET otherKeysPopped = otherKeysPopped + 1 WHERE ID = '${currentMember.id}';`)
                                         }
 
                                         let reactionInformationEmbed = new Discord.MessageEmbed()
@@ -496,7 +496,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("3ea04a")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         if (firstKeyMessaged) {
                                             const oldText = informationPanel.fields[0].value;
                                             informationPanel.fields[0] = { name: "Keys:", value: oldText + "\n" + currentMember.toString(), inline: false };
@@ -507,7 +507,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         await arlChatInformationPanelMessage.edit(informationPanel);
                                         if (!firstKeyMessaged) firstKeyMessaged = true;
 
-                                        lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${user.id}'`, async (error, row) => {
+                                        client.database.get(`SELECT * FROM stats WHERE ID = '${user.id}'`, async (error, row) => {
                                             if (row != undefined) {
                                                 let totalKeysPopped = row.lostHallsKeysPopped + row.otherKeysPopped
 
@@ -546,7 +546,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                                     .setFooter(`User ID: ${currentMember.id}`)
                                                     .setColor("3ea04a")
                                                     .setTimestamp()
-                                                await lanisBot.channels.get(Channels.historyReacts.id).send(roleGrantedEmbed);
+                                                await client.channels.get(Channels.historyReacts.id).send(roleGrantedEmbed);
                                             }
                                         })
                                     } else {
@@ -558,7 +558,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("cf0202")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
@@ -572,7 +572,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         .setFooter(`User ID: ${currentMember.id}`)
                                         .setColor("cf0202")
                                         .setTimestamp()
-                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -585,7 +585,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     .setFooter(`User ID: ${currentMember.id}`)
                                     .setColor("cf0202")
                                     .setTimestamp()
-                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
                         } else {
                             await currentMember.send("Sorry, you have to be in the voice channel to get the key location.")
@@ -596,11 +596,11 @@ module.exports.run = async (lanisBot, message, args) => {
                                 .setFooter(`User ID: ${currentMember.id}`)
                                 .setColor("cf0202")
                                 .setTimestamp()
-                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                            await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
                     }
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial)) {
+            } else if (reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial)) {
                 if (locationMessage != "") {
                     if (peopleMessaged.includes(currentMember.id) === false) {
                         if (raidingChannel.members.has(currentMember.id) === true) {
@@ -642,7 +642,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("3ea04a")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         informationPanel.fields[1] = { name: "Vials:", value: currentMember.toString() + " / Main", inline: false };
                                         await informationPanelMessage.edit(informationPanel);
                                         await arlChatInformationPanelMessage.edit(informationPanel);
@@ -655,7 +655,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setColor("cf0202")
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
@@ -668,7 +668,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         .setFooter(`User ID: ${currentMember.id}`)
                                         .setColor("cf0202")
                                         .setTimestamp()
-                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -708,7 +708,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("3ea04a")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const oldVials = informationPanel.fields[1]
                                         informationPanel.fields[1] = { name: "Vials:", value: oldVials.value + "\n" + currentMember.toString(), inline: false };
                                         await informationPanelMessage.edit(informationPanel);
@@ -727,7 +727,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         .setFooter(`User ID: ${currentMember.id}`)
                                         .setColor("cf0202")
                                         .setTimestamp()
-                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -740,7 +740,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     .setFooter(`User ID: ${currentMember.id}`)
                                     .setColor("cf0202")
                                     .setTimestamp()
-                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
                         } else {
                             await currentMember.send("Sorry, you have to be in the voice channel to get the vial location.")
@@ -751,11 +751,11 @@ module.exports.run = async (lanisBot, message, args) => {
                                 .setFooter(`User ID: ${currentMember.id}`)
                                 .setColor("cf0202")
                                 .setTimestamp()
-                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                            await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
                     }
                 }
-            } else if (reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker)) {
+            } else if (reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.classes.cloakOfThePlanewalker)) {
                 if (peopleMessaged.includes(currentMember.id) === false) {
                     if (currentMember.roles.find(role => role.name === "Official Rusher")) {
                         if (raidingChannel.members.has(currentMember.id) === true) {
@@ -798,7 +798,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("3ea04a")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         if (firstRusherMessaged) {
                                             const oldText = informationPanel.fields[rusherFieldIndex].value;
                                             informationPanel.fields[rusherFieldIndex] = { name: "Rushers:", value: oldText + "\n" + currentMember.toString(), inline: false };
@@ -817,7 +817,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                             .setFooter(`User ID: ${currentMember.id}`)
                                             .setColor("cf0202")
                                             .setTimestamp()
-                                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                         const index = peopleMessaged.indexOf(currentMember.id);
                                         peopleMessaged.splice(index, 1);
                                     }
@@ -830,7 +830,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                         .setFooter(`User ID: ${currentMember.id}`)
                                         .setColor("cf0202")
                                         .setTimestamp()
-                                    await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                    await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                                     const index = peopleMessaged.indexOf(currentMember.id);
                                     peopleMessaged.splice(index, 1);
                                 });
@@ -843,7 +843,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     .setFooter(`User ID: ${currentMember.id}`)
                                     .setColor("cf0202")
                                     .setTimestamp()
-                                await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                                await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                             }
                         } else {
                             await currentMember.send("Sorry, you have to be in the voice channel to get the rusher location.")
@@ -854,7 +854,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                 .setFooter(`User ID: ${currentMember.id}`)
                                 .setColor("cf0202")
                                 .setTimestamp()
-                            await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                            await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                         }
                     } else {
                         await currentMember.send("Sorry, you have to be an official rusher to get rusher location.")
@@ -865,7 +865,7 @@ module.exports.run = async (lanisBot, message, args) => {
                             .setFooter(`User ID: ${currentMember.id}`)
                             .setColor("cf0202")
                             .setTimestamp()
-                        await lanisBot.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
+                        await client.channels.get(Channels.historyReacts.id).send(reactionInformationEmbed);
                     }
                 }
             } else {
@@ -883,7 +883,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (wantedType.toUpperCase() === "VOID") {
         reactEmojis.splice(2, 0, marbleSealEmote); //if it's a void run, add the marble seal with vial
-        reactEmojis.splice(2, 0, lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial));
+        reactEmojis.splice(2, 0, client.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial));
     }
 
     for (const emoji of reactEmojis) {
@@ -1018,11 +1018,11 @@ module.exports.run = async (lanisBot, message, args) => {
             members.each(member => {
                 if (!member.deaf) {
                     if (wantedType.toUpperCase() === "CULT") {
-                        lanisBot.database.run(`UPDATE stats SET cultsDone = cultsDone + 1 WHERE ID = '${member.id}';`)
+                        client.database.run(`UPDATE stats SET cultsDone = cultsDone + 1 WHERE ID = '${member.id}';`)
                     } else if (wantedType.toUpperCase() === "VOID") {
-                        lanisBot.database.run(`UPDATE stats SET voidsDone = voidsDone + 1 WHERE ID = '${member.id}';`)
+                        client.database.run(`UPDATE stats SET voidsDone = voidsDone + 1 WHERE ID = '${member.id}';`)
                     } else {
-                        lanisBot.database.run(`UPDATE stats SET otherDungeonsDone = otherDungeonsDone + 1 WHERE ID = '${member.id}';`)
+                        client.database.run(`UPDATE stats SET otherDungeonsDone = otherDungeonsDone + 1 WHERE ID = '${member.id}';`)
                     }
                 }
             })

@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const securityRole = message.guild.roles.find(role => role.id === Roles.security.id)
     const raiderRole = message.guild.roles.find(role => role.id === Roles.verifiedRaider.id)
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
@@ -10,8 +10,8 @@ module.exports.run = async (lanisBot, message, args) => {
     let inGameName = args[1]
     let noPerms = false
 
-    const errorChannel = lanisBot.channels.get(Channels.verificationAttempts.id)
-    const verificationLogs = lanisBot.channels.get(Channels.verificationsLog.id)
+    const errorChannel = client.channels.get(Channels.verificationAttempts.id)
+    const verificationLogs = client.channels.get(Channels.verificationsLog.id)
 
     if (inGameName === memberToVerify.user.username) {
         let capitalizedMemberToVerify = capitalizeFirstLetter(inGameName);
@@ -45,12 +45,12 @@ module.exports.run = async (lanisBot, message, args) => {
         .addField("Successful Verification", message.member.toString() + " has manually verified a member " + memberToVerify.toString() + " with the in game name of '" + inGameName + "'\n[Player Profile](https://www.realmeye.com/player/" + inGameName + ")");
     await verificationLogs.send(successfulVerificationLogEmbed);
 
-    lanisBot.database.get(`SELECT * FROM verified WHERE name = '${inGameName.toUpperCase()}' OR ID = '${memberToVerify.id}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM verified WHERE name = '${inGameName.toUpperCase()}' OR ID = '${memberToVerify.id}'`, async (error, row) => {
         if (error) {
             throw error
         }
         if (row === undefined) {
-            lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${memberToVerify.id}', '${inGameName.toUpperCase()}')`)
+            client.database.run(`INSERT INTO verified(ID, name) VALUES('${memberToVerify.id}', '${inGameName.toUpperCase()}')`)
         }
     })
 }

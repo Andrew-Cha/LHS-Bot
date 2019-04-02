@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const config = require("../dataFiles/config.json");
+const config = require("../../data/config.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let abortRestart = false;
 
     await new Promise(async (resolve, reject) => {
@@ -35,8 +35,8 @@ module.exports.run = async (lanisBot, message, args) => {
     });
 
     if (abortRestart) return;
-    await lanisBot.destroy();
-    await lanisBot.login(config.token);
+    await client.destroy();
+    await client.login(config.token);
 }
 
 module.exports.help = {

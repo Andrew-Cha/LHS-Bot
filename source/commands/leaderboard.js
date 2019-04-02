@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
-const Emojis = require("../dataFiles/emojis.json")
+const Roles = require("../../data/roles.json")
+const Emojis = require("../../data/emojis.json")
 
-module.exports.run = async (lanisBot, message, args) => {
-    const guild = lanisBot.guilds.get("343704644712923138");
+module.exports.run = async (client, message, args) => {
+    const guild = client.guilds.get("343704644712923138");
     let reportEmbed = new Discord.MessageEmbed()
         .setColor("3ea04a")
         .setTimestamp()
@@ -44,7 +44,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const reactionCollector = messageSent.createReactionCollector(reactionFilter, { time: 60000 });
     reactionCollector.on("collect", async (reaction) => {
         if (reaction.emoji.id === "506072260139024395") { //Runs Done
-            lanisBot.database.all(`SELECT * FROM stats WHERE cultsDone >= 0 OR voidsDone >= 0 OR otherDungeonsDone >= 0;`, async (error, rows) => {
+            client.database.all(`SELECT * FROM stats WHERE cultsDone >= 0 OR voidsDone >= 0 OR otherDungeonsDone >= 0;`, async (error, rows) => {
                 reportEmbed.setDescription("Leaderboard of Runs");
 
                 rows.forEach(member => {
@@ -76,7 +76,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                         await message.author.send(reportEmbed);
 
-                        const historyDMs = lanisBot.channels.get("396694518738714634")
+                        const historyDMs = client.channels.get("396694518738714634")
                         let historyReport = new Discord.MessageEmbed()
                             .addField("Sent Leaderboard", `User <@${message.author.id}> has received the run leaderboard after requesting it.`)
                             .setColor("3ea04a")
@@ -103,7 +103,7 @@ module.exports.run = async (lanisBot, message, args) => {
             })
             reactionCollector.stop()
         } else if (reaction.emoji.id === "506080313974325248") { //Keys Popped
-            lanisBot.database.all(`SELECT * FROM stats WHERE lostHallsKeysPopped >= 0 OR otherKeysPopped >= 0;`, async (error, rows) => {
+            client.database.all(`SELECT * FROM stats WHERE lostHallsKeysPopped >= 0 OR otherKeysPopped >= 0;`, async (error, rows) => {
                 reportEmbed.setDescription("Leaderboard of Keys Popped");
 
                 rows.forEach(member => {
@@ -135,7 +135,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                         await message.author.send(reportEmbed);
 
-                        const historyDMs = lanisBot.channels.get("396694518738714634")
+                        const historyDMs = client.channels.get("396694518738714634")
                         let historyReport = new Discord.MessageEmbed()
                             .addField("Sent Leaderboard", `User <@${message.author.id}> has received the key leaderboard after requesting it.`)
                             .setColor("3ea04a")
@@ -161,7 +161,7 @@ module.exports.run = async (lanisBot, message, args) => {
             })
             reactionCollector.stop()
         } else if (reaction.emoji.id === "506091071655378974") { //Vials Popped
-            lanisBot.database.all(`SELECT * FROM stats WHERE vialsUsed >= 0;`, async (error, rows) => {
+            client.database.all(`SELECT * FROM stats WHERE vialsUsed >= 0;`, async (error, rows) => {
                 reportEmbed.setDescription("Leaderboard of Vials Popped");
 
                 rows.forEach(member => {
@@ -193,7 +193,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                         await message.author.send(reportEmbed);
 
-                        const historyDMs = lanisBot.channels.get("396694518738714634")
+                        const historyDMs = client.channels.get("396694518738714634")
                         let historyReport = new Discord.MessageEmbed()
                             .addField("Sent Leaderboard", `User <@${message.author.id}> has received the vials popped leaderboard after requesting it.`)
                             .setColor("3ea04a")
@@ -220,7 +220,7 @@ module.exports.run = async (lanisBot, message, args) => {
             })
             reactionCollector.stop()
         } else if (reaction.emoji.id === "506091097970442257") { //Runs Led 
-            lanisBot.database.all(`SELECT * FROM stats WHERE cultsLed >= 0 OR voidsLed >= 0 OR assists >= 0;`, async (error, rows) => {
+            client.database.all(`SELECT * FROM stats WHERE cultsLed >= 0 OR voidsLed >= 0 OR assists >= 0;`, async (error, rows) => {
                 reportEmbed.setDescription("Leaderboard of Runs Led");
 
                 rows.forEach(member => {
@@ -252,7 +252,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
                         await message.author.send(reportEmbed);
 
-                        const historyDMs = lanisBot.channels.get("396694518738714634")
+                        const historyDMs = client.channels.get("396694518738714634")
                         let historyReport = new Discord.MessageEmbed()
                             .addField("Sent Leaderboard", `User <@${message.author.id}> has received the runs led leaderboard after requesting it.`)
                             .setColor("3ea04a")
@@ -289,10 +289,10 @@ module.exports.run = async (lanisBot, message, args) => {
     })
 
     await message.react("✅")
-    await messageSent.react(lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.dungeon))
-    await messageSent.react(lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.key))
-    await messageSent.react(lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial))
-    await messageSent.react(lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity))
+    await messageSent.react(client.emojis.find(emoji => emoji.id === Emojis.lostHalls.dungeon))
+    await messageSent.react(client.emojis.find(emoji => emoji.id === Emojis.lostHalls.key))
+    await messageSent.react(client.emojis.find(emoji => emoji.id === Emojis.lostHalls.vial))
+    await messageSent.react(client.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity))
 }
 
 module.exports.help = {

@@ -1,6 +1,6 @@
-const Roles = require("../dataFiles/roles.json")
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const devRole = message.guild.roles.find(role => role.id === Roles.developer.id);
     if (message.member.roles.highest.position < devRole.position) return;
     let messageNumber = parseInt(args[0]) + 1;

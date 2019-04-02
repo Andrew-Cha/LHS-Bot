@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json")
+const Channels = require("../../data/channels.json")
 
-module.exports.run = async (lanisBot, message, args) => {
-    const guild = lanisBot.guilds.get("343704644712923138");
+module.exports.run = async (client, message, args) => {
+    const guild = client.guilds.get("343704644712923138");
     let member;
     let input = args[0]
     if (input === undefined) {
@@ -58,7 +58,7 @@ module.exports.run = async (lanisBot, message, args) => {
         }
     })
 
-    lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
         if (row === undefined) return message.react("⚠")
         let reply = new Discord.MessageEmbed()
             .setColor("#00FF00")
@@ -88,7 +88,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
         if (!failed) {
             message.react("✅")
-            const historyDMs = lanisBot.channels.get("396694518738714634")
+            const historyDMs = client.channels.get("396694518738714634")
             let reportEmbed = new Discord.MessageEmbed()
                 .addField("Sent Stats", `User <@${message.author.id}> has received their stats of user <@${member.id}> after requesting them.`)
                 .setColor("3ea04a")

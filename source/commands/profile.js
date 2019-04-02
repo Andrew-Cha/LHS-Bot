@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const channels = require("../dataFiles/channels.json");
+const channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let guildMember;
     if (args[0] === undefined) {
         guildMember = message.member;

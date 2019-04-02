@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 const fileSystem = require(`fs`);
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let command;
     if (args.length > 0) {
         command = args[0].toUpperCase();
@@ -16,7 +16,7 @@ module.exports.run = async (lanisBot, message, args) => {
         case ("ALL"):
             let categories = []
             let categoriesFound = []
-            lanisBot.commands.forEach(command => {
+            client.commands.forEach(command => {
                 if (!categoriesFound.includes(command.help.category)) {
                     categoriesFound.push(command.help.category)
                     let category = {
@@ -38,8 +38,8 @@ module.exports.run = async (lanisBot, message, args) => {
             break;
 
         default:
-            if (lanisBot.commands.has(command.toUpperCase())) {
-                const commandFile = lanisBot.commands.get(command.toUpperCase())
+            if (client.commands.has(command.toUpperCase())) {
+                const commandFile = client.commands.get(command.toUpperCase())
                 commandDescription.addField("Description", commandFile.help.explanation)
                 commandDescription.addField("Usage", commandFile.help.example)
             } else {

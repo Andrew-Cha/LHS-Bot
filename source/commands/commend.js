@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
 
-module.exports.run = async (lanisBot, message, args) => {
-    const guild = lanisBot.guilds.get("343704644712923138");
+module.exports.run = async (client, message, args) => {
+    const guild = client.guilds.get("343704644712923138");
     let member;
     let input = args[0]
     if (input === undefined) {
@@ -39,7 +39,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     if (member.id === message.author.id) return message.channel.send("Sorry, you can't commend yourself.")
-    lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}';`, async (error, row) => {
+    client.database.get(`SELECT * FROM stats WHERE ID = '${member.id}';`, async (error, row) => {
         let newCommendations;
         if (row.commendedBy !== null && row.commendedBy !== "" && row.commendedBy !== undefined) {
             newCommendations = row.commendedBy.split(",")
@@ -52,7 +52,7 @@ module.exports.run = async (lanisBot, message, args) => {
             newCommendations = [`${message.author.id}`]
         }
 
-        lanisBot.database.run(`UPDATE stats SET commendedBy = '${newCommendations.join(",")}', commendations = commendations + 1 WHERE ID = '${member.id}'`)
+        client.database.run(`UPDATE stats SET commendedBy = '${newCommendations.join(",")}', commendations = commendations + 1 WHERE ID = '${member.id}'`)
         await message.channel.send("Commended " + member.toString() + ", they now have " + newCommendations.length + " commendations.")
 
         if (newCommendations.length >= 3) {

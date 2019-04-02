@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
  
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const embed = new Discord.MessageEmbed()
     .setTitle("This is your title, it can hold 256 characters")
     .setAuthor("Author Name", "https://i.imgur.com/lm8s41J.png")

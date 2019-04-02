@@ -1,6 +1,6 @@
-const Roles = require("../dataFiles/roles.json")
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
@@ -25,7 +25,7 @@ module.exports.run = async (lanisBot, message, args) => {
     
     const actionUpperCase = action.toUpperCase();
 
-    lanisBot.database.get(`SELECT * FROM pending WHERE name = '${input}' OR ID = '${input}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM pending WHERE name = '${input}' OR ID = '${input}'`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -34,7 +34,7 @@ module.exports.run = async (lanisBot, message, args) => {
         switch (actionUpperCase) {
             case "REMOVE":
                 if (memberPending) {
-                    lanisBot.database.run(`DELETE FROM pending WHERE name = '${input}' OR ID = '${input}'`)
+                    client.database.run(`DELETE FROM pending WHERE name = '${input}' OR ID = '${input}'`)
                     await message.channel.send(`<@${row.ID}> (${row.name}) removed from the pending list.`);
                 } else {
                     return await message.channel.send(`${unmodifiedInput} is not pending.`);

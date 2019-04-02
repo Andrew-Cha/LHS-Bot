@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json");
+const Channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let userID = args[0]
     if (userID === undefined) return message.channel.send("Please input a user.")
     //Try to grab numbers only
@@ -9,14 +9,14 @@ module.exports.run = async (lanisBot, message, args) => {
     if (inputReplaced.length < 17) return await message.channel.send("Input a user mention or their ID.")
     userID = inputReplaced
 
-    lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${userID}'`, (error, row) => {
+    client.database.get(`SELECT * FROM stats WHERE ID = '${userID}'`, (error, row) => {
         if (row === undefined) return message.channel.send("User not found.")
         if (row.vialsStored > 0) {
-            lanisBot.database.run(`UPDATE stats SET vialsStored = vialsStored - 1, vialsUsed = vialsUsed + 1 WHERE ID = '${userID}';`)
-            lanisBot.channels.get(Channels.vialLogs.id).send(`Vial popped by <@${userID}>, logged by ${message.member.toString()}. (${row.vialsStored - 1} remaining vials)`)
+            client.database.run(`UPDATE stats SET vialsStored = vialsStored - 1, vialsUsed = vialsUsed + 1 WHERE ID = '${userID}';`)
+            client.channels.get(Channels.vialLogs.id).send(`Vial popped by <@${userID}>, logged by ${message.member.toString()}. (${row.vialsStored - 1} remaining vials)`)
         } else {
-            lanisBot.database.run(`UPDATE stats SET vialsUsed = vialsUsed + 1 WHERE ID = '${userID}';`)
-            lanisBot.channels.get(Channels.vialLogs.id).send(`Vial popped by <@${userID}>, logged by ${message.member.toString()}. (No logged vials found)`)
+            client.database.run(`UPDATE stats SET vialsUsed = vialsUsed + 1 WHERE ID = '${userID}';`)
+            client.channels.get(Channels.vialLogs.id).send(`Vial popped by <@${userID}>, logged by ${message.member.toString()}. (No logged vials found)`)
         }
         
     })

@@ -1,6 +1,6 @@
-const Roles = require("../dataFiles/roles.json")
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
@@ -17,7 +17,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     const actionUpperCase = action.toUpperCase();
     let guildExpelled = false
-    lanisBot.database.get(`SELECT * FROM expelledGuilds WHERE name = '${guildName}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM expelledGuilds WHERE name = '${guildName}'`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -25,7 +25,7 @@ module.exports.run = async (lanisBot, message, args) => {
         switch (actionUpperCase) {
             case "ADD":
                 if (!guildExpelled) {
-                    lanisBot.database.run(`INSERT INTO expelledGuilds(name) VALUES('${guildName}')`)
+                    client.database.run(`INSERT INTO expelledGuilds(name) VALUES('${guildName}')`)
                     await message.channel.send(`${guildName} is now expelled.`)
                 } else {
                     return await message.channel.send(`${guildName} is already expelled.`);
@@ -34,7 +34,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             case "REMOVE":
                 if (guildExpelled) {
-                    lanisBot.database.run(`DELETE FROM expelledGuilds WHERE name = '${guildName}'`)
+                    client.database.run(`DELETE FROM expelledGuilds WHERE name = '${guildName}'`)
                     await message.channel.send(`${guildName} is now unexpelled.`);
                 } else {
                     return await message.channel.send(`${guildName} is not expelled.`);
@@ -43,7 +43,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             case "LIST":
                 let reportMessage = "**Expelled Guilds**\n```";
-                lanisBot.database.all(`SELECT * FROM expelledGuilds`, async (err, rows) => {
+                client.database.all(`SELECT * FROM expelledGuilds`, async (err, rows) => {
                     let expelledGuilds = rows.map(row => row.name)
 
                     expelledGuilds.sort(compare);

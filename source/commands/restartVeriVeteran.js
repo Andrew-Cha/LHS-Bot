@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const channels = require("../dataFiles/channels.json");
+const channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
-    const verificationsAutomatic = lanisBot.channels.get(channels.verificationsVeteran.id);
+module.exports.run = async (client, message, args) => {
+    const verificationsAutomatic = client.channels.get(channels.verificationsVeteran.id);
     await message.channel.send("Cleaning the veteran verification channel.");
     await verificationsAutomatic.messages.fetch().then(async messages => {
         for (const message of messages.values()) {
@@ -11,7 +11,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }).then(async () => {
         let verificationEmbed = new Discord.MessageEmbed()
             .setColor('#337b0a')
-            .setAuthor('Public Halls Veteran Verification', lanisBot.user.avatarURL())
+            .setAuthor('Public Halls Veteran Verification', client.user.avatarURL())
             .addField("Information", "This is the place to get access to the Veteran Run part of this discord, where raid leaders will do Lost Halls with experienced members.")
             .addField(`Requirements`, `2 8/8 characters, one of which has to be either a melee or a priest.\n100 Lost Halls runs done with us.`)
             .addBlankField()

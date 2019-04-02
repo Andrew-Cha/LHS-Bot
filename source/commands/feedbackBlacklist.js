@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
     const action = args[0];
@@ -17,7 +17,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let memberExpelled = false
 
-    lanisBot.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${playerID}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM feedbackBlacklist WHERE ID = '${playerID}'`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -26,7 +26,7 @@ module.exports.run = async (lanisBot, message, args) => {
         switch (action.toUpperCase()) {
             case "ADD":
                 if (!memberExpelled) {
-                    lanisBot.database.run(`INSERT INTO feedbackBlacklist(ID) VALUES('${playerID}')`, (error, row) => {
+                    client.database.run(`INSERT INTO feedbackBlacklist(ID) VALUES('${playerID}')`, (error, row) => {
                         if (error) {
                             throw error
                         }
@@ -39,7 +39,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             case "REMOVE":
                 if (memberExpelled) {
-                    lanisBot.database.run(`DELETE FROM feedbackBlacklist WHERE ID = '${playerID}'`)
+                    client.database.run(`DELETE FROM feedbackBlacklist WHERE ID = '${playerID}'`)
                     await message.channel.send(`<@${playerID}> is now unblacklisted and can add feedback.`);
                 } else {
                     return await message.channel.send(`<@${playerID}> is not blacklisted from adding feedback.`);
@@ -48,7 +48,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
             case "LIST":
                 let reportMessage = "**Feedback Blacklist**\n";
-                lanisBot.database.all(`SELECT * FROM feedbackBlacklist`, async (err, rows) => {
+                client.database.all(`SELECT * FROM feedbackBlacklist`, async (err, rows) => {
                     let expelledPeople = rows.map(row => row.ID)
 
                     for (const person of expelledPeople) {

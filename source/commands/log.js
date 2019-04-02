@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json");
+const Channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const authorRoles = message.member.roles.values();
     let isLeader = false;
     for (role of authorRoles) {
@@ -32,9 +32,9 @@ module.exports.run = async (lanisBot, message, args) => {
     let customMessage = args.join(" ")
 
     if (type.toUpperCase() === "CULT") {
-        lanisBot.database.run(`UPDATE stats SET cultsLed = cultsLed + 1 WHERE ID = '${message.author.id}'`)
-        lanisBot.database.run(`UPDATE stats SET currentCultsLed = currentCultsLed + 1 WHERE ID = '${message.author.id}'`, () => {
-            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
+        client.database.run(`UPDATE stats SET cultsLed = cultsLed + 1 WHERE ID = '${message.author.id}'`)
+        client.database.run(`UPDATE stats SET currentCultsLed = currentCultsLed + 1 WHERE ID = '${message.author.id}'`, () => {
+            client.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
                 if (row.currentCultsLed + row.currentVoidsLed === 1) {
                     await message.channel.send(`${message.member.toString()}, this is your first run of the week, keep it up!`)
                 } else {
@@ -43,9 +43,9 @@ module.exports.run = async (lanisBot, message, args) => {
             })
         })
     } else if (type.toUpperCase() === "VOID") {
-        lanisBot.database.run(`UPDATE stats SET voidsLed = voidsLed + 1 WHERE ID = '${message.author.id}'`)
-        lanisBot.database.run(`UPDATE stats SET currentVoidsLed = currentVoidsLed + 1 WHERE ID = '${message.author.id}'`, () => {
-            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
+        client.database.run(`UPDATE stats SET voidsLed = voidsLed + 1 WHERE ID = '${message.author.id}'`)
+        client.database.run(`UPDATE stats SET currentVoidsLed = currentVoidsLed + 1 WHERE ID = '${message.author.id}'`, () => {
+            client.database.get(`SELECT * FROM stats WHERE ID = ${message.author.id}`, async (error, row) => {
                 if (row.currentCultsLed + row.currentVoidsLed === 1) {
                     await message.channel.send(`${message.member.toString()}, this is your first run of the week, keep it up!`)
                 } else {
@@ -98,9 +98,9 @@ module.exports.run = async (lanisBot, message, args) => {
                 await message.channel.send("Adding one secondary run to the mentioned peoples' logs.");
                 for (const leader of assistantLeadersMentions) {
                     if (leader.user.bot === false) {
-                        lanisBot.database.run(`UPDATE stats SET assists = assists + 1 WHERE ID = '${leader.user.id}'`)
-                        lanisBot.database.run(`UPDATE stats SET currentAssists = currentAssists + 1 WHERE ID = '${leader.user.id}'`, () => {
-                            lanisBot.database.get(`SELECT * FROM stats WHERE ID = ${leader.user.id}`, async (error, row) => {
+                        client.database.run(`UPDATE stats SET assists = assists + 1 WHERE ID = '${leader.user.id}'`)
+                        client.database.run(`UPDATE stats SET currentAssists = currentAssists + 1 WHERE ID = '${leader.user.id}'`, () => {
+                            client.database.get(`SELECT * FROM stats WHERE ID = ${leader.user.id}`, async (error, row) => {
                                 if (row.currentAssists === 1) {
                                     await message.channel.send(`${leader.toString()}, this is your first assist of the week, keep it up!`)
                                 } else {
@@ -124,7 +124,7 @@ module.exports.run = async (lanisBot, message, args) => {
         logEmbed.addField("Additions: ", customMessage)
     }
 
-    await lanisBot.channels.get(Channels.leadingLogs.id).send(logEmbed);
+    await client.channels.get(Channels.leadingLogs.id).send(logEmbed);
 }
 
 module.exports.help = {

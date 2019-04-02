@@ -1,11 +1,11 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json");
-const Emojis = require("../dataFiles/emojis.json");
-const Roles = require("../dataFiles/roles.json");
+const Channels = require("../../data/channels.json");
+const Emojis = require("../../data/emojis.json");
+const Roles = require("../../data/roles.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const setupEmbed = new Discord.MessageEmbed()
-        .setDescription(`Setup for ${lanisBot.user.username}`)
+        .setDescription(`Setup for ${client.user.username}`)
         .setColor("#5042f4")
         .setFooter("⚠ Keep in mind that Lanis has to add these emojis, roles and channels manually for security reasons, this is an indicator of how much is ready for the current server.");
 

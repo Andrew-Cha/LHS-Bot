@@ -1,10 +1,10 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let action = args[0];
     const channelList = ["AFK", "SPLITVOID", "SUSPEND", "CLEAN"];
     if (action != undefined) {

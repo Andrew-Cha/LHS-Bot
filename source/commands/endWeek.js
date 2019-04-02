@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
 
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     if (args[0] !== "automaticEnd" && message.author.bot === false) {
         return message.channel.send("Only the bot can end the week automatically.")
     } 
@@ -79,7 +79,7 @@ module.exports.run = async (lanisBot, message, args) => {
     const templateEmbed = reportEmbed
 
     let activeLeaders = [];
-    lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
+    client.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
         rows.forEach(member => {
             activeLeaders.push(member)
         })
@@ -135,7 +135,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let membersChecked = 0
         await new Promise(async (resolve, reject) => {
             raidLeaders.forEach(member => {
-                lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
+                client.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
                     membersChecked += 1
                     if (row.currentCultsLed + row.currentVoidsLed + row.currentAssists === 0) {
                         const leader = message.guild.members.get(member.id)
@@ -164,15 +164,15 @@ module.exports.run = async (lanisBot, message, args) => {
         }).then(async () => {
             reportEmbed.addField(" ឵឵ ឵឵", reportMessage)
                 .setFooter("Total Runs: " + totalRuns + "; Assisted Runs: " + assistedRuns)
-                const guild = lanisBot.guilds.get(`343704644712923138`)
+                const guild = client.guilds.get(`343704644712923138`)
                 const channel = guild.channels.get(Channels.leadingActivityLogs.id)
                 await channel.send(reportEmbed)
         }).catch(console.error)
     })
 
-    lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
+    client.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
         rows.forEach(member => {
-            lanisBot.database.run(`UPDATE stats SET currentCultsLed = 0, currentVoidsLed = 0, currentAssists = 0 WHERE ID = ${member.ID};`)
+            client.database.run(`UPDATE stats SET currentCultsLed = 0, currentVoidsLed = 0, currentAssists = 0 WHERE ID = ${member.ID};`)
         })
     })
 

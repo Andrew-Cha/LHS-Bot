@@ -1,9 +1,9 @@
 const Discord = require("discord.js");
 
-const channels = require("../dataFiles/channels.json");
+const channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
-    const verificationsAutomatic = lanisBot.channels.get(channels.verificationsEvents.id);
+module.exports.run = async (client, message, args) => {
+    const verificationsAutomatic = client.channels.get(channels.verificationsEvents.id);
     await message.channel.send("Cleaning the event verification channel.");
     await verificationsAutomatic.messages.fetch().then(async messages => {
         for (const message of messages.values()) {
@@ -12,7 +12,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }).then(async () => {
         let verificationEmbed = new Discord.MessageEmbed()
             .setColor('#337b0a')
-            .setAuthor('Public Halls Event Verification', lanisBot.user.avatarURL())
+            .setAuthor('Public Halls Event Verification', client.user.avatarURL())
             .addField("Information", "This is the place to get access to the event part of this discord, where raid leaders will do miscellaneous dungeons with no preference, unless there is an event.")
             .addBlankField()
             .addField("Follow these steps to verify or unverify: ", "React to ✅, to get unverified react to ❌")

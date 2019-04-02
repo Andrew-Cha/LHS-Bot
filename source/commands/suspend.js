@@ -1,12 +1,12 @@
 const Discord = require("discord.js");
 
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const arlRole = message.guild.roles.find(role => role.id === Roles.almostRaidLeader.id);
     if (message.member.roles.highest.position <= arlRole.position) return await message.channel.send("You can not suspend as a person with a role equal to or below ARL.");
     const memberMention = args[0];
@@ -51,7 +51,7 @@ module.exports.run = async (lanisBot, message, args) => {
             return await message.channel.send("Input a valid time format.");
     }
 
-    lanisBot.database.get(`SELECT * FROM suspended WHERE ID = ${memberID}`, async (error, row) => {
+    client.database.get(`SELECT * FROM suspended WHERE ID = ${memberID}`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -112,7 +112,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let toBeExpelled = false;
         if (suspensionReason !== "") {
             if (timeUnit !== "weeks" || time < 10) {
-                await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+                await client.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
             } else if (timeUnit === "weeks" && time >= 10) {
                 await new Promise(async (resolve, reject) => {
                     await message.channel.send("Would you like to suspend " + memberToSuspend.toString() + " permanently instead?");
@@ -145,10 +145,10 @@ module.exports.run = async (lanisBot, message, args) => {
                 });
 
                 if (toBeExpelled) {
-                    await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " **permanently** for " + suspensionReason);
+                    await client.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " **permanently** for " + suspensionReason);
                     time = 9999;
                 } else {
-                    await lanisBot.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
+                    await client.channels.get(Channels.suspendLog.id).send(memberToSuspend.toString() + " you have been suspended by: " + message.author.toString() + " for " + time + " " + timeUnit + " for " + suspensionReason)
                 }
             }
         } else {
@@ -163,7 +163,7 @@ module.exports.run = async (lanisBot, message, args) => {
             }
         }
 
-        lanisBot.database.run(`INSERT INTO suspended(ID, time, roles) VALUES(${memberToSuspend.id}, ${Date.now() + parseInt(time) * timeMultiplier}, '${roles.join(",")}')`, (error, row) => {
+        client.database.run(`INSERT INTO suspended(ID, time, roles) VALUES(${memberToSuspend.id}, ${Date.now() + parseInt(time) * timeMultiplier}, '${roles.join(",")}')`, (error, row) => {
             if (error) {
                 throw error
             }

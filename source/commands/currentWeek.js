@@ -1,7 +1,7 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
+const Roles = require("../../data/roles.json")
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let month = new Date().getUTCMonth() + 1;
     const day = new Date().getUTCDate();
     const week = Math.floor(day / 8) + 1;
@@ -71,7 +71,7 @@ module.exports.run = async (lanisBot, message, args) => {
     reportEmbed.setDescription(weekMessage);
     let activeLeaders = [];
 
-    lanisBot.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
+    client.database.all(`SELECT * FROM stats WHERE currentCultsLed > 0 OR currentVoidsLed > 0 OR currentAssists > 0;`, async (error, rows) => {
         rows.forEach(member => {
             activeLeaders.push(member)
         })
@@ -120,7 +120,7 @@ module.exports.run = async (lanisBot, message, args) => {
         let membersChecked = 0
         await new Promise(async (resolve, reject) => {
             raidLeaders.forEach(member => {
-                lanisBot.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
+                client.database.get(`SELECT * FROM stats WHERE ID = '${member.id}'`, async (error, row) => {
                     membersChecked += 1
                     if (row.currentCultsLed + row.currentVoidsLed + row.currentAssists === 0) {
                         const leader = message.guild.members.get(member.id)

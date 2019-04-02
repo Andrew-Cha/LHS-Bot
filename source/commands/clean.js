@@ -1,11 +1,11 @@
 const Discord = require("discord.js");
 
-const channels = require("../dataFiles/channels.json");
+const channels = require("../../data/channels.json");
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const wantedChannel = args[0];
     const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
     let abortRestart = false;
@@ -15,7 +15,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         const channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber]);
+        raidingChannel = client.channels.get(channels.raidingChannels.id[channelNumber]);
     } else {
         const error = "No such raiding channel found to set up for raiding.";
         await message.channel.send(error);

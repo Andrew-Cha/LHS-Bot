@@ -1,11 +1,11 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
-const Channels = require("../dataFiles/channels.json");
+const Roles = require("../../data/roles.json")
+const Channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const securityRole = message.guild.roles.find(role => role.id === Roles.security.id);
     if (message.member.roles.highest.position < securityRole.position && !message.member.roles.find(role => role.id === Roles.verifier.id)) return await message.channel.send("You can not use this command as a non Security or Verifier.");
-    const faqChannel = lanisBot.channels.get(Channels.faq.id);
+    const faqChannel = client.channels.get(Channels.faq.id);
 
     await faqChannel.messages.fetch().then(async messages => {
         for (const message of messages.values()) {

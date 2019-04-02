@@ -1,8 +1,8 @@
 const Discord = require("discord.js");
-const Roles = require("../dataFiles/roles.json")
-const Channels = require("../dataFiles/channels.json");
+const Roles = require("../../data/roles.json")
+const Channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     let world = args[0];
     let location = "";
     for (let i = 1; i < args.length; i++) {
@@ -61,7 +61,7 @@ module.exports.run = async (lanisBot, message, args) => {
     }
 
     worldEmbed.setDescription(title + " • " + location + " • Started by: " + message.member.displayName + "**")
-    const raidStatusAnnouncements = lanisBot.channels.get(Channels.raidStatusEventAnnouncements.id);
+    const raidStatusAnnouncements = client.channels.get(Channels.raidStatusEventAnnouncements.id);
     await raidStatusAnnouncements.send("@here", worldEmbed);
 }
 

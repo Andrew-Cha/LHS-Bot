@@ -1,12 +1,12 @@
 const Discord = require("discord.js");
-const Emojis = require("../dataFiles/emojis.json")
-const channels = require("../dataFiles/channels.json");
+const Emojis = require("../../data/emojis.json")
+const channels = require("../../data/channels.json");
 const fs = require('fs');
 const path = require('path');
-const safeGuardConfigsFile = path.normalize(__dirname + "../../dataFiles/safeGuardConfigs.json");
+const safeGuardConfigsFile = path.normalize(__dirname + "../../../data/safeGuardConfigs.json");
 const safeGuardConfigs = require(safeGuardConfigsFile);
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
   const raidingChannelCount = Object.keys(channels.raidingChannels.id).length;
   const groupImages = ["https://i.imgur.com/Auj5j8e.png", "https://i.imgur.com/JsxemyK.png", "https://i.imgur.com/M06pChe.png", "https://i.imgur.com/XaxkV7i.png"];
   let channelNumber = args[0];
@@ -15,7 +15,7 @@ module.exports.run = async (lanisBot, message, args) => {
   let maxGroups = 2;
 
   if (0 < channelNumber && channelNumber <= raidingChannelCount) {
-    raidingChannel = lanisBot.channels.get(channels.raidingChannels.id[channelNumber - 1]);
+    raidingChannel = client.channels.get(channels.raidingChannels.id[channelNumber - 1]);
   } else {
     const error = "Can't find such a channel to set up the void split for.";
     await message.channel.send(error);
@@ -84,27 +84,27 @@ module.exports.run = async (lanisBot, message, args) => {
     }
   }
 
-  const reactEmojis = [lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity),
-  lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal),
-  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
-  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
-  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight),
-  lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest),
+  const reactEmojis = [client.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity),
+  client.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal),
+  client.emojis.find(emoji => emoji.id === Emojis.classes.paladin),
+  client.emojis.find(emoji => emoji.id === Emojis.classes.warrior),
+  client.emojis.find(emoji => emoji.id === Emojis.classes.knight),
+  client.emojis.find(emoji => emoji.id === Emojis.classes.priest),
     "❌"
   ];
 
   let voidCheckEmbed = new Discord.MessageEmbed()
     .addField("Splitting **Raiding Channel Number " + (channelNumber) + "** into groups!", "React below with only one emote from the classes or Marble Seal that you are bringing to void.")
     .addField("If you do not have any of the classes(or the Marble Seal) shown below react with: ", reactEmojis[0]);
-  const voidCheckMessage = await lanisBot.channels.get(channels.groupAssignments.id).send(voidCheckEmbed);
+  const voidCheckMessage = await client.channels.get(channels.groupAssignments.id).send(voidCheckEmbed);
 
   const filter = (reaction, user) => (reaction.emoji.name === "❌" ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity) ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal) ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin) ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior) ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight) ||
-    reaction.emoji === lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest)) && !user.bot;
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity) ||
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal) ||
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.classes.paladin) ||
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.classes.warrior) ||
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.classes.knight) ||
+    reaction.emoji === client.emojis.find(emoji => emoji.id === Emojis.classes.priest)) && !user.bot;
 
   const collector = new Discord.ReactionCollector(voidCheckMessage, filter, { time: 60000 });
   collector.on("collect", async (reaction, user) => {
@@ -137,12 +137,12 @@ module.exports.run = async (lanisBot, message, args) => {
 
     let peopleActive = [];
     let duplicateReactors = [];
-    const voidEntityEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
-    const marbleEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal)
-    const paladinEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.paladin);
-    const warriorEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.warrior);
-    const knightEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.knight);
-    const priestEmoji = lanisBot.emojis.find(emoji => emoji.id === Emojis.classes.priest);
+    const voidEntityEmoji = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.voidEntity);
+    const marbleEmoji = client.emojis.find(emoji => emoji.id === Emojis.lostHalls.marbleSeal)
+    const paladinEmoji = client.emojis.find(emoji => emoji.id === Emojis.classes.paladin);
+    const warriorEmoji = client.emojis.find(emoji => emoji.id === Emojis.classes.warrior);
+    const knightEmoji = client.emojis.find(emoji => emoji.id === Emojis.classes.knight);
+    const priestEmoji = client.emojis.find(emoji => emoji.id === Emojis.classes.priest);
 
     const voidEntityReacts = (collected.get(voidEntityEmoji.id) ? collected.get(voidEntityEmoji.id).users : null);
     const marbleReacts = (collected.get(marbleEmoji.id) ? collected.get(marbleEmoji.id).users : null);
@@ -255,7 +255,7 @@ module.exports.run = async (lanisBot, message, args) => {
       }
     }
 
-    const groupAssignments = lanisBot.channels.get(channels.groupAssignments.id);
+    const groupAssignments = client.channels.get(channels.groupAssignments.id);
     for (let i = 0; i < groups.length; i++) {
       await groupAssignments.send("Group " + (i + 1) + " (" + groups[i].length + " people)" + " :\n" + groups[i].join(" "));
     }

@@ -1,6 +1,6 @@
 const Discord = require("discord.js");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     if ((!message.member.hasPermission("ADMINISTRATOR")) && ((message.member.id !== "142250464656883713"))) return await message.channel.send("Only Admins or Lani can change the presence of the bot :)");
 
     const activityType = args[0];
@@ -19,7 +19,7 @@ module.exports.run = async (lanisBot, message, args) => {
         activityName = activityName + args[i] + " ";
     }
     if (activityName === "") return await message.channel.send("Please input an activity that the bot is doing.");
-    await lanisBot.user.setActivity(activityName, { type: activityType.toUpperCase() })
+    await client.user.setActivity(activityName, { type: activityType.toUpperCase() })
     await message.channel.send("Presence changed.");
 
 }

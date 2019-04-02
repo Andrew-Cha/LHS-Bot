@@ -1,12 +1,12 @@
 const Discord = require("discord.js");
-const Channels = require("../dataFiles/channels.json");
-const Roles = require("../dataFiles/roles.json")
+const Channels = require("../../data/channels.json");
+const Roles = require("../../data/roles.json")
 const axios = require("axios");
 axios.defaults.timeout = 10000;
 const cheerio = require("cheerio");
 
-module.exports.run = async (lanisBot, message, args) => {
-    const errorChannel = lanisBot.channels.get(Channels.verificationAttempts.id);
+module.exports.run = async (client, message, args) => {
+    const errorChannel = client.channels.get(Channels.verificationAttempts.id);
     let errorEmbed = new Discord.MessageEmbed()
         .setColor("#cf0202");
 
@@ -64,7 +64,7 @@ module.exports.run = async (lanisBot, message, args) => {
     let veriCodeEmbed
     let veriCodeMessage
 
-    lanisBot.database.get(`SELECT * FROM expelled WHERE name = '${inGameName.toUpperCase()}'`, async (error, row) => {
+    client.database.get(`SELECT * FROM expelled WHERE name = '${inGameName.toUpperCase()}'`, async (error, row) => {
         if (error) {
             throw error
         }
@@ -77,7 +77,7 @@ module.exports.run = async (lanisBot, message, args) => {
             return
         }
 
-        lanisBot.database.get(`SELECT * FROM verified WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
+        client.database.get(`SELECT * FROM verified WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
             if (error) {
                 throw error
             }
@@ -90,17 +90,17 @@ module.exports.run = async (lanisBot, message, args) => {
                 return
             }
 
-            lanisBot.database.get(`SELECT * FROM pending WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
+            client.database.get(`SELECT * FROM pending WHERE name = '${inGameName.toUpperCase()}' OR ID = '${message.author.id}'`, async (error, row) => {
 
                 if (row !== undefined) memberIsPending = true;
 
                 if (!memberIsPending) {
-                    if (lanisBot.activeVerificationCount >= maxVerificationsAllowedAtOnce) {
+                    if (client.activeVerificationCount >= maxVerificationsAllowedAtOnce) {
                         await rejectCommand(`${message.member.toString()}, there are already a maximum amount of verifications allowed at the moment (${maxVerificationsAllowedAtOnce}), please try again in around ${maxVerificationTimeAllowed} minutes.`,
                             `User ${message.member.toString()} (${message.author.username}) tried to verify with the in game name of  "${inGameName}", while there were already ${maxVerificationsAllowedAtOnce} verifications active.`)
                         return
                     } else {
-                        lanisBot.database.run(`INSERT INTO pending(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
+                        client.database.run(`INSERT INTO pending(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
                     }
                 } else {
                     await rejectCommand(`${message.member.toString()}, there is already a verification pending. If you haven't recently applied, contact a staff member.`,
@@ -142,18 +142,18 @@ module.exports.run = async (lanisBot, message, args) => {
                     });
 
                     if (disabledDM) {
-                        lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
+                        client.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
                         return
                     }
 
-                    lanisBot.activeVerificationCount += 1
+                    client.activeVerificationCount += 1
                     let activeVerificationEmbed = new Discord.MessageEmbed()
                         .setColor("3ea04a")
                         .setDescription(message.member.toString() + " trying to verify as: " + inGameName)
                         .addField("Attempts", "0")
                         .setFooter(`Time left: ${maxVerificationTimeAllowed} minutes 0 seconds.`);
 
-                    activeVerificationStatusMessage = await lanisBot.channels.get(Channels.verificationActive.id).send(activeVerificationEmbed);
+                    activeVerificationStatusMessage = await client.channels.get(Channels.verificationActive.id).send(activeVerificationEmbed);
 
                     let timeTotal = DMMessageCollector.options.time;
                     updateTimeLeft = setInterval(() => {
@@ -239,7 +239,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         }
                     })
                 }).then(async () => {
-                    lanisBot.activeVerificationCount -= 1
+                    client.activeVerificationCount -= 1
                     await activeVerificationStatusMessage.delete().catch(e => {
                         console.log(e);
                     })
@@ -259,7 +259,7 @@ module.exports.run = async (lanisBot, message, args) => {
                         await DMChannel.send("The bot doesn't have permissions to set your role, thus removing your pending application.");
                     });
 
-                    lanisBot.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
+                    client.database.run(`DELETE FROM pending WHERE ID = '${message.author.id}'`)
 
                     await message.delete().catch(e => {
                         console.log(e);
@@ -279,12 +279,12 @@ module.exports.run = async (lanisBot, message, args) => {
                         .setFooter("User ID: " + message.member.id)
                         .setColor("3ea04a")
                         .addField("Successful Verification", "The bot has verified a member " + message.author.toString() + " with the in game name of '" + inGameName + "'\n[Player Profile](https://www.realmeye.com/player/" + inGameName + ")");
-                    await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
+                    await client.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
                     if (!memberIsVerified) {
-                        lanisBot.database.run(`INSERT INTO verified(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
+                        client.database.run(`INSERT INTO verified(ID, name) VALUES('${message.author.id}', '${inGameName.toUpperCase()}')`)
                     }
                 }).catch(async (e) => {
-                    lanisBot.activeVerificationCount -= 1
+                    client.activeVerificationCount -= 1
                     await activeVerificationStatusMessage.delete().catch(e => {
                         console.log(e);
                     })
@@ -410,7 +410,7 @@ module.exports.run = async (lanisBot, message, args) => {
                 }).children().last().text();
                 const currentGuildFixed = currentGuild.replace(/[^A-Za-z0-9]/g, '');
 
-                lanisBot.database.all(`SELECT * FROM expelledGuilds`, async (err, rows) => {
+                client.database.all(`SELECT * FROM expelledGuilds`, async (err, rows) => {
                     blacklistedGuilds = rows.map(row => row.name)
                     if (currentGuild) {
                         if (blacklistedGuilds.includes(currentGuildFixed)) {
@@ -441,7 +441,7 @@ module.exports.run = async (lanisBot, message, args) => {
                                     }
                                 }
 
-                                lanisBot.database.all(`SELECT * FROM expelled`, async (err, rows) => {
+                                client.database.all(`SELECT * FROM expelled`, async (err, rows) => {
                                     let expelledPeople = rows.map(row => row.name)
                                     let foundNames = []
                                     for (const previousName of previousNames) {
@@ -560,7 +560,7 @@ module.exports.run = async (lanisBot, message, args) => {
                     .addField("Problems: ", reportMessage)
                     .setTimestamp()
 
-                const verificationsManual = lanisBot.channels.get(Channels.verificationsManual.id)
+                const verificationsManual = client.channels.get(Channels.verificationsManual.id)
                 const altReportMessage = await verificationsManual.send(reportEmbed);
                 await altReportMessage.react("🔑")
                 await altReportMessage.pin();
@@ -590,7 +590,7 @@ module.exports.run = async (lanisBot, message, args) => {
             .addField(`Invalid Action`, errorDescription)
             .setFooter("User ID: " + message.member.id)
 
-        await lanisBot.channels.get(Channels.verificationAttempts.id).send(errorEmbed)
+        await client.channels.get(Channels.verificationAttempts.id).send(errorEmbed)
         const errorMessage = await message.channel.send(reason)
         await sleep(10000)
         await message.delete().catch(e => {

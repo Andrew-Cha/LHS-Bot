@@ -1,7 +1,7 @@
-const Roles = require("../dataFiles/roles.json")
-const Channels = require("../dataFiles/channels.json");
+const Roles = require("../../data/roles.json")
+const Channels = require("../../data/channels.json");
 
-module.exports.run = async (lanisBot, message, args) => {
+module.exports.run = async (client, message, args) => {
     const raidingChannelCount = Object.keys(Channels.raidingChannels.id).length;
     let wantedChannel = args[0];
     let channelNumber;
@@ -10,7 +10,7 @@ module.exports.run = async (lanisBot, message, args) => {
 
     if (0 < wantedChannel && wantedChannel <= raidingChannelCount) {
         channelNumber = wantedChannel - 1;
-        raidingChannel = lanisBot.channels.get(Channels.raidingChannels.id[channelNumber]);
+        raidingChannel = client.channels.get(Channels.raidingChannels.id[channelNumber]);
         if (raidingChannel === undefined) {
             const error = "No such raiding channel found to reset for raiding.";
             await message.channel.send(error);
