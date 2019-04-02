@@ -75,9 +75,10 @@ fileSystem.readdir("./commands", (e, files) => {
 
     filteredFiles.forEach((f, i) => {
         let file = require(`./commands/${f}`);
-        console.log(`${f} command loaded.`);
         lanisBot.commands.set(file.help.name.toUpperCase(), file);
     });
+
+    console.log(`Loaded ${filteredFiles.length} commands.`)
 });
 
 lanisBot.on("error", console.error);
@@ -588,22 +589,227 @@ lanisBot.on('messageReactionAdd', async (reaction, user) => {
     }
 
     if (reactionChannel.id === Channels.verificationsManualVeteran.id) {
-        reactionChannel.send(`Reaction handler to be added.`)
+        const verifier = await reactionMessage.guild.members.fetch(user.id);
+
+        if (reaction.emoji.name === "🔑" || reaction.emoji.name === "↩") {
+            await reactionMessage.reactions.removeAll();
+            await reactionMessage.react("✅");
+            await reactionMessage.react("❌");
+            await reactionMessage.react("🔒");
+        } else if (reaction.emoji.name === "🔒") {
+            await reactionMessage.reactions.removeAll();
+            await reactionMessage.react("🔑");
+        } else if (reaction.emoji.name === "❌") {
+            const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0]
+            const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1]
+            const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID)
+
+            if (memberVerifying !== undefined) {
+                lanisBot.database.get(`SELECT * FROM pending WHERE ID = '${memberVerifying.id}'`, async (error, row) => {
+                    if (error) {
+                        throw error
+                    }
+                    if (row !== undefined) {
+                        lanisBot.database.run(`DELETE FROM pending WHERE ID = '${memberVerifying.id}'`)
+                    }
+                })
+            }
+
+            let failedVerificationLogEmbed = new Discord.MessageEmbed()
+            .setFooter("User ID: " + memberVerifyingID)
+            .setColor("#cf0202")
+            failedVerificationLogEmbed.addField("Application Rejected", `${memberVerifying.toString()} had their veteran raider application rejected by ${verifier.toString()}.`)
+            await lanisBot.channels.get(Channels.verificationsLog.id).send(failedVerificationLogEmbed)
+
+            await reactionMessage.reactions.removeAll();
+            let reactionMessageEmbed = reactionMessage.embeds[0]
+            reactionMessageEmbed.footer = { text: "Rejected by " + verifier.displayName }
+            await reactionMessage.edit(reactionMessageEmbed)
+            await reactionMessage.react("👋");
+            if (reactionMessage.pinned) {
+                await reactionMessage.unpin();
+            }
+        } else if (reaction.emoji.name === `✅`) {
+            const memberVerifyingTag = reactionMessage.embeds[0].description.split(', ')[0]
+            const memberVerifyingID = memberVerifyingTag.match(/<@!?(1|\d{17,19})>/)[1]
+            const memberVerifying = await reactionMessage.guild.members.fetch(memberVerifyingID)
+
+            if (memberVerifying !== undefined) {
+                lanisBot.database.get(`SELECT * FROM pending WHERE ID = '${memberVerifying.id}'`, async (error, row) => {
+                    if (error) {
+                        throw error
+                    }
+                    if (row !== undefined) {
+                        lanisBot.database.run(`DELETE FROM pending WHERE ID = '${memberVerifying.id}'`)
+                    }
+                })
+            }
+
+            const veteranRaiderRole = reactionMessage.guild.roles.get(Roles.veteranRaider.id)
+            const reactionMember = await reactionMessage.guild.members.fetch(memberVerifyingID).catch()
+            reactionMember.roles.add(veteranRaiderRole)
+
+            let successfulVerificationLogEmbed = new Discord.MessageEmbed()
+                .setFooter("User ID: " + memberVerifying)
+                .setColor("3ea04a")
+                .addField("Successful Verification", verifier.toString() + " has given the member " + memberVerifying.toString() + " the veteran raider role.");
+            await lanisBot.channels.get(Channels.verificationsLog.id).send(successfulVerificationLogEmbed);
+            await reactionMessage.reactions.removeAll();
+            let reactionMessageEmbed = reactionMessage.embeds[0]
+            reactionMessageEmbed.footer = { text: "Verified by " + verifier.displayName }
+            await reactionMessage.edit(reactionMessageEmbed)
+            await reactionMessage.react("💯");
+            if (reactionMessage.pinned) {
+                await reactionMessage.unpin();
+            }
+        }
     }
 
     if (reactionChannel.id === Channels.verificationsVeteran.id) {
+        if (!antiflood.has(user.id)) {
+            antiflood.add(user.id);
+    
+            setTimeout(() => {
+                antiflood.delete(user.id);
+            }, antifloodTime * 1000 * 10)
+        } else {
+            reaction.users.remove(user.id)
+            return
+        }
+
         const veteranRaiderRole = reactionMessage.guild.roles.get(Roles.veteranRaider.id)
         const reactionMember = await reactionMessage.guild.members.fetch(user.id)
-
+        
         if (reaction.emoji.name === `✅`) {
-            const pendingRow = await lanisBot.database.getAsync(`SELECT * FROM pending WHERE ID = '${user.id}'`)
-            if (pendingRow) {
-                const errorMessage = await reactionChannel.send(`There can only be 1 verification active at a time.`)
+            if (reactionMember.roles.find(role => role.id === veteranRaiderRole.id)) {
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, you already have the Veteran Raider Role.`)
                 await sleep(10000)
                 await errorMessage.delete()
                 return
             }
 
+            const pendingRow = await lanisBot.database.getAsync(`SELECT * FROM pending WHERE ID = '${user.id}'`)
+            if (pendingRow) {
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, there can only be 1 verification active at a time.`)
+                await sleep(10000)
+                await errorMessage.delete()
+                return
+            }
+
+            const axios = require("axios");
+            axios.defaults.timeout = 10000;
+            const cheerio = require("cheerio");
+            const otherClasses = [`Wizard`, `Archer`, `Huntress`, `Necromancer`, `Mystic`]
+            const neededClasses = [`Priest`, `Warrior`, `Samurai`, `Ninja`, `Knight`, `Paladin`, `Trickster`, `Rogue`, `Assassin`]
+            const inGameNames = reactionMember.nickname.match(/\b[a-zA-Z]+\b/g)
+
+            if (!inGameNames) {
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, you do not have a nickname set, please contact a staff member.`)
+                await sleep(10000)
+                await errorMessage.delete()
+                return
+            }
+
+            let doesMeetStatRequirements = false
+            let doesMeetCharacterRequirements = false
+            let characterCount = 0
+            for (const inGameName of inGameNames) {
+                await axios.get("https://www.realmeye.com/player/" + inGameName, { headers: { 'User-Agent': 'Public Halls (LHS) Verification Bot' } }).then(async response => {
+                    if (response.status === 200) {
+                        const htmlData = response.data
+                        const $ = cheerio.load(htmlData)
+
+                        const classes = []
+                        $(`tr`).children().each((i, element) => {
+                            if (!element.children[0]) return
+                            if (neededClasses.includes(element.children[0].data) || otherClasses.includes(element.children[0].data)) classes.push(element.children[0].data)
+                        })
+
+                        const charStats = $('.player-stats').text();
+                        const charStatsSplit = charStats.match(/.{3}/g)
+                        let maxCharCount = 0
+                        let neededClassCount = 0
+                        if (charStatsSplit) {
+                            for (let i = 0; i < charStatsSplit.length; i++) {
+                                if (neededClasses.includes(classes[i])) neededClassCount += 1
+                                if (charStatsSplit[i] === "8/8") maxCharCount += 1
+                            }
+                        }
+
+                        const currentCharacterCount = $('.active').text().replace(/[^0-9]/g, '');
+                        characterCount += currentCharacterCount
+
+                        if (maxCharCount >= 2) {
+                            doesMeetStatRequirements = true
+                        }
+
+                        if (neededClassCount > 0) {
+                            doesMeetCharacterRequirements = true
+                        }
+                    } else {
+                        const errorMessage = await reactionChannel.send(`<@${user.id}>, failed to connect to RealmEye. This may be due to your nickname not being set correctly. Please try again or contact a staff member.`)
+                        await sleep(10000)
+                        await errorMessage.delete()
+                    }
+                })
+            }
+
+            if (characterCount < 1) {
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, can't find any characters, make sure they aren't hidden and try again.`)
+                await sleep(10000)
+                await errorMessage.delete()
+                return
+            }
+
+            let doesMeetRunRequirements = false
+            const statsRow = await lanisBot.database.getAsync(`SELECT * FROM stats WHERE ID = '${user.id}'`)
+            const runsDone = statsRow.voidsDone + statsRow.cultsDone
+            if (runsDone >= 100) {
+                doesMeetRunRequirements = true
+            }
+
+            if (!doesMeetStatRequirements || !doesMeetRunRequirements || !doesMeetCharacterRequirements) {
+                let reportMessage = ``
+                if (!doesMeetStatRequirements) reportMessage = reportMessage + `Does not have enough 8/8 characters.`
+                if (!doesMeetCharacterRequirements) reportMessage = reportMessage + `\nDoes not have an 8/8 priest or melee.`
+                if (!doesMeetRunRequirements) reportMessage = reportMessage + `\nDoes not have 100 Lost Halls runs done. (Currently: ${runsDone})`
+                if (inGameNames.length === 1) {
+                    reportMessage = reportMessage + `\n[Player Profile](https://www.realmeye.com/player/${inGameNames[0]})`
+                } else {
+                    let i = 0
+                    for (const inGameName of inGameNames) {
+                        i++
+                        reportMessage = reportMessage + `\n[Player Profile ${i}](https://www.realmeye.com/player/${inGameName})`
+                    }
+                }
+
+
+                let reportEmbed = new Discord.MessageEmbed()
+                    .setColor("#940000")
+                    .setDescription(reactionMember.toString() + " trying to verify as: " + reactionMember.nickname)
+                    .addField("Problems: ", reportMessage)
+                    .setTimestamp()
+
+                const verificationsManualVeteran = lanisBot.channels.get(Channels.verificationsManualVeteran.id)
+                const failedApplicationReportMessage = await verificationsManualVeteran.send(reportEmbed);
+                await failedApplicationReportMessage.react("🔑")
+                await failedApplicationReportMessage.pin()
+
+                const systemMesssages = await verificationsManualVeteran.messages.fetch({ after: failedApplicationReportMessage.id }).catch()
+                for (let message of systemMesssages.values()) {
+                    if (message.system) await message.delete().catch()
+                }
+
+                lanisBot.database.run(`INSERT INTO pending(ID, name) VALUES('${user.id}', '${inGameNames[0].toUpperCase()}')`)
+                const errorMessage = await reactionChannel.send(`<@${user.id}>, you do not meet the requirements, you will now get a manual review of your application. Try again later.`)
+                await sleep(10000)
+                await errorMessage.delete()
+            } else {
+                reactionMember.roles.add(veteranRaiderRole)
+                const successMessage = await reactionChannel.send(`<@${user.id}>, gave you the Veteran Raider Role.`)
+                await sleep(10000)
+                await successMessage.delete()
+            }
             //Verify, send to VeriVeteranPending
         } else if (reaction.emoji.name === `❌`) {
             if (reactionMember.roles.find(role => role.id === veteranRaiderRole.id)) {

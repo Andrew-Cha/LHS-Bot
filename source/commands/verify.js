@@ -5,8 +5,6 @@ const axios = require("axios");
 axios.defaults.timeout = 10000;
 const cheerio = require("cheerio");
 
-const fs = require('fs');
-
 module.exports.run = async (lanisBot, message, args) => {
     const errorChannel = lanisBot.channels.get(Channels.verificationAttempts.id);
     let errorEmbed = new Discord.MessageEmbed()
@@ -343,9 +341,9 @@ module.exports.run = async (lanisBot, message, args) => {
                 }
 
                 let descriptionLines = [];
-                $('.description-line').each(function (i, elem) {
+                $('.description-line').each((i, elem) => {
                     descriptionLines[i] = $(this).text()
-                });
+                })
 
                 let codeFound = false;
                 for (const descriptionLine of descriptionLines) {

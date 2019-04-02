@@ -13,9 +13,10 @@ module.exports.run = async (lanisBot, message, args) => {
             .setColor('#337b0a')
             .setAuthor('Public Halls Veteran Verification', lanisBot.user.avatarURL())
             .addField("Information", "This is the place to get access to the Veteran Run part of this discord, where raid leaders will do Lost Halls with experienced members.")
-            .addField(`Requirements`, `2 8/8 characters.\nOne of those 8/8s has to be either a melee or a priest.`)
+            .addField(`Requirements`, `2 8/8 characters, one of which has to be either a melee or a priest.\n100 Lost Halls runs done with us.`)
             .addBlankField()
             .addField("Follow these steps to verify or unverify: ", "To attempt to verify react to ✅\nTo get unverified react to ❌")
+            .setFooter(`⚠ There is a cooldown for how often you can interact with the reactions. If yours gets removed, wait until your report message is deleted.`)
         const messageSent = await verificationsAutomatic.send(verificationEmbed);
         await messageSent.react("✅");
         await messageSent.react("❌");
