@@ -9,7 +9,7 @@
     "discord.js": "github:discordjs/discord.js",
     "enmap": "^2.5.2",
     "enmap-mongo": "^2.0.1",
-    "generate-password": "^1.4.0",
+    "generate-password": "^1.4.1",
     "hello.js": "^1.0.0",
     "jimp": "^0.2.28",
     "sqlite3": "^4.0.4"
